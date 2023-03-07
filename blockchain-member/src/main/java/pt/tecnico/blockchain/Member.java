@@ -7,13 +7,9 @@ import java.io.IOException;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 
-/**
- * Hello world!
- *
- */
-public class Client
+public class Member
 {
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(Member.class);
     private static int id;
     private static int port;
     private static String hostname;
@@ -36,7 +32,7 @@ public class Client
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
         }
 
-        Pair<String, Integer> host = config.getClientHostname(id);
+        Pair<String, Integer> host = config.getMemberHostname(id);
         if (host == null) throw new BlockChainException(MEMBER_DOES_NOT_EXIST, id);
 
         hostname = host.getFirst();
@@ -44,7 +40,7 @@ public class Client
 
         if (DEBUG) printInfo();
 
-        // TODO All client work is to be done
+        // TODO All member work is to be done
 
     }
 
