@@ -12,8 +12,6 @@
     <artifactId>blockchain-initiator</artifactId>
 
     <name>blockchain-initiator</name>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,6 +36,21 @@
             <artifactId>utils</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>pt.tecnico.blockchain</groupId>
+            <artifactId>blockchain-member</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>pt.tecnico.blockchain</groupId>
+            <artifactId>client</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>pt.tecnico.blockchain</groupId>
+            <artifactId>cryptography</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -112,6 +125,8 @@
                         <mainClass>pt.tecnico.blockchain.Initiator</mainClass>
                         <arguments>
                             <argument>config.in</argument>
+                            <argument>-gen</argument>
+                            <argument>-debug</argument>
                         </arguments>
                     </configuration>
                 </plugin>
@@ -122,8 +137,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
         </plugins>

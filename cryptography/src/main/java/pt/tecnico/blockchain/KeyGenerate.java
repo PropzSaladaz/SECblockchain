@@ -1,5 +1,9 @@
 package pt.tecnico.blockchain;
 
+import sun.security.rsa.RSAKeyPairGenerator;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import javax.crypto.SecretKey;
@@ -28,6 +32,13 @@ public class KeyGenerate {
         keyGenerator.init(256); // specify the key size
         Key key = keyGenerator.generateKey();
         return key.getEncoded();
+    }
+
+    public static KeyPair generateRSAkeys() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+
+        return keyPairGenerator.generateKeyPair();
     }
 
 }

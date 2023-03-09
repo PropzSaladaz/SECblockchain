@@ -46,8 +46,7 @@ public class LaunchConsoleTests
         console.setDirectory(memberPath);
         console.setTitle("This member");
         console.launch();
-//        new ProcessBuilder("cmd", "/c", "start /wait cmd /k \"title This member&mvn exec:java -Dexec.args=\\\" '2' " +
-//                "'C:\\Users\\sidne\\OneDrive\\Ambiente de Trabalho\\ResumosLEIC\\MEIC-1ano\\Semestre 2\\SEC - Sistemas Elevada " +
-//                "Confiabilidade\\project\\Stage 1\\SECblockchain\\blockchain-initiator\\config.in' '-debug'\\\" & pause & exit\"").start();
     }
+
+
 }

@@ -9,6 +9,9 @@ import static pt.tecnico.blockchain.ErrorMessage.*;
 
 public class Member
 {
+    public static final String MODULE = "blockchain-member";
+    public static final String TYPE = "Member";
+
     private static final Logger logger = LoggerFactory.getLogger(Member.class);
     private static int id;
     private static int port;

@@ -7,12 +7,12 @@ import java.io.IOException;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 
-/**
- * Hello world!
- *
- */
+
 public class Client
 {
+    public static final String MODULE = "client";
+    public static final String TYPE = "Client";
+
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     private static int id;
     private static int port;
