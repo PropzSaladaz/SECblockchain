@@ -18,11 +18,11 @@ public class LaunchConsoleTests
     @Test
     public void launchWindowsConsole() throws IOException {
         // Should open a console, print "hi" , wait for a ping, and then close
-        Console console = new ConsoleLauncher(rootModule.toString(), "dir",
-                "ECHO Hi" , "ping -n 6 127.0.0.1 > nul" , "exit"
-        ); // ping used to make console open till exit
-        Process p = console.launch();
-        p.destroy();
+        Console console = new ConsoleLauncher("echo hi",
+                "ECHO Hi" , "ping -n 6 127.0.0.1 > nul"); // ping used to make console open till exit
+        console.setDirectory(rootModule.toString());
+        console.setTitle("This title");
+        console.launch();
     }
 
     @Ignore
@@ -30,7 +30,8 @@ public class LaunchConsoleTests
     public void launchConsoleAndEcho() throws IOException {
         // Should open a console and echo "Hello"
         String memberPath = rootModule.getParent().append("blockchain-member").getPath();
-        Console console = new ConsoleLauncher(memberPath, "echo hello");
+        Console console = new ConsoleLauncher("echo hello");
+        console.setDirectory(memberPath);
         console.launch();
     }
 
@@ -45,5 +46,8 @@ public class LaunchConsoleTests
         console.setDirectory(memberPath);
         console.setTitle("This member");
         console.launch();
+//        new ProcessBuilder("cmd", "/c", "start /wait cmd /k \"title This member&mvn exec:java -Dexec.args=\\\" '2' " +
+//                "'C:\\Users\\sidne\\OneDrive\\Ambiente de Trabalho\\ResumosLEIC\\MEIC-1ano\\Semestre 2\\SEC - Sistemas Elevada " +
+//                "Confiabilidade\\project\\Stage 1\\SECblockchain\\blockchain-initiator\\config.in' '-debug'\\\" & pause & exit\"").start();
     }
 }

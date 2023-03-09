@@ -43,7 +43,7 @@ public class ConsoleLauncher extends BaseConsole implements Console {
                     new WindowsLaunch(commands) : // default console title
                     new WindowsLaunch(windowTitle, commands);
         }
-        if (os.contains("linux")) {
+        else if (os.contains("linux")) {
             launchCommands = windowTitle.equals("") ?
                     new LinuxLaunch(commands) : // default console title
                     new LinuxLaunch(windowTitle, commands);

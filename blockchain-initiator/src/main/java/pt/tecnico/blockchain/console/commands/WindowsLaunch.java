@@ -1,5 +1,8 @@
 package pt.tecnico.blockchain.console.commands;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 public class WindowsLaunch extends LaunchCommands {
 
     public WindowsLaunch(String... commands) {
@@ -13,22 +16,24 @@ public class WindowsLaunch extends LaunchCommands {
 
     @Override
     public String[] getBaseCommand() {
-        return "cmd /c start cmd.exe /k".split(" ");
+        String[] base = "cmd /c start /wait cmd /c ".split(" ");
+        String[] title = { "title " + windowTitle };
+        return (Stream.concat(Arrays.stream(base), Arrays.stream(title))).toArray(String[]::new);
     }
 
     @Override
     public String getWindowTitleCommand() {
-        return null;
+        return "";
     }
 
     @Override
     public String getEndCommand() {
-        return ""; // No need, the /k flag on the base command already sets the window to be persistent
+        return " pause & exit";
     }
 
     @Override
     public String getCommandSeparator() {
-        return "&&";
+        return "&";
     }
 
     @Override

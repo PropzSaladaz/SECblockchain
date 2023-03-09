@@ -17,6 +17,7 @@ public abstract class LaunchCommands {
         StringBuilder sb = new StringBuilder();
         sb.append(getCommandDelimiter());
         sb.append(getWindowTitleCommand());
+        sb.append(getCommandSeparator());
         for (String command : commands) {
             sb.append(parseCommand(command));
             sb.append(getCommandSeparator());
