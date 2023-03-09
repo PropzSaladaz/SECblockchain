@@ -12,16 +12,17 @@ The config file(s) must be in the root directory of **blockchain-initiator** mod
 After having the configuration file, one can start the system by going to the
 **blockchain-initiator** directory and providing the following arguments:  
 ```shell
-mvn exec:java -Dexec.args="<config_file> generate -debug"
+mvn exec:java -Dexec.args="config_file -gen -debug"
 ```
 where: 
-- **<config_file>** will be the name of the file (just the name, not the full path)
+- **config_file** is the name of the file (just the name, not the full path)
 assuming the file is in the root directory of **blockchain-initiator**.
-- **generate** is an optional argument to whether or not re-generate all the keys
+- **-gen** is an optional argument to whether or not re-generate all the keys
 to the members (note that if the config file changes the number of members, then 
-it must be run with generate on).
+it must be run with -gen on).
 - **-debug** is necessary only if the config file includes the additional commands
-stated in **2**
+stated in **2**. Prints additional information about each process. Must be allways
+the last flag.
 
 ## 1.1 - Config file grammar 
 ### 1.1.1 -  Create Processes
