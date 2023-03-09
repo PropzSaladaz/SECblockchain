@@ -1,39 +1,54 @@
 package pt.tecnico.blockchain.console;
 
 import pt.tecnico.blockchain.BlockChainException;
+import pt.tecnico.blockchain.Path.ModulePath;
+import pt.tecnico.blockchain.Path.Path;
+import pt.tecnico.blockchain.console.commands.LaunchCommands;
+import pt.tecnico.blockchain.console.commands.LinuxLaunch;
+import pt.tecnico.blockchain.console.commands.WindowsLaunch;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import static pt.tecnico.blockchain.ErrorMessage.UNSUPPORTED_OS;
 
-public class ConsoleLauncher implements Console {
-    private String[] commands;
-    private String consoleDir;
+public class ConsoleLauncher extends BaseConsole implements Console {
 
-    public ConsoleLauncher(String consoleDir, String... args) {
-        String os = System.getProperty("os.name").toLowerCase();
-        this.consoleDir = consoleDir;
-        String[] launchCommands;
+    private LaunchCommands launchCommands;
 
-        if (os.contains("windows")) {
-            launchCommands = "cmd /c start cmd.exe /k".split(" ");
-        } else if (os.contains("linux")) {
-            launchCommands = "/bin/bash -c".split(" ");
-        }
-        else {
-            throw new BlockChainException(UNSUPPORTED_OS, os);
-        }
-        commands = Stream.concat(Arrays.stream(launchCommands), Arrays.stream(args)).toArray(String[]::new);
+
+    public ConsoleLauncher() {
+        setDirectory(new ModulePath().getPath());
+    }
+
+    public ConsoleLauncher(String... commands) {
+        setDirectory(new ModulePath().getPath());
+        setCommands(commands);
     }
 
     @Override
     public Process launch() throws IOException {
-        System.out.println(Arrays.toString(commands));
-        ProcessBuilder pb = new ProcessBuilder(commands);
+        setOSConsoleLaunchCommands(windowTitle, commands);
+        System.out.println(Arrays.toString(launchCommands.getCommands()));
+        ProcessBuilder pb = new ProcessBuilder(launchCommands.getCommands());
         pb.directory(new File(consoleDir)); // set console path
         return pb.start();
+    }
+
+    private void setOSConsoleLaunchCommands(String windowTitle, String... commands) {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("windows")) {
+            launchCommands = windowTitle.equals("") ?
+                    new WindowsLaunch(commands) : // default console title
+                    new WindowsLaunch(windowTitle, commands);
+        }
+        if (os.contains("linux")) {
+            launchCommands = windowTitle.equals("") ?
+                    new LinuxLaunch(commands) : // default console title
+                    new LinuxLaunch(windowTitle, commands);
+        }
+        else throw new BlockChainException(UNSUPPORTED_OS, os);
+
     }
 }

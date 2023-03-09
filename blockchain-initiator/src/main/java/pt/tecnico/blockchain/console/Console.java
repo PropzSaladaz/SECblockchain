@@ -3,8 +3,14 @@ package pt.tecnico.blockchain.console;
 import java.io.IOException;
 
 public interface Console {
+    String DEFAULT_TITLE = "Console";
 
-    String commandSeparator = System.getProperty("os.name").startsWith("Windows") ? " && " : " ; ";
     Process launch() throws IOException;
+
+    void setTitle(String title);
+
+    void setCommands(String... commands);
+
+    void setDirectory(String directory);
 
 }

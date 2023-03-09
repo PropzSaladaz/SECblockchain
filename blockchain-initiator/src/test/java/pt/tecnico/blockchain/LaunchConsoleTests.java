@@ -2,27 +2,24 @@ package pt.tecnico.blockchain;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import pt.tecnico.blockchain.Path.ModulePath;
+import pt.tecnico.blockchain.Path.Path;
 import pt.tecnico.blockchain.console.Console;
 import pt.tecnico.blockchain.console.ConsoleLauncher;
 import pt.tecnico.blockchain.console.MavenConsole;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 
 public class LaunchConsoleTests
 {
-    private static Path rootModule = Paths.get(new File("").getAbsolutePath());
+    private static Path rootModule = new ModulePath();
 
     @Ignore
     @Test
-    public void launchConsoleLauncher() throws IOException, InterruptedException {
+    public void launchWindowsConsole() throws IOException {
         // Should open a console, print "hi" , wait for a ping, and then close
-        Console console = new ConsoleLauncher(rootModule.toString(), "dir" + Console.commandSeparator +
-                "ECHO Hi" + Console.commandSeparator +  "ping -n 6 127.0.0.1 > nul" + Console.commandSeparator
-                + "exit"
+        Console console = new ConsoleLauncher(rootModule.toString(), "dir",
+                "ECHO Hi" , "ping -n 6 127.0.0.1 > nul" , "exit"
         ); // ping used to make console open till exit
         Process p = console.launch();
         p.destroy();
@@ -30,12 +27,23 @@ public class LaunchConsoleTests
 
     @Ignore
     @Test
+    public void launchConsoleAndEcho() throws IOException {
+        // Should open a console and echo "Hello"
+        String memberPath = rootModule.getParent().append("blockchain-member").getPath();
+        Console console = new ConsoleLauncher(memberPath, "echo hello");
+        console.launch();
+    }
+
+    @Ignore
+    @Test
     public void launchMavenConsole() throws IOException {
         // Should open a console and execute a blockchain-member java program passing the following 2 arguments
-        String memberPath = rootModule.getParent() + File.separator + "blockchain-member";
-        String configPath = memberPath + File.separator + "config.in";
-        String processId = "5";
-        Console console = new MavenConsole(memberPath, processId, configPath);
+        String memberPath = rootModule.getParent().append("blockchain-member").getPath();
+        String configPath = rootModule.append("config.in").getPath();
+        String processId = "2";
+        Console console = new MavenConsole(processId, configPath, "-debug");
+        console.setDirectory(memberPath);
+        console.setTitle("This member");
         console.launch();
     }
 }

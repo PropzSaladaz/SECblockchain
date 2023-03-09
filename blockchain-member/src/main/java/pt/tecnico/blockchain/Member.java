@@ -18,9 +18,15 @@ public class Member
 
     public static void main( String[] args )
     {
+        {
+            for (String arg : args) {
+                logger.info(arg);
+            }
+            logger.info("Debug mode on");
+        }
+
         if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_MEMBER_ARGUMENTS);
         setDebugMode(args);
-        if (DEBUG) logger.info("Debug mode on");
 
         id = Integer.parseInt(args[0]);
         BlockchainConfig config;
