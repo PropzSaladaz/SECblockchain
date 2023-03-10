@@ -8,8 +8,9 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>client</artifactId>
-    <name>client</name>
+    <artifactId>blockchain-member</artifactId>
+    <name>blockchain-member</name>
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,14 +27,13 @@
         </dependency>
         <dependency>
             <groupId>pt.tecnico.blockchain</groupId>
-            <artifactId>cryptography</artifactId>
-            <version>1.0</version>
+            <artifactId>exceptions</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>pt.tecnico.blockchain</groupId>
-            <artifactId>exceptions</artifactId>
+            <artifactId>cryptography</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>pt.tecnico.blockchain</groupId>
@@ -52,6 +52,7 @@
             <version>2.0.0-alpha0</version>
             <scope>runtime</scope>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -110,7 +111,7 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <mainClass>pt.tecnico.blockchain.Client</mainClass>
+                        <mainClass>pt.tecnico.blockchain.Member</mainClass>
                     </configuration>
                 </plugin>
             </plugins>

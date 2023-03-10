@@ -8,8 +8,10 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>client</artifactId>
-    <name>client</name>
+
+    <artifactId>blockchain-initiator</artifactId>
+
+    <name>blockchain-initiator</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,20 +28,29 @@
         </dependency>
         <dependency>
             <groupId>pt.tecnico.blockchain</groupId>
-            <artifactId>cryptography</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>pt.tecnico.blockchain</groupId>
             <artifactId>exceptions</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>pt.tecnico.blockchain</groupId>
             <artifactId>utils</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>pt.tecnico.blockchain</groupId>
+            <artifactId>blockchain-member</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>pt.tecnico.blockchain</groupId>
+            <artifactId>client</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>pt.tecnico.blockchain</groupId>
+            <artifactId>cryptography</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -52,6 +63,7 @@
             <version>2.0.0-alpha0</version>
             <scope>runtime</scope>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -110,10 +122,25 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <mainClass>pt.tecnico.blockchain.Client</mainClass>
+                        <mainClass>pt.tecnico.blockchain.Initiator</mainClass>
+                        <arguments>
+                            <argument>config.in</argument>
+                            <argument>-gen</argument>
+                            <argument>-debug</argument>
+                        </arguments>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

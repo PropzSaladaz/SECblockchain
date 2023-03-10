@@ -8,12 +8,12 @@ import java.io.IOException;
 import static pt.tecnico.blockchain.ErrorMessage.*;
 import pt.tecnico.blockchain.SlotTimer.*;
 
-public class Client
+public class Member
 {
-    public static final String MODULE = "client";
-    public static final String TYPE = "Client";
+    public static final String MODULE = "blockchain-member";
+    public static final String TYPE = "Member";
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(Member.class);
     private static int id;
     private static int port;
     private static String hostname;
@@ -22,9 +22,15 @@ public class Client
 
     public static void main( String[] args )
     {
+        {
+            for (String arg : args) {
+                logger.info(arg);
+            }
+            logger.info("Debug mode on");
+        }
+
         if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_MEMBER_ARGUMENTS);
         setDebugMode(args);
-        if (DEBUG) logger.info("Debug mode on");
 
         id = Integer.parseInt(args[0]);
         BlockchainConfig config;
@@ -36,7 +42,7 @@ public class Client
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
         }
 
-        Pair<String, Integer> host = config.getClientHostname(id);
+        Pair<String, Integer> host = config.getMemberHostname(id);
         if (host == null) throw new BlockChainException(MEMBER_DOES_NOT_EXIST, id);
 
         hostname = host.getFirst();
@@ -44,7 +50,7 @@ public class Client
 
         if (DEBUG) printInfo();
 
-        SlotTimer slotTimer = new SlotTimer(new BlockchainMemberFrontend(), config.getSlotDuration());
+        SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
         slotTimer.start();
     }
 
