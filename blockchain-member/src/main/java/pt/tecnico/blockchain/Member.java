@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
+import pt.tecnico.blockchain.SlotTimer.*;
 
 public class Member
 {
@@ -49,8 +50,8 @@ public class Member
 
         if (DEBUG) printInfo();
 
-        // TODO All member work is to be done
-
+        SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
+        slotTimer.start();
     }
 
     private static boolean correctNumberArgs(String[] args) {
