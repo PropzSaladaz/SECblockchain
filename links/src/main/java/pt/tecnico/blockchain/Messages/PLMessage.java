@@ -1,16 +1,18 @@
-package pt.tecnico.blockchain;
+package pt.tecnico.blockchain.Messages;
+
+import java.net.InetAddress;
 
 public class PLMessage extends FLLMessage {
 
     private int _seqNum;
     private Boolean _ack;
 
-    public PLMessage(String message, int sender) {
-        super(message, sender);
+    public PLMessage(String message, int sender, InetAddress senderHostname, int senderPort) {
+        super(message, sender, senderHostname, senderPort);
     }
 
-    public PLMessage(String message, int sender, int seqNum, Boolean ack) {
-        super(message, sender);
+    public PLMessage(String message, int sender, InetAddress senderHostname, int senderPort, int seqNum, Boolean ack) {
+        super(message, sender, senderHostname, senderPort);
         _seqNum = seqNum;
         _ack = ack;
     }

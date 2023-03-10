@@ -1,5 +1,13 @@
 package pt.tecnico.blockchain;
 
+import java.io.IOException;
+
+import java.net.DatagramSocket;
+import java.security.PublicKey;
+import java.security.PrivateKey;
+
+import pt.tecnico.blockchain.Messages.APLMessage;
+
 public class AuthenticatedPerfectLink {
 
     private PublicKey _myPublicKey;
@@ -14,10 +22,11 @@ public class AuthenticatedPerfectLink {
     }
     
     public void send(DatagramSocket socket, APLMessage message) throws IOException {
-        
+        // TODO
     }
 
-    public APLMessage deliver() {
-
+    public APLMessage deliver() throws IOException {
+        // TODO
+        return null;
     }
 }

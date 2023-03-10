@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain.Timer;
+package pt.tecnico.blockchain.SlotTimer;
 
 import java.util.TimerTask;
 

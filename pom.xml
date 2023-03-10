@@ -9,8 +9,9 @@
   <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
   <modules>
-    <module>client</module>
     <module>cryptography</module>
+    <module>client</module>
+    <module>links</module>
     <module>blockchain-member</module>
     <module>blockchain-initiator</module>
     <module>exceptions</module>

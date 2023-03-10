@@ -4,9 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.DatagramSocket;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 import pt.tecnico.blockchain.SlotTimer.*;
+import pt.tecnico.blockchain.Messages.*;
 
 public class Member
 {
@@ -52,6 +55,15 @@ public class Member
 
         SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
         slotTimer.start();
+
+        try {
+            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
+            while (true) {
+                FLLMessage message = (FLLMessage) FairLossLink.deliver(socket);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static boolean correctNumberArgs(String[] args) {
