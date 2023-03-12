@@ -1,13 +1,14 @@
 package pt.tecnico.blockchain;
 
+import pt.tecnico.blockchain.Config.BlockchainConfig;
+import pt.tecnico.blockchain.Keys.KeyFilename;
+import pt.tecnico.blockchain.Path.BlockchainPaths;
 import pt.tecnico.blockchain.Path.ModulePath;
 import pt.tecnico.blockchain.Path.Path;
 import pt.tecnico.blockchain.console.Console;
 import pt.tecnico.blockchain.console.MavenConsole;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -24,8 +25,8 @@ public class Initiator {
     private static final Path rootModule = new ModulePath();
     private static final String DEBUG_FLAG = "-debug";
     private static final String GENERATE_FLAG = "-gen";
-    private static final String memberModule = rootModule.getParent().append(Member.MODULE).getPath();
-    private static final String clientModule = rootModule.getParent().append(Client.MODULE).getPath();
+    private static final String memberModule = rootModule.getParent().append(BlockchainPaths.MEMBER_MODULE_NAME).getPath();
+    private static final String clientModule = rootModule.getParent().append(BlockchainPaths.CLIENT_MODULE_NAME).getPath();
     private static final BlockchainConfig config = new BlockchainConfig();
 
     private static boolean DEBUG = false;
@@ -56,7 +57,7 @@ public class Initiator {
     private static void initProcessArray(ArrayList<Integer> ids, String directory, String processType) throws IOException, NoSuchAlgorithmException {
         String debug = DEBUG ? DEBUG_FLAG : "";
         for (int id : ids) {
-            if (GENERATE_NEW_KEYS) generateKeys(directory, getKeyFilename(processType, id));
+            if (GENERATE_NEW_KEYS) generateKeys(directory, KeyFilename.get(processType, id));
             Console console = new MavenConsole(String.valueOf(id), config.getFilePath(), debug);
             console.setDirectory(directory);
             console.setTitle(processType + " " + id);
@@ -90,7 +91,4 @@ public class Initiator {
         }
     }
 
-    public static String getKeyFilename(String processType, int id) {
-        return processType + "-" + id;
-    }
 }

@@ -8,52 +8,53 @@ import java.net.InetAddress;
 import java.net.DatagramSocket;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
+
+import pt.tecnico.blockchain.Config.BlockchainConfig;
+import pt.tecnico.blockchain.Keys.KeyFilename;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.Path.BlockchainPaths;
+import pt.tecnico.blockchain.Path.ModulePath;
 import pt.tecnico.blockchain.SlotTimer.*;
 import pt.tecnico.blockchain.Messages.*;
 
 public class Member
 {
-    public static final String MODULE = "blockchain-member";
     public static final String TYPE = "Member";
+    private static final String DEBUG_STRING = "-debug";
 
     private static final Logger logger = LoggerFactory.getLogger(Member.class);
     private static int id;
     private static int port;
     private static String hostname;
     private static boolean DEBUG = false;
-    private static final String DEBUG_STRING = "-debug";
+    private static RSAKeyStoreById store;
+    private static BlockchainConfig config;
 
-    public static void main( String[] args )
-    {
+
+    public static void main( String[] args ) throws Exception {
         if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_MEMBER_ARGUMENTS);
-        setDebugMode(args);
-
-        id = Integer.parseInt(args[0]);
-        BlockchainConfig config;
+        parseArgs(args);
 
         try {
             config = new BlockchainConfig();
             config.setFromAbsolutePath(args[1]);
-        } catch (IOException e) {
-            throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
-        }
+            setHostnameFromConfig();
 
-        Pair<String, Integer> host = config.getMemberHostname(id);
-        if (host == null) throw new BlockChainException(MEMBER_DOES_NOT_EXIST, id);
+            if (DEBUG) printInfo();
 
-        hostname = host.getFirst();
-        port = host.getSecond();
+            initKeyStore();
 
-        if (DEBUG) printInfo();
+            SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
+            slotTimer.start();
 
-        SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
-        slotTimer.start();
 
-        try {
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             while (true) {
                 FLLMessage message = (FLLMessage) FairLossLink.deliver(socket);
             }
+
+        } catch (IOException e) {
+            throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,5 +78,26 @@ public class Member
     private static RSAKeyStoreById readKeys() {
         RSAKeyStoreById store = new RSAKeyStoreById();
         return store;
+    }
+
+    private static void initKeyStore() throws Exception {
+        store = new RSAKeyStoreById();
+        store.addPrivate(BlockchainPaths.MEMBER_KEYDIR_PATH
+                .append(KeyFilename.getWithPrivExtension(TYPE, id))
+                .getPath());
+        store.addPublics(BlockchainPaths.CLIENT_KEYDIR_PATH.getPath());
+        store.addPublics(BlockchainPaths.MEMBER_KEYDIR_PATH.getPath());
+    }
+
+    private static void parseArgs(String[] args) {
+        id = Integer.parseInt(args[0]);
+        setDebugMode(args);
+    }
+
+    private static void setHostnameFromConfig() {
+        Pair<String, Integer> host = config.getMemberHostname(id);
+        if (host == null) throw new BlockChainException(MEMBER_DOES_NOT_EXIST, id);
+        hostname = host.getFirst();
+        port = host.getSecond();
     }
 }

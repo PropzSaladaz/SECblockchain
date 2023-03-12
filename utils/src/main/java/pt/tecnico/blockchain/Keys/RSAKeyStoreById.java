@@ -1,8 +1,8 @@
-package pt.tecnico.blockchain;
+package pt.tecnico.blockchain.Keys;
 
 
 
-import pt.tecnico.blockchain.Path.ModulePath;
+import pt.tecnico.blockchain.RSAKeyReader;
 
 import java.io.File;
 import java.security.PrivateKey;
@@ -10,19 +10,15 @@ import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RSAKeyStoreById {
-    private final Pattern FILE_PATTERN;
-    private final String ID = "id";
 
     private Map<Integer, PrivateKey> privateKeys;
     private Map<Integer, PublicKey> publicKeys;
 
-    public RSAKeyStoreById(Pattern fileRegex) {
+    public RSAKeyStoreById() {
         privateKeys = new HashMap<>();
         publicKeys = new HashMap<>();
-        this.FILE_PATTERN = fileRegex;
     }
 
     public PublicKey getPublicKey(int id) {
@@ -36,35 +32,29 @@ public class RSAKeyStoreById {
     public void addPrivates(String directoryPath) throws Exception {
         File dir = new File(directoryPath);
         for (File file : dir.listFiles()) {
-            String filename = file.getName();
-            if (file.isFile() && filename.endsWith(RSAKeyWriter.PRIVATE_EXT)) {
-                addPrivate(filename);
-            }
+            if (file.isFile()) addPrivate(file.getName());
         }
     }
 
     public void addPublics(String directoryPath) throws Exception {
         File dir = new File(directoryPath);
         for (File file : dir.listFiles()) {
-            String filename = file.getName();
-            if (file.isFile() && filename.endsWith(RSAKeyWriter.PUBLIC_EXT)) {
-                addPublic(filename);
-            }
+            if (file.isFile()) addPublic(file.getName());
         }
     }
 
     public void addPrivate(String keyPath) throws Exception {
-        Matcher fileMatcher = FILE_PATTERN.matcher(keyPath);
+        Matcher fileMatcher = KeyFilename.PRIV_FILE_PATTERN_EXT.matcher(keyPath);
         if (fileMatcher.find()) {
-            int id = Integer.parseInt(fileMatcher.group(ID));
+            int id = Integer.parseInt(fileMatcher.group(KeyFilename.PROCESS_ID_GROUP));
             privateKeys.put(id, RSAKeyReader.readPrivate(keyPath));
         }
     }
 
     public void addPublic(String keyPath) throws Exception {
-        Matcher fileMatcher = FILE_PATTERN.matcher(keyPath);
+        Matcher fileMatcher = KeyFilename.PUB_FILE_PATTERN_EXT.matcher(keyPath);
         if (fileMatcher.find()) {
-            int id = Integer.parseInt(fileMatcher.group(ID));
+            int id = Integer.parseInt(fileMatcher.group(KeyFilename.PROCESS_ID_GROUP));
             publicKeys.put(id, RSAKeyReader.readPublic(keyPath));
         }
     }

@@ -6,11 +6,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
+
+import pt.tecnico.blockchain.Config.BlockchainConfig;
+import pt.tecnico.blockchain.Keys.KeyFilename;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.Path.BlockchainPaths;
 import pt.tecnico.blockchain.SlotTimer.*;
 
 public class Client
 {
-    public static final String MODULE = "client";
     public static final String TYPE = "Client";
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
@@ -19,33 +23,30 @@ public class Client
     private static String hostname;
     private static boolean DEBUG = false;
     private static final String DEBUG_STRING = "-debug";
+    private static RSAKeyStoreById store;
+    private static BlockchainConfig config;
 
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ) throws Exception {
         if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_MEMBER_ARGUMENTS);
-        setDebugMode(args);
+        parseArgs(args);
         if (DEBUG) logger.info("Debug mode on");
-
-        id = Integer.parseInt(args[0]);
-        BlockchainConfig config;
 
         try {
             config = new BlockchainConfig();
             config.setFromAbsolutePath(args[1]);
+            setHostnameFromConfig();
+
+            if (DEBUG) printInfo();
+
+            initKeyStore();
+
+            SlotTimer slotTimer = new SlotTimer(new BlockchainMemberFrontend(), config.getSlotDuration());
+            slotTimer.start();
+
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
         }
 
-        Pair<String, Integer> host = config.getClientHostname(id);
-        if (host == null) throw new BlockChainException(MEMBER_DOES_NOT_EXIST, id);
-
-        hostname = host.getFirst();
-        port = host.getSecond();
-
-        if (DEBUG) printInfo();
-
-        SlotTimer slotTimer = new SlotTimer(new BlockchainMemberFrontend(), config.getSlotDuration());
-        slotTimer.start();
     }
 
     private static boolean correctNumberArgs(String[] args) {
@@ -61,5 +62,25 @@ public class Client
         logger.info("ID=" + id + "\n" +
                 "hostname=" + hostname + "\n" +
                 "port=" + port + "\n");
+    }
+
+    private static void initKeyStore() throws Exception {
+        store = new RSAKeyStoreById();
+        store.addPrivate(BlockchainPaths.CLIENT_KEYDIR_PATH
+                .append(KeyFilename.getWithPrivExtension(TYPE, id))
+                .getPath());
+        store.addPublics(BlockchainPaths.MEMBER_KEYDIR_PATH.getPath());
+    }
+
+    private static void parseArgs(String[] args) {
+        id = Integer.parseInt(args[0]);
+        setDebugMode(args);
+    }
+
+    private static void setHostnameFromConfig() {
+        Pair<String, Integer> host = config.getClientHostname(id);
+        if (host == null) throw new BlockChainException(MEMBER_DOES_NOT_EXIST, id);
+        hostname = host.getFirst();
+        port = host.getSecond();
     }
 }
