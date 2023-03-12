@@ -56,7 +56,7 @@ public class Initiator {
     private static void initProcessArray(ArrayList<Integer> ids, String directory, String processType) throws IOException, NoSuchAlgorithmException {
         String debug = DEBUG ? DEBUG_FLAG : "";
         for (int id : ids) {
-            if (GENERATE_NEW_KEYS) generateKeys(directory, processType + " " + id);
+            if (GENERATE_NEW_KEYS) generateKeys(directory, getKeyFilename(processType, id));
             Console console = new MavenConsole(String.valueOf(id), config.getFilePath(), debug);
             console.setDirectory(directory);
             console.setTitle(processType + " " + id);
@@ -88,5 +88,9 @@ public class Initiator {
             GENERATE_NEW_KEYS = commandMatcher.group("generate").strip().equals(GENERATE_FLAG);
             DEBUG =             commandMatcher.group("debug").strip().equals(DEBUG_FLAG);
         }
+    }
+
+    public static String getKeyFilename(String processType, int id) {
+        return processType + "-" + id;
     }
 }

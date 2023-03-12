@@ -25,13 +25,6 @@ public class Member
 
     public static void main( String[] args )
     {
-        {
-            for (String arg : args) {
-                logger.info(arg);
-            }
-            logger.info("Debug mode on");
-        }
-
         if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_MEMBER_ARGUMENTS);
         setDebugMode(args);
 
@@ -79,5 +72,10 @@ public class Member
         logger.info("ID=" + id + "\n" +
                 "hostname=" + hostname + "\n" +
                 "port=" + port + "\n");
+    }
+
+    private static RSAKeyStoreById readKeys() {
+        RSAKeyStoreById store = new RSAKeyStoreById();
+        return store;
     }
 }

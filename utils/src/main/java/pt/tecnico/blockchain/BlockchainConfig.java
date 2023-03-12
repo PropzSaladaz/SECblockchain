@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import pt.tecnico.blockchain.Pair;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 
