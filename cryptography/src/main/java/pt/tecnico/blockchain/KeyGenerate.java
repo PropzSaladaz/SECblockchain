@@ -1,6 +1,5 @@
 package pt.tecnico.blockchain;
 
-import sun.security.rsa.RSAKeyPairGenerator;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;

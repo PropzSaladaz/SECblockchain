@@ -3,6 +3,7 @@ package pt.tecnico.blockchain;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import pt.tecnico.blockchain.Config.BlockchainConfig;
 
 import java.io.File;
 import java.io.FileWriter;

@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain;
+package pt.tecnico.blockchain.Config;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,6 +9,9 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import pt.tecnico.blockchain.BlockChainException;
+import pt.tecnico.blockchain.Pair;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 
