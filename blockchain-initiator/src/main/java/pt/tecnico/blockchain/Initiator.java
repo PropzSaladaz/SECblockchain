@@ -33,13 +33,14 @@ public class Initiator {
     private static String configFile;
 
 
-    public static void main(String[] args) throws BlockChainException, IOException {
+    public static void main(String[] args) throws BlockChainException, IOException, NoSuchAlgorithmException {
         if (!correctNumberArgs(args)) throw new BlockChainException(INCORRECT_INITIATOR_ARGUMENTS);
         parseArgs(args);
         if (DEBUG) System.out.println("Debug mode is on");
         if (GENERATE_NEW_KEYS) System.out.println("Generating new keys...");
         config.setFromRelativePath(configFile);
         initProcesses();
+
     }
 
     private static void initProcesses() throws BlockChainException {
