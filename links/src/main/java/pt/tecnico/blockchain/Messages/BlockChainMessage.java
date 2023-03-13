@@ -2,7 +2,7 @@ package pt.tecnico.blockchain.Messages;
 
 import java.util.Base64;
 
-public class BlockchainMessage extends Message implements Content {
+public class BlockchainMessage implements Content {
     
     private String _message;
 

@@ -12,6 +12,7 @@
     <module>cryptography</module>
     <module>client</module>
     <module>links</module>
+    <module>ibft</module>
     <module>blockchain-member</module>
     <module>blockchain-initiator</module>
     <module>exceptions</module>

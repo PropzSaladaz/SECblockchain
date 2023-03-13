@@ -14,6 +14,7 @@ public class MemberState {
     private BlockchainConfig _config;
     private List<Message> _prepared;
     private List<Message> _commited;
+    private Ibft _ibftInstance = new Ibft();
 
     public MemberState (BlockchainConfig config, SlotTimer timer) {
         _timer = timer;
@@ -58,5 +59,17 @@ public class MemberState {
 
     public List<Integer> getCommitQuorum() {
         return _commited.stream().map(msg -> msg.getSenderPID()).collect(Collectors.toList());
+    }
+
+    public void startIbft(int consensusInstance, BlockchainMessage inputValue) {
+        _ibftInstance.start(consensusInstance, inputValue);
+    }
+
+    public void setIbftPreparedRound(int round) {
+        _ibftInstance.setPreparedRound(round);
+    }
+
+    public void setIbftPreparedValue(BlockchainMessage value) {
+        _ibftInstance.setPreparedValue(value);
     }
 }

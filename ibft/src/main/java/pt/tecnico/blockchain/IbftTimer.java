@@ -1,11 +1,14 @@
-package pt.tecnico.ibft;
+package pt.tecnico.blockchain;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.lang.Math;
 
-public static class IbftTimer {
+public class IbftTimer {
 
+    private Timer timer = new Timer();
     private String state = "expired";
+
     private TimerTask task = new TimerTask() {
         @Override
         public void run() {
@@ -13,9 +16,12 @@ public static class IbftTimer {
         }
     };
 
-    public static void start(int round) {
-        Timer timer = new Timer();
+    public void start(int round) {
         state = "running";
-        timer.schedule(task, exp(round));
+        timer.schedule(task, (long)Math.exp(round));
+    }
+
+    public void stop() {
+        timer.cancel();
     }
 }

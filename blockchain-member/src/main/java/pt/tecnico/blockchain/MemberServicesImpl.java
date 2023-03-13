@@ -8,7 +8,8 @@ public class MemberServicesImpl {
         Content msgContent = message.getContent();
         switch (msgContent.getContentType()) {
             case ContentType.APPEND_BLOCK:
-                // START IBFT ((BlockchainMessage)request);
+                ConsensusInstanceMessage msg = (ConsensusInstanceMessage) msgContent;
+                memberState.startIbft(msg.getConsensusInstance(), msg.getValue());
                 break;
             case ContentType.CONSENSUS_INSTANCE:
                 handleConsensusInstanceMessage((ConsensusInstanceMessage) message, memberState);
@@ -45,8 +46,8 @@ public class MemberServicesImpl {
     public static void handlePrepareRequest(ConsensusInstanceMessage message, MemberState memberState) {
         memberState.addToPreparedQuorum(message);
         if (memberState.hasPreparedQuorum()) {
-            // Change prepared round in IBFT instance to round
-            // Change prepared value in IBFT instance to value
+            memberState.setIbftPreparedRound(message.getRound());
+            memberState.setIbftPreparedValue(message.getValue());
             message.setMessageType(ConsensusInstanceMessage.COMMIT);
             MemberFrontend.broadcastMessage(message);
         }
