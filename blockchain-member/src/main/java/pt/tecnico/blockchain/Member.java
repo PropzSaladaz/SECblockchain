@@ -37,10 +37,8 @@ public class Member
     private static BlockchainConfig config;
 
 
-    public static void main( String[] args ) throws UnknownHostException, SocketException, InterruptedException {
-
-    public static void main( String[] args ) throws Exception {
-        if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_MEMBER_ARGUMENTS);
+    public static void main( String[] args ) {
+        if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_PROCESS_ARGUMENTS);
         parseArgs(args);
 
         try {
@@ -54,10 +52,8 @@ public class Member
 
             SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
             slotTimer.start();
-            DatagramSocket memberSocket = new DatagramSocket(5001, InetAddress.getByName("localhost"));
+            DatagramSocket memberSocket = new DatagramSocket(port, InetAddress.getByName(hostname));
 
-
-            //InitializeLinks
             initializeLinks();
 
             Thread deliverThread = new Thread(() -> {
@@ -72,11 +68,13 @@ public class Member
 
            Thread senderThread = new Thread(() -> {
                 try {
-                    for (int i =0; i <5;i++)
+                    for (int i =0; i < 10;i++)
                     {
-                        String message = "Sidnei nao responde";
-                        Content content = new BlockChainMessage(message);
-                        AuthenticatedPerfectLink.send(memberSocket,content,createKeys.pairMember.getPrivate(),InetAddress.getByName("localhost"),5001);
+                        if (id == 1 || id == 3) {
+                            String message = "Sidnei nao responde " + i;
+                            Content content = new BlockChainMessage(message);
+                            AuthenticatedPerfectLink.send(memberSocket, content, InetAddress.getByName("127.0.0.1"),10002);
+                        }
                     }
                     //Send Message with AuthLink
                 } catch (IOException | NoSuchAlgorithmException e) {
@@ -84,12 +82,10 @@ public class Member
                 }
             });
 
-            //Start Threads
             deliverThread.start();
             senderThread.start();
 
-            //WAIT
-            deliverThread.start();
+            deliverThread.join();
             senderThread.join();
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
@@ -121,15 +117,11 @@ public class Member
     }
 
 
-    private static void initializeLinks(){
-        AuthenticatedPerfectLink.setId(id);
+    private static void initializeLinks() throws UnknownHostException {
         PerfectLink.setDeliveredMap(new HashMap<>());
-        AuthenticatedPerfectLink.setSource("localhost",5001);
-    }
-
-    private static RSAKeyStoreById readKeys() {
-        RSAKeyStoreById store = new RSAKeyStoreById();
-        return store;
+        AuthenticatedPerfectLink.setId(id);
+        AuthenticatedPerfectLink.setSource(hostname, port);
+        AuthenticatedPerfectLink.setKeyStore(store);
     }
 
     private static void initKeyStore() throws Exception {

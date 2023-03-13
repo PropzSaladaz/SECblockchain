@@ -1,13 +1,18 @@
 package pt.tecnico.blockchain.Messages;
 
 import java.net.InetAddress;
+import java.util.UUID;
 
 public class PLMessage extends Message implements Content {
 
-    private int _seqNum;
+    private UUID _seqNum;
     private Boolean _ack;
     private InetAddress _senderHostname;
     private int _senderPort;
+
+    public PLMessage() {
+
+    }
 
     public PLMessage(InetAddress senderHostname, int senderPort,Content content) {
         super(content);
@@ -15,11 +20,11 @@ public class PLMessage extends Message implements Content {
         _senderPort = senderPort;
 
     }
-    public int getSeqNum() {
+    public UUID getSeqNum() {
         return _seqNum;
     }
 
-    public void setSeqNum(int value) {
+    public void setSeqNum(UUID value) {
         _seqNum = value;
     }
 
@@ -37,6 +42,17 @@ public class PLMessage extends Message implements Content {
 
     public int getSenderPort() {
         return _senderPort;
+    }
+
+    @Override
+    public String toString(int level) {
+        return  toStringWithTabs("PLMessage: {", level) +
+                toStringWithTabs("seq_number: " + _seqNum, level + 1) +
+                toStringWithTabs("Ack: " + _ack, level + 1) +
+                toStringWithTabs("sender_hostname: " + _senderHostname, level + 1) +
+                toStringWithTabs("sender_port: " + _senderPort, level + 1) +
+                _content.toString(level + 1) +
+                toStringWithTabs("}", level);
     }
 
 
