@@ -1,12 +1,14 @@
 package pt.tecnico.blockchain.Messages;
 
+import java.util.List;
+
 public class DecideBlockMessage extends Message implements Content {
 
     private int _round;
     private BlockchainMessage _value;
-    private int[] _quorum;
+    private List<Integer> _quorum;
 
-    public DecideBlockMessage(int round, BlockchainMessage value, int[] quorum) {
+    public DecideBlockMessage(int round, BlockchainMessage value, List<Integer> quorum) {
         _round = round;
         _value = value;
         _quorum = quorum;
@@ -21,11 +23,21 @@ public class DecideBlockMessage extends Message implements Content {
         return _round;
     }
 
-    public int[] getQuorum() {
+    public List<Integer> getQuorum() {
         return _quorum;
     }
 
     public BlockchainMessage getValue() {
         return _value;
     } 
+
+    @Override
+    public String toString (){
+        return "TODO TODO: EMPTY METHOD";
+    }
+
+    @Override
+    public String toString(int level) {
+        return "TODO TODO: EMPTY METHOD";
+    }
 }

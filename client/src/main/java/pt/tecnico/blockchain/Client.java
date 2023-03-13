@@ -32,7 +32,7 @@ public class Client
     public static final String TYPE = "Client";
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
-    private static int id;
+    private static int pid;
     private static int port;
     private static String hostname;
     private static boolean DEBUG = false;
@@ -79,8 +79,8 @@ public class Client
                     for (int i =0; i <5;i++)
                     {
                         String message = "Sidnei nao responde";
-                        Content content = new BlockChainMessage(message);
-                        AuthenticatedPerfectLink.send(clientSocket,content ,InetAddress.getByName("127.0.0.1"),10001);
+                        Content content = new BlockchainMessage(message);
+                        AuthenticatedPerfectLink.send(clientSocket,content ,InetAddress.getByName("127.0.0.1"),10001,pid);
                     }
                     //Send Message with AuthLink
                 } catch (IOException | NoSuchAlgorithmException e) {
@@ -123,13 +123,12 @@ public class Client
     }
 
     private static void printInfo() {
-        logger.info("ID=" + id + "\n" +
+        logger.info("ID=" + pid + "\n" +
                 "hostname=" + hostname + "\n" +
                 "port=" + port + "\n");
     }
 
     private static void initializeLinks() throws UnknownHostException {
-        AuthenticatedPerfectLink.setId(id);
         PerfectLink.setDeliveredMap(new HashMap<>());
         AuthenticatedPerfectLink.setSource(hostname, port);
         AuthenticatedPerfectLink.setKeyStore(store);
@@ -138,19 +137,19 @@ public class Client
     private static void initKeyStore() throws Exception {
         store = new RSAKeyStoreById();
         store.addPrivate(CLIENT_KEYDIR_PATH
-                .append(KeyFilename.getWithPrivExtension(TYPE, id))
+                .append(KeyFilename.getWithPrivExtension(TYPE, pid))
                 .getPath());
         store.addPublics(MEMBER_KEYDIR_PATH.getPath());
     }
 
     private static void parseArgs(String[] args) {
-        id = Integer.parseInt(args[0]);
+        pid = Integer.parseInt(args[0]);
         setDebugMode(args);
     }
 
     private static void setHostnameFromConfig() {
-        Pair<String, Integer> host = config.getClientHostname(id);
-        if (host == null) throw new BlockChainException(CLIENT_DOES_NOT_EXIST, id);
+        Pair<String, Integer> host = config.getClientHostname(pid);
+        if (host == null) throw new BlockChainException(CLIENT_DOES_NOT_EXIST, pid);
         hostname = host.getFirst();
         port = host.getSecond();
 

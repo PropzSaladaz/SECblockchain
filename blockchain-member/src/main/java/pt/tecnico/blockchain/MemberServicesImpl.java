@@ -57,7 +57,8 @@ public class MemberServicesImpl {
         if (memberState.hasCommitQuorum()) {
             memberState.stopTimer();
             DecideBlockMessage newBlock = new DecideBlockMessage(
-                message.getRound(), message.getConsensusInstance(), memberState.getCommitQuorum());
+                message.getRound(), message.getValue(), memberState.getCommitQuorum());
+            // DECIDE(newBlock) -> Call to an external entity
         }
     }
 }

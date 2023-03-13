@@ -10,8 +10,8 @@ import pt.tecnico.blockchain.Messages.*;
 public class FairLossLink {
 
 
-    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException {
-        FLLMessage message = new FLLMessage(content);
+    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port, int senderPID) throws IOException {
+        FLLMessage message = new FLLMessage(content, senderPID);
         System.out.println("Sending FLL message: \n" + message.toString());
         socket.send(MessageManager.createPacket(message, hostname, port));
     }

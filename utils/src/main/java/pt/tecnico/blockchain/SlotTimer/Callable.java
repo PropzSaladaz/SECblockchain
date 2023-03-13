@@ -4,6 +4,6 @@ import java.util.TimerTask;
 
 public interface Callable {
     
-    public static TimerTask getTask();
+    public TimerTask getTask();
     
 }

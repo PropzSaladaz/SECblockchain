@@ -42,4 +42,14 @@ public class ConsensusInstanceMessage extends Message implements Content {
     public BlockchainMessage getValue() {
         return _value;
     }
+
+    @Override
+    public String toString (){
+        return "TODO TODO: EMPTY METHOD";
+    }
+
+    @Override
+    public String toString(int level) {
+        return "TODO TODO: EMPTY METHOD";
+    }
 }

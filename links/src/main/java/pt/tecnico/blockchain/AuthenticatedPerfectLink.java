@@ -21,7 +21,6 @@ import pt.tecnico.blockchain.Messages.Content;
 
 public class AuthenticatedPerfectLink {
 
-    private static int _id;
     private static String _source;
     private static RSAKeyStoreById _store;
 
@@ -47,16 +46,16 @@ public class AuthenticatedPerfectLink {
         return Arrays.equals(digest, decryptedDigest);
     }
 
-    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException, NoSuchAlgorithmException {
+    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port, int senderPID) throws IOException, NoSuchAlgorithmException {
 
         String dest = hostname.toString() + port;
-        byte[] encryptedMessage = authenticate(content,dest, _store.getPrivateKey(_id));
-        APLMessage message = new APLMessage(content, _source, _id);
+        byte[] encryptedMessage = authenticate(content,dest, _store.getPrivateKey(senderPID));
+        APLMessage message = new APLMessage(content, _source, senderPID);
 
         message.setSignature(encryptedMessage);
 
         System.out.println("Sending APL");
-        PerfectLink.send(socket,message,hostname,port);
+        PerfectLink.send(socket,message,hostname,port,senderPID);
 
     }
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
@@ -65,7 +64,7 @@ public class AuthenticatedPerfectLink {
                System.out.println("Waiting for PL messages...");
                APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                // TODO CHECK KEY FIRST
-               if (verifyAuth(message, _store.getPublicKey(message.getSenderID()))){
+               if (verifyAuth(message, _store.getPublicKey(message.getSenderPID()))){
                    return message;
                }
            }catch(RuntimeException e){
@@ -78,8 +77,6 @@ public class AuthenticatedPerfectLink {
         _source = address + port;
         PerfectLink.setSource(address, port);
     }
-
-    public static void setId(Integer id) { _id = id;}
 
     public static void setKeyStore(RSAKeyStoreById store) {
         _store = store;

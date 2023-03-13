@@ -50,20 +50,18 @@ public class Member
 
             initKeyStore();
 
-            MemberFrontend memberFrontend = new MemberFrontend();
             MemberState memberState = new MemberState(
                 config,
-                new SlotTimer(memberFrontend, config.getSlotDuration()),
-                memberFrontend
+                new SlotTimer(new MemberFrontend(), config.getSlotDuration())
             );
             memberState.startTimer();
 
-            DatagramSocket memberSocket = new DatagramSocket(port, InetAddress.getByName(hostname));
+            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
 
             initializeLinks();
             
             while (true) {
-                APLMessage message = (APLMessage) AuthenticatedPerfectLinks.deliver(socket);
+                APLMessage message = (APLMessage) AuthenticatedPerfectLink.deliver(socket);
                 Thread worker = new Thread(() -> {
                     try {
                         MemberServicesImpl.handleRequest(message, memberState);
@@ -133,7 +131,6 @@ public class Member
 
     private static void initializeLinks() throws UnknownHostException {
         PerfectLink.setDeliveredMap(new HashMap<>());
-        AuthenticatedPerfectLink.setId(id);
         AuthenticatedPerfectLink.setSource(hostname, port);
         AuthenticatedPerfectLink.setKeyStore(store);
     }

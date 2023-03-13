@@ -14,8 +14,8 @@ public class PLMessage extends Message implements Content {
 
     }
 
-    public PLMessage(InetAddress senderHostname, int senderPort,Content content) {
-        super(content);
+    public PLMessage(InetAddress senderHostname, int senderPort,Content content, int senderPID) {
+        super(content,senderPID);
         _senderHostname = senderHostname;
         _senderPort = senderPort;
 
