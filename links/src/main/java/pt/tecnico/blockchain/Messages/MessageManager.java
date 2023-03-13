@@ -14,9 +14,12 @@ public class MessageManager {
         return new DatagramPacket(buffer, buffer.length, address, remotePort);
     }
 
-    public static Message createMessage(byte[] buffer) throws IOException, ClassNotFoundException {
+    public static FLLMessage createMessage(byte[] buffer) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bytesIS = new ByteArrayInputStream(buffer);
         ObjectInputStream objectIS = new ObjectInputStream(bytesIS);
-        return (Message) objectIS.readObject();
+        return (FLLMessage) objectIS.readObject();
     }
+
+
+
 }
