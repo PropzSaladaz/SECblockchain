@@ -5,6 +5,7 @@ package pt.tecnico.blockchain;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.xml.bind.DatatypeConverter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -88,11 +89,10 @@ public class Crypto {
     }
 
 
+    public static String computeHash(String message) throws NoSuchAlgorithmException {
+        byte[] hash = digest(message.getBytes(StandardCharsets.UTF_8));
+        return DatatypeConverter.printHexBinary(hash);
 
-    public static byte[] getBytesFromInt(int value) {
-        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-        buffer.putInt(value);
-        return buffer.array();
     }
 
 

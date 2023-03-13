@@ -32,14 +32,14 @@ public class RSAKeyStoreById {
     public void addPrivates(String directoryPath) throws Exception {
         File dir = new File(directoryPath);
         for (File file : dir.listFiles()) {
-            if (file.isFile()) addPrivate(file.getName());
+            if (file.isFile()) addPrivate(file.getPath());
         }
     }
 
     public void addPublics(String directoryPath) throws Exception {
         File dir = new File(directoryPath);
         for (File file : dir.listFiles()) {
-            if (file.isFile()) addPublic(file.getName());
+            if (file.isFile()) addPublic(file.getPath());
         }
     }
 
@@ -57,5 +57,13 @@ public class RSAKeyStoreById {
             int id = Integer.parseInt(fileMatcher.group(KeyFilename.PROCESS_ID_GROUP));
             publicKeys.put(id, RSAKeyReader.readPublic(keyPath));
         }
+    }
+
+    public int getPrivateCount() {
+        return privateKeys.size();
+    }
+
+    public int getPublicCount() {
+        return publicKeys.size();
     }
 }

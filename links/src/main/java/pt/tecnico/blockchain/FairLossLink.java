@@ -11,8 +11,8 @@ public class FairLossLink {
 
 
     public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException {
-        System.out.println("Sending FLL message: " + content.toString() + "to: " + hostname.toString()+ ":" + port);
         FLLMessage message = new FLLMessage(content);
+        System.out.println("Sending FLL message: \n" + message.toString());
         socket.send(MessageManager.createPacket(message, hostname, port));
     }
 
@@ -22,7 +22,7 @@ public class FairLossLink {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         FLLMessage message = MessageManager.createMessage(packet.getData());
-        System.out.println("FLL message received: " + message.toString());
+        System.out.println("FLL message received: \n" + message.toString());
         return message.getContent();
     }
 

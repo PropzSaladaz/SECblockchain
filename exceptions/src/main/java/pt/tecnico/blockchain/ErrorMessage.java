@@ -3,7 +3,7 @@ package pt.tecnico.blockchain;
 public enum ErrorMessage {
     INCORRECT_INITIATOR_ARGUMENTS("Incorrect arguments! Must be in the following format: \n" +
             "program <input_config_file> | program <input_config_file> -debug"),
-    INVALID_MEMBER_ARGUMENTS("Incorrect arguments! Must be in the following format: \n" +
+    INVALID_PROCESS_ARGUMENTS("Incorrect arguments! Must be in the following format: \n" +
             "<ID> <configPath> | <ID> <configPath> -debug"),
     INVALID_PROCESS_TYPE("Invalid process type. Must be either M for blockchain member or C for client"),
     INVALID_BEHAVIOR_OPERATOR("Invalid behavior operator. Must be either C, O or A"),
@@ -41,6 +41,7 @@ public enum ErrorMessage {
     COULD_NOT_INIT_PROCESS("Error initiating a blockchain process: %s"),
     COULD_NOT_LOAD_CONFIG_FILE("Could not load config file: %s"),
     MEMBER_DOES_NOT_EXIST("No member with id %s exist in the configuration file"),
+    CLIENT_DOES_NOT_EXIST("No client with id %s exist in the configuration file"),
     UNSUPPORTED_OS("%s operating system is not supported!");
 
 

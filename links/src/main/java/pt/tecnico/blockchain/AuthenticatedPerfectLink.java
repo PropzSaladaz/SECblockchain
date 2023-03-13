@@ -5,25 +5,25 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.util.Arrays;
-import java.util.Map;
 
 
-
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.APLMessage;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Pair;
 
 
 public class AuthenticatedPerfectLink {
 
     private static int _id;
     private static String _source;
+    private static RSAKeyStoreById _store;
 
     public static byte[] digestAuth(Content content, String dest) throws NoSuchAlgorithmException, IOException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -47,15 +47,15 @@ public class AuthenticatedPerfectLink {
         return Arrays.equals(digest, decryptedDigest);
     }
 
-    public static void send(DatagramSocket socket, Content content, PrivateKey myPrivKey, InetAddress hostname, int port) throws IOException, NoSuchAlgorithmException {
+    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException, NoSuchAlgorithmException {
 
         String dest = hostname.toString() + port;
-        byte[] encryptedMessage = authenticate(content,dest,myPrivKey);
-        APLMessage message = new APLMessage(content,_source);
+        byte[] encryptedMessage = authenticate(content,dest, _store.getPrivateKey(_id));
+        APLMessage message = new APLMessage(content, _source, _id);
 
         message.setSignature(encryptedMessage);
 
-        System.out.println("Sending APL" + message.getContent().toString() + "to :" + dest);
+        System.out.println("Sending APL");
         PerfectLink.send(socket,message,hostname,port);
 
     }
@@ -64,9 +64,8 @@ public class AuthenticatedPerfectLink {
            try{
                System.out.println("Waiting for PL messages...");
                APLMessage message = (APLMessage) PerfectLink.deliver(socket);
-               System.out.println("PL message received: " + message.getContent().toString() + " from: " + message.getSenderID());
-               //TO DO CHECK KEY FIRST
-               if (verifyAuth(message,createKeys.getPublic(message.getSenderID()))){
+               // TODO CHECK KEY FIRST
+               if (verifyAuth(message, _store.getPublicKey(message.getSenderID()))){
                    return message;
                }
            }catch(RuntimeException e){
@@ -75,12 +74,16 @@ public class AuthenticatedPerfectLink {
        }
     }
 
-    public static void setSource(String address, int port) {
+    public static void setSource(String address, int port) throws UnknownHostException {
         _source = address + port;
-
+        PerfectLink.setSource(address, port);
     }
 
     public static void setId(Integer id) { _id = id;}
+
+    public static void setKeyStore(RSAKeyStoreById store) {
+        _store = store;
+    }
 
 
 
