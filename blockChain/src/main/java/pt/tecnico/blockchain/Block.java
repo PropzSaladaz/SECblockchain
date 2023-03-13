@@ -1,7 +1,7 @@
 package pt.tecnico.blockchain;
 
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import pt.tecnico.blockchain.Crypto;
 
 public class Block {
     private String _previousHash;
