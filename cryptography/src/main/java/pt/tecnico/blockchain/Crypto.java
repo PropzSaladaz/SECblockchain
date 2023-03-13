@@ -1,11 +1,16 @@
 package pt.tecnico.blockchain;
 
+
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.UUID;
 
 public class Crypto {
 
@@ -77,10 +82,18 @@ public class Crypto {
         }
     }
 
-
     public static byte[] digest(byte[] message) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         return digest.digest(message);
     }
+
+
+
+    public static byte[] getBytesFromInt(int value) {
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+        buffer.putInt(value);
+        return buffer.array();
+    }
+
 
 }

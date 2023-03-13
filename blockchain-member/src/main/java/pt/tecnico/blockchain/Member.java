@@ -6,6 +6,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.HashMap;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 import pt.tecnico.blockchain.SlotTimer.*;
@@ -23,8 +29,7 @@ public class Member
     private static boolean DEBUG = false;
     private static final String DEBUG_STRING = "-debug";
 
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ) throws UnknownHostException, SocketException, InterruptedException {
         {
             for (String arg : args) {
                 logger.info(arg);
@@ -51,19 +56,49 @@ public class Member
         hostname = host.getFirst();
         port = host.getSecond();
 
+
         if (DEBUG) printInfo();
 
         SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
         slotTimer.start();
 
-        try {
-            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            while (true) {
-                FLLMessage message = (FLLMessage) FairLossLink.deliver(socket);
+        DatagramSocket memberSocket = new DatagramSocket(5001, InetAddress.getByName("localhost"));
+
+
+        //InitializeLinks
+        initializeLinks();
+
+        Thread deliverThread = new Thread(() -> {
+            try {
+                while(true){
+                    AuthenticatedPerfectLink.deliver(memberSocket);
+                }
+            } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
+
+       Thread senderThread = new Thread(() -> {
+            try {
+                for (int i =0; i <5;i++)
+                {
+                    String message = "Sidnei nao responde";
+                    Content content = new BlockChainMessage(message);
+                    AuthenticatedPerfectLink.send(memberSocket,content,createKeys.pairMember.getPrivate(),InetAddress.getByName("localhost"),5001);
+                }
+                //Send Message with AuthLink
+            } catch (IOException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        });
+
+        //Start Threads
+        deliverThread.start();
+        senderThread.start();
+
+        //WAIT
+        deliverThread.start();
+        senderThread.join();
     }
 
     private static boolean correctNumberArgs(String[] args) {
@@ -79,5 +114,12 @@ public class Member
         logger.info("ID=" + id + "\n" +
                 "hostname=" + hostname + "\n" +
                 "port=" + port + "\n");
+    }
+
+    private static void initializeLinks(){
+        AuthenticatedPerfectLink.setId(id);
+        PerfectLink.setDeliveredMap(new HashMap<>());
+        AuthenticatedPerfectLink.setSource("localhost",5001);
+
     }
 }

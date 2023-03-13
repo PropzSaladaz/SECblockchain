@@ -2,17 +2,16 @@ package pt.tecnico.blockchain.Messages;
 
 import java.net.InetAddress;
 
-public class APLMessage extends PLMessage {
+public class APLMessage extends Message implements Content{
     
     private byte[] _signature;
+    private String _source;
+    private int _senderId;
 
-    public APLMessage(String message, int sender, InetAddress senderHostname, int senderPort) {
-        super(message, sender, senderHostname, senderPort);
-    }
 
-    public APLMessage(String message, int sender, InetAddress senderHostname, int senderPort, byte[] signature) {
-        super(message, sender, senderHostname, senderPort);
-        _signature = signature;
+    public APLMessage(Content content,String source) {
+        super(content);
+        _source = source;
     }
 
     public byte[] getSignatureBytes() {
@@ -22,4 +21,18 @@ public class APLMessage extends PLMessage {
     public void setSignature(byte[] signature) {
         _signature = signature;
     }
+
+    public String getSource() {
+        return _source;
+    }
+
+    public void setSource(byte[] source) {
+        _signature = source;
+    }
+
+    public int getSenderID() {
+        return _senderId;
+    }
+
+
 }

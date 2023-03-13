@@ -2,9 +2,13 @@ package pt.tecnico.blockchain.Messages;
 
 import java.net.InetAddress;
 
-public class FLLMessage extends Message {
+public class FLLMessage extends Message implements Content{
+
     
-    public FLLMessage(String message, int sender, InetAddress senderHostname, int senderPort) {
-        super(message, sender, senderHostname, senderPort);
+    public FLLMessage(Content content) {
+        super(content);
+
     }
+
+
 }
