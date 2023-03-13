@@ -52,8 +52,13 @@ public class Member
 
             initKeyStore();
 
-            SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
-            slotTimer.start();
+            MemberFrontend memberFrontend = new MemberFrontend();
+            MemberState memberState = new MemberState(
+                config,
+                new SlotTimer(memberFrontend, config.getSlotDuration()),
+                memberFrontend
+            );
+            memberState.startTimer();
             DatagramSocket memberSocket = new DatagramSocket(5001, InetAddress.getByName("localhost"));
 
 
@@ -95,6 +100,13 @@ public class Member
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             while (true) {
                 FLLMessage message = (FLLMessage) FairLossLink.deliver(socket);
+                Thread worker = new Thread(() -> {
+                    try {
+                        MemberServicesImpl.handleRequest(message, memberState);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
         } catch (IOException e) {
