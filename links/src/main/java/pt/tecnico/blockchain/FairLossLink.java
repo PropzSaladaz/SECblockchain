@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.io.*;
-import java.util.Map;
 
 import pt.tecnico.blockchain.Messages.*;
 

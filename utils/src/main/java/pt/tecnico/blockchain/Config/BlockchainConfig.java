@@ -106,6 +106,10 @@ public class BlockchainConfig
         return new ArrayList<>(clients.keySet());
     }
 
+    public int getNumberOfMemberProcesses() {
+        return members.size();
+    }
+
     public ArrayList<Pair<String, Integer>> getMemberHostnames() {
         return new ArrayList<>(members.values());
     }

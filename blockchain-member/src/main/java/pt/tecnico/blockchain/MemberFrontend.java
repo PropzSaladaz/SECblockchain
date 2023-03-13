@@ -1,6 +1,8 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.SlotTimer.*;
+import pt.tecnico.blockchain.Messages.*;
+
 import java.util.TimerTask;
 
 public class MemberFrontend implements Callable {
@@ -14,7 +16,11 @@ public class MemberFrontend implements Callable {
         };
     }
 
-    public void performArbitraryBehaviour() {
+    public static void performArbitraryBehaviour() {
+
+    }
+
+    public static void broadcastMessage(Message message) {
 
     }
 }

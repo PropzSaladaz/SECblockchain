@@ -50,12 +50,30 @@ public class Member
 
             initKeyStore();
 
-            SlotTimer slotTimer = new SlotTimer(new MemberFrontend(), config.getSlotDuration());
-            slotTimer.start();
+            MemberFrontend memberFrontend = new MemberFrontend();
+            MemberState memberState = new MemberState(
+                config,
+                new SlotTimer(memberFrontend, config.getSlotDuration()),
+                memberFrontend
+            );
+            memberState.startTimer();
+
             DatagramSocket memberSocket = new DatagramSocket(port, InetAddress.getByName(hostname));
 
             initializeLinks();
+            
+            while (true) {
+                APLMessage message = (APLMessage) AuthenticatedPerfectLinks.deliver(socket);
+                Thread worker = new Thread(() -> {
+                    try {
+                        MemberServicesImpl.handleRequest(message, memberState);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
 
+            /*
             Thread deliverThread = new Thread(() -> {
                 try {
                     while(true){
@@ -77,7 +95,7 @@ public class Member
                         }
                     }
                     //Send Message with AuthLink
-                } catch (IOException | NoSuchAlgorithmException e) {
+                } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
             });
@@ -87,12 +105,8 @@ public class Member
 
             deliverThread.join();
             senderThread.join();
-
-            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            while (true) {
-                FLLMessage message = (FLLMessage) FairLossLink.deliver(socket);
-            }
-
+            */
+            
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
         } catch (Exception e) {
