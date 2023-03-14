@@ -6,11 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.HashMap;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
@@ -18,8 +15,8 @@ import static pt.tecnico.blockchain.ErrorMessage.*;
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Path.BlockchainPaths;
-import pt.tecnico.blockchain.Path.ModulePath;
 import pt.tecnico.blockchain.SlotTimer.*;
 import pt.tecnico.blockchain.Messages.*;
 
@@ -60,22 +57,22 @@ public class Member
 
             initializeLinks();
             
-            while (true) {
-                APLMessage message = (APLMessage) AuthenticatedPerfectLink.deliver(socket);
-                Thread worker = new Thread(() -> {
-                    try {
-                        MemberServicesImpl.handleRequest(message, memberState);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
+//            while (true) {
+//                APLMessage message = (APLMessage) AuthenticatedPerfectLink.deliver(socket);
+//                Thread worker = new Thread(() -> {
+//                    try {
+//                        MemberServicesImpl.handleRequest(message, memberState);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                });
+//            }
 
-            /*
+
             Thread deliverThread = new Thread(() -> {
                 try {
                     while(true){
-                        AuthenticatedPerfectLink.deliver(memberSocket);
+                        AuthenticatedPerfectLink.deliver(socket);
                     }
                 } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
                     e.printStackTrace();
@@ -84,16 +81,16 @@ public class Member
 
            Thread senderThread = new Thread(() -> {
                 try {
-                    for (int i =0; i < 10;i++)
+                    for (int i =0; i < 10 ; i++)
                     {
                         if (id == 1 || id == 3) {
                             String message = "Sidnei nao responde " + i;
-                            Content content = new BlockChainMessage(message);
-                            AuthenticatedPerfectLink.send(memberSocket, content, InetAddress.getByName("127.0.0.1"),10002);
+                            Content content = new BlockchainMessage(message);
+                            AuthenticatedPerfectLink.send(socket, content, InetAddress.getByName("127.0.0.1"),10002);
                         }
                     }
                     //Send Message with AuthLink
-                } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
+                } catch (IOException | NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
             });
@@ -103,7 +100,7 @@ public class Member
 
             deliverThread.join();
             senderThread.join();
-            */
+
             
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
@@ -133,6 +130,7 @@ public class Member
         PerfectLink.setDeliveredMap(new HashMap<>());
         AuthenticatedPerfectLink.setSource(hostname, port);
         AuthenticatedPerfectLink.setKeyStore(store);
+        AuthenticatedPerfectLink.setId(id);
     }
 
     private static void initKeyStore() throws Exception {

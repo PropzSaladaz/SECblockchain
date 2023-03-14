@@ -1,6 +1,9 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.*;
+import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.Messages.ibft.ContentType;
+import pt.tecnico.blockchain.Messages.ibft.DecideBlockMessage;
 
 public class MemberServicesImpl {
 

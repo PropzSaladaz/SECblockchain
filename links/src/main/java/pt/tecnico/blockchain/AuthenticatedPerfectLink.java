@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
-import pt.tecnico.blockchain.Messages.APLMessage;
+import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.Messages.Content;
 
 
@@ -23,6 +23,7 @@ public class AuthenticatedPerfectLink {
 
     private static String _source;
     private static RSAKeyStoreById _store;
+    private static int _id;
 
     public static byte[] digestAuth(Content content, String dest) throws NoSuchAlgorithmException, IOException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -46,16 +47,16 @@ public class AuthenticatedPerfectLink {
         return Arrays.equals(digest, decryptedDigest);
     }
 
-    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port, int senderPID) throws IOException, NoSuchAlgorithmException {
+    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException, NoSuchAlgorithmException {
 
         String dest = hostname.toString() + port;
-        byte[] encryptedMessage = authenticate(content,dest, _store.getPrivateKey(senderPID));
-        APLMessage message = new APLMessage(content, _source, senderPID);
+        byte[] encryptedMessage = authenticate(content,dest, _store.getPrivateKey(_id));
+        APLMessage message = new APLMessage(content, _source, _id);
 
         message.setSignature(encryptedMessage);
 
         System.out.println("Sending APL");
-        PerfectLink.send(socket,message,hostname,port,senderPID);
+        PerfectLink.send(socket,message,hostname,port);
 
     }
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
@@ -80,6 +81,10 @@ public class AuthenticatedPerfectLink {
 
     public static void setKeyStore(RSAKeyStoreById store) {
         _store = store;
+    }
+
+    public static void setId(int id) {
+        _id = id;
     }
 
 

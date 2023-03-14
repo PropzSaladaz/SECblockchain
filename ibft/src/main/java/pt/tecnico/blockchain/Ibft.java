@@ -1,6 +1,6 @@
 package pt.tecnico.blockchain;
 
-import pt.tecnico.blockchain.Messages.*;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
 public class Ibft {
 

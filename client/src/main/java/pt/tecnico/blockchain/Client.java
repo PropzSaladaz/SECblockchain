@@ -9,8 +9,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.*;
 
 
@@ -23,7 +21,7 @@ import static pt.tecnico.blockchain.Path.BlockchainPaths.MEMBER_KEYDIR_PATH;
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
-import pt.tecnico.blockchain.Path.BlockchainPaths;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
 import pt.tecnico.blockchain.SlotTimer.*;
 
@@ -80,7 +78,7 @@ public class Client
                     {
                         String message = "Sidnei nao responde";
                         Content content = new BlockchainMessage(message);
-                        AuthenticatedPerfectLink.send(clientSocket,content ,InetAddress.getByName("127.0.0.1"),10001,pid);
+                        AuthenticatedPerfectLink.send(clientSocket,content ,InetAddress.getByName("127.0.0.1"),10001);
                     }
                     //Send Message with AuthLink
                 } catch (IOException | NoSuchAlgorithmException e) {

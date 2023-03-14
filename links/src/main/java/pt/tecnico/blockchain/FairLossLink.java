@@ -6,12 +6,13 @@ import java.net.DatagramSocket;
 import java.io.*;
 
 import pt.tecnico.blockchain.Messages.*;
+import pt.tecnico.blockchain.Messages.links.FLLMessage;
 
 public class FairLossLink {
 
 
-    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port, int senderPID) throws IOException {
-        FLLMessage message = new FLLMessage(content, senderPID);
+    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException {
+        FLLMessage message = new FLLMessage(content);
         System.out.println("Sending FLL message: \n" + message.toString());
         socket.send(MessageManager.createPacket(message, hostname, port));
     }

@@ -47,5 +47,10 @@ public class WindowsLaunch extends LaunchCommands {
         return new String[]{commands};
     }
 
+    @Override
+    public boolean getCommandInNewConsole() {
+        return true;
+    }
+
 
 }

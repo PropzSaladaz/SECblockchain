@@ -7,6 +7,7 @@ import java.util.UUID;
 
 
 import pt.tecnico.blockchain.Messages.*;
+import pt.tecnico.blockchain.Messages.links.PLMessage;
 
 public class PerfectLink {
     private static UUID seqNum;
@@ -18,16 +19,16 @@ public class PerfectLink {
         return _ackMessages.containsKey(seqNum);
     }
 
-    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port, int senderPID) throws IOException {
-        PLMessage message = new PLMessage(_address, _port,  content, senderPID);
+    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException {
+        PLMessage message = new PLMessage(_address, _port,  content);
         message.setSeqNum(UuidGenerator.generateUuid());
         message.setAck(false);
         long startTime = System.currentTimeMillis();
-        FairLossLink.send(socket,message,hostname,port,senderPID);
+        FairLossLink.send(socket,message,hostname,port);
         while (!hasAckArrived(message.getSeqNum())) {
             if (System.currentTimeMillis() - startTime > 5000) {
                 System.out.println("Timeout occurred, resending message...\n");
-                FairLossLink.send(socket, message, hostname, port, senderPID);
+                FairLossLink.send(socket, message, hostname, port);
                 startTime = System.currentTimeMillis(); // reset start time
             }
         }
@@ -44,7 +45,7 @@ public class PerfectLink {
             }else if (!hasAckArrived(message.getSeqNum())) { // TODO +1 ?
                 message.setAck(true);
                 message.setSeqNum(message.getSeqNum());
-                FairLossLink.send(socket, message, message.getSenderHostname(), message.getSenderPort(), message.getSenderPID());
+                FairLossLink.send(socket, message, message.getSenderHostname(), message.getSenderPort());
                 return message.getContent();
             }
         }
@@ -58,6 +59,7 @@ public class PerfectLink {
         _address = InetAddress.getByName(address);
         _port = port;
     }
+
 
 
 

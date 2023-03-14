@@ -16,6 +16,7 @@ public abstract class LaunchCommands {
     protected void setCommands(String[] commands) {
         StringBuilder sb = new StringBuilder();
         sb.append(getCommandDelimiter());
+         if (getCommandInNewConsole()) sb.append(getCommandSeparator());
         for (String command : commands) {
             sb.append(parseCommand(command));
             sb.append(getCommandSeparator());
@@ -60,6 +61,8 @@ public abstract class LaunchCommands {
     public abstract String parseCommand(String command);
 
     public abstract String getEndCommand();
+
+    public boolean getCommandInNewConsole() { return false; }
 
 
 }

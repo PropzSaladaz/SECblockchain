@@ -1,5 +1,7 @@
 package pt.tecnico.blockchain;
 
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
+import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.SlotTimer.*;
 import pt.tecnico.blockchain.Config.*;
 import pt.tecnico.blockchain.Messages.*;
@@ -12,8 +14,8 @@ public class MemberState {
     
     private SlotTimer _timer;
     private BlockchainConfig _config;
-    private List<Message> _prepared;
-    private List<Message> _commited;
+    private List<ConsensusInstanceMessage> _prepared;
+    private List<ConsensusInstanceMessage> _commited;
     private Ibft _ibftInstance = new Ibft();
 
     public MemberState (BlockchainConfig config, SlotTimer timer) {

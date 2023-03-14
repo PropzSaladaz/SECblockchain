@@ -1,5 +1,7 @@
 package pt.tecnico.blockchain.Messages;
 
+import pt.tecnico.blockchain.Messages.links.FLLMessage;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.DatagramPacket;
