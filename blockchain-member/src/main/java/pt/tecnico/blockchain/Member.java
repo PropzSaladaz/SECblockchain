@@ -120,7 +120,6 @@ public class Member
 
 
     private static void initializeLinks() throws UnknownHostException {
-        PerfectLink.setDeliveredMap(new HashMap<>());
         AuthenticatedPerfectLink.setSource(hostname, port);
         AuthenticatedPerfectLink.setKeyStore(store);
         AuthenticatedPerfectLink.setId(id);

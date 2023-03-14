@@ -127,9 +127,9 @@ public class Client
     }
 
     private static void initializeLinks() throws UnknownHostException {
-        PerfectLink.setDeliveredMap(new HashMap<>());
         AuthenticatedPerfectLink.setSource(hostname, port);
         AuthenticatedPerfectLink.setKeyStore(store);
+        AuthenticatedPerfectLink.setId(pid);
     }
     
     private static void initKeyStore() throws Exception {

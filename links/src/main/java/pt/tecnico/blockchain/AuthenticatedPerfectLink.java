@@ -64,10 +64,11 @@ public class AuthenticatedPerfectLink {
            try{
                System.out.println("Waiting for PL messages...");
                APLMessage message = (APLMessage) PerfectLink.deliver(socket);
-               // TODO CHECK KEY FIRST
-               if (verifyAuth(message, _store.getPublicKey(message.getSenderPID()))){
+               PublicKey pk = _store.getPublicKey(message.getSenderPID());
+               if (pk != null && verifyAuth(message, pk)) {
                    return message;
                }
+               System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
            }catch(RuntimeException e){
                System.out.println(e.getMessage());
            }
