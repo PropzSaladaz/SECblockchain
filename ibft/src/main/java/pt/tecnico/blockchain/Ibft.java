@@ -19,7 +19,7 @@ public class Ibft {
     }
 
     public void start(BlockchainMessage inputValue) {
-        _consensusInstance = consensusInstance;
+//        _consensusInstance = consensusInstance;
         _round = 1;
         _preparedRound = -1;
         _inputValue = inputValue;

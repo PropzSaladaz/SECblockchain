@@ -9,7 +9,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
 
 
 import pt.tecnico.blockchain.Messages.*;
@@ -58,8 +57,8 @@ public class Client
 
             DatagramSocket clientSocket = new DatagramSocket(port, InetAddress.getByName(hostname));
 
-            SlotTimer slotTimer = new SlotTimer(new BlockchainMemberFrontend(), config.getSlotDuration());
-            slotTimer.start();
+//            ScheduledTask scheduledTask = new ScheduledTask(new BlockchainMemberFrontend(), config.getSlotDuration());
+//            scheduledTask.start();
 
 
             Thread deliverThread = new Thread(() -> {
@@ -78,7 +77,7 @@ public class Client
                     {
                         String message = "Sidnei nao responde";
                         Content content = new BlockchainMessage(message);
-                        AuthenticatedPerfectLink.send(clientSocket,content ,InetAddress.getByName("127.0.0.1"),10001);
+                        AuthenticatedPerfectLink.send(clientSocket,content , "127.0.0.1", 10001);
                     }
                     //Send Message with AuthLink
                 } catch (IOException | NoSuchAlgorithmException e) {

@@ -11,10 +11,15 @@ import pt.tecnico.blockchain.Messages.links.FLLMessage;
 public class FairLossLink {
 
 
-    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException {
-        FLLMessage message = new FLLMessage(content);
-        System.out.println("Sending FLL message: \n" + message.toString());
-        socket.send(MessageManager.createPacket(message, hostname, port));
+    public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) {
+        try {
+            FLLMessage message = new FLLMessage(content);
+            System.out.println("Sending FLL message: \n" + message.toString());
+            socket.send(MessageManager.createPacket(message, hostname, port));
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException {

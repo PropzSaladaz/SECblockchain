@@ -13,5 +13,5 @@ public abstract class ApplicationMessage extends Message {
         super(content);
     }
 
-    public String getApplicationMessageType();
+    public abstract String getApplicationMessageType();
 }

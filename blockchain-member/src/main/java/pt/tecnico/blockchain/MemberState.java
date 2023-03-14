@@ -5,7 +5,9 @@ import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Config.*;
 import pt.tecnico.blockchain.Messages.*;
 
+
 import java.lang.Math;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,14 +17,14 @@ public class MemberState {
     private List<ConsensusInstanceMessage> _prepared;
     private List<ConsensusInstanceMessage> _commited;
     private Ibft _ibftInstance = new Ibft();
-    private Blockchain blockchain = new Blockchain();
+//    private Blockchain blockchain = new Blockchain();
 
-    public MemberState (BlockchainConfig config) {
+    public MemberState (BlockchainConfig config) throws NoSuchAlgorithmException {
         _config = config;
     }
 
     public void startTimer() {
-        _ibftInstance.startTimer();
+        //_ibftInstance.startTimer();
     }
 
     public void stopTimer() {
@@ -62,7 +64,7 @@ public class MemberState {
     }
 
     public void startIbft(BlockchainMessage inputValue) {
-        _ibftInstance.start(blockchain.getNextBlockNumber(), inputValue);
+//        _ibftInstance.start(blockchain.getNextBlockNumber(), inputValue);
     }
 
     public void setIbftPreparedRound(int round) {
