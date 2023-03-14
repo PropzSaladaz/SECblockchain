@@ -7,14 +7,13 @@ import pt.tecnico.blockchain.Messages.ibft.DecideBlockMessage;
 
 public class MemberServicesImpl {
 
-    public static void handleRequest(Message message, MemberState memberState) {
-        Content msgContent = message.getContent();
-        switch (msgContent.getContentType()) {
-            case ContentType.APPEND_BLOCK:
-                ConsensusInstanceMessage msg = (ConsensusInstanceMessage) msgContent;
-                memberState.startIbft(msg.getConsensusInstance(), msg.getValue());
+    public static void handleRequest(ApplicationMessage message, MemberState memberState) {
+        switch (message.getApplicationMessageType()) {
+            case ApplicationMessage.APPEND_BLOCK_MESSAGE:
+                AppendBlockMessage msg = (AppendBlockMessage) message;
+                memberState.startIbft(msg.getContent());
                 break;
-            case ContentType.CONSENSUS_INSTANCE:
+            case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
                 handleConsensusInstanceMessage((ConsensusInstanceMessage) message, memberState);
                 break;
             default:

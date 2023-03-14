@@ -46,22 +46,15 @@ public class Member
             if (DEBUG) printInfo();
 
             initKeyStore();
-
-            MemberState memberState = new MemberState(
-                config,
-                new SlotTimer(new MemberFrontend(), config.getSlotDuration())
-            );
-            memberState.startTimer();
-
+            MemberState memberState = new MemberState(config);
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-
             initializeLinks();
             
 //            while (true) {
 //                APLMessage message = (APLMessage) AuthenticatedPerfectLink.deliver(socket);
 //                Thread worker = new Thread(() -> {
 //                    try {
-//                        MemberServicesImpl.handleRequest(message, memberState);
+//                        MemberServicesImpl.handleRequest((ApplicationMessage) message.getContent(), memberState);
 //                    } catch (Exception e) {
 //                        e.printStackTrace();
 //                    }

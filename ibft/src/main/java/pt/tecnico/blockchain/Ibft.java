@@ -18,7 +18,7 @@ public class Ibft {
         return 1;
     }
 
-    public void start(int consensusInstance, BlockchainMessage inputValue) {
+    public void start(BlockchainMessage inputValue) {
         _consensusInstance = consensusInstance;
         _round = 1;
         _preparedRound = -1;
@@ -27,7 +27,15 @@ public class Ibft {
         if (leader(_consensusInstance, _round) == _pid) {
             broadcastPrePrepare();
         }
-        timer.start(_round);
+        startTimer(_round);
+    }
+
+    public void startTimer(int round) {
+        timer.start(round);
+    }
+
+    public void stopTimer() {
+        timer.stop();
     }
 
     public int getPID() {

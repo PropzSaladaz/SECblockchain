@@ -4,26 +4,25 @@ import java.security.NoSuchAlgorithmException;
 import pt.tecnico.blockchain.Crypto;
 
 public class Block {
-    private String _previousHash;
+    private Block _previousBlock;
     private String _hash;
-    private Integer _id;
-    private static Integer _generalId = 0;
+    private Integer _blockNumber;
 
-    public Block(String previousHash, String message) throws NoSuchAlgorithmException {
-        _previousHash = previousHash;
-        _hash = Crypto.computeHash(message);
-        _id = _generalId++;
-
-    }
-    public String getPreviousHash() {
-        return _previousHash;
+    public Block(Block previousBlock, BlockchainMessage value) throws NoSuchAlgorithmException {
+        _previousBlock = previousBlock;
+        _hash = Crypto.computeHash(value.getMessage());
+        _blockNumber = _previousBlock.getBlockNumber()++;
     }
 
-    public String getHash() {
+    public void getBlockNumber() {
+        return _blockNumber;
+    }
+
+    public String getPreviousBlock() {
+        return _previousBlock;
+    }
+
+    public String getBlockHash() {
         return _hash;
-    }
-
-    public Integer getId() {
-        return _id;
     }
 }

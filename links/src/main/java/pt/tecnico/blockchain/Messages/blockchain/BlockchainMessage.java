@@ -1,7 +1,7 @@
 package pt.tecnico.blockchain.Messages.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.ibft.ContentType;
+import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
 public class BlockchainMessage implements Content {
     
@@ -10,12 +10,7 @@ public class BlockchainMessage implements Content {
     public BlockchainMessage(String message) {
        _message = message;
     }
-
-    @Override
-    public String getContentType() {
-        return ContentType.APPEND_BLOCK;
-    }
-
+    
     public String getMessage() {
         return _message;
     }

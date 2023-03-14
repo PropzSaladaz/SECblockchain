@@ -2,9 +2,9 @@ package pt.tecnico.blockchain.Messages.ibft;
 
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.Message;
+import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
-public class ConsensusInstanceMessage extends Message implements Content {
+public class ConsensusInstanceMessage extends ApplicationMessage implements Content {
 
     public static final String PRE_PREPARE = "PRE-PREPARE";
     public static final String PREPARE = "PREPARE";
@@ -17,7 +17,8 @@ public class ConsensusInstanceMessage extends Message implements Content {
     private BlockchainMessage _value;
 
     public ConsensusInstanceMessage(String messageType, int consensusInstance, int roundNumber,
-                                    BlockchainMessage value, int senderPID) {
+                                    BlockchainMessage value, int senderPID, Content content) {
+        super(content);
         _messageType = messageType;
         _consensusInstance = consensusInstance;
         _roundNumber = roundNumber;
@@ -26,8 +27,8 @@ public class ConsensusInstanceMessage extends Message implements Content {
     }
 
     @Override
-    public String getContentType() {
-        return ContentType.CONSENSUS_INSTANCE;
+    public String getApplicationMessageType() {
+        return super.CONSENSUS_INSTANCE_MESSAGE;
     }
 
     public String getMessageType() {
