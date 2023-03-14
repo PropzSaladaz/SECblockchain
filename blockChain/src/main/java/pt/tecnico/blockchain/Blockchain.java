@@ -1,7 +1,6 @@
 package pt.tecnico.blockchain;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.LinkedList;
 
 public class Blockchain {
 

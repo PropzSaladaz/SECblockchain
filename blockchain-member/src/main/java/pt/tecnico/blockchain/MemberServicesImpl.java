@@ -1,8 +1,8 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.*;
+import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
-import pt.tecnico.blockchain.Messages.ibft.ContentType;
 import pt.tecnico.blockchain.Messages.ibft.DecideBlockMessage;
 
 public class MemberServicesImpl {
@@ -11,7 +11,7 @@ public class MemberServicesImpl {
         switch (message.getApplicationMessageType()) {
             case ApplicationMessage.APPEND_BLOCK_MESSAGE:
                 AppendBlockMessage msg = (AppendBlockMessage) message;
-                memberState.startIbft(msg.getContent());
+//                memberState.startIbft(msg.getContent());
                 break;
             case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
                 handleConsensusInstanceMessage((ConsensusInstanceMessage) message, memberState);
@@ -59,8 +59,8 @@ public class MemberServicesImpl {
         memberState.addToCommitQuorum(message);
         if (memberState.hasCommitQuorum()) {
             memberState.stopTimer();
-            DecideBlockMessage newBlock = new DecideBlockMessage(
-                message.getRound(), message.getValue(), memberState.getCommitQuorum());
+//            DecideBlockMessage newBlock = new DecideBlockMessage(
+//                message.getRound(), message.getValue(), memberState.getCommitQuorum());
             // DECIDE(newBlock) -> Call to an external entity
         }
     }

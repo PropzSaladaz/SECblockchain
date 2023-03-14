@@ -74,12 +74,12 @@ public class Member
 
            Thread senderThread = new Thread(() -> {
                 try {
-                    for (int i =0; i < 10 ; i++)
+                    for (int i =0; i < 2 ; i++)
                     {
                         if (id == 1 || id == 3) {
                             String message = "Sidnei nao responde " + i;
                             Content content = new BlockchainMessage(message);
-                            AuthenticatedPerfectLink.send(socket, content, InetAddress.getByName("127.0.0.1"),10002);
+                            AuthenticatedPerfectLink.send(socket, content, "127.0.0.1",10002);
                         }
                     }
                     //Send Message with AuthLink
