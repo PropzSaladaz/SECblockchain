@@ -19,7 +19,7 @@ public class FairLossLink {
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException {
         System.out.println("Waiting for FLL messages...");
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[2048];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         FLLMessage message = MessageManager.createMessage(packet.getData());

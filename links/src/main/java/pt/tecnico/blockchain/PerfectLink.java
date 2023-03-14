@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 import pt.tecnico.blockchain.Messages.*;
@@ -13,7 +14,7 @@ public class PerfectLink {
     private static UUID seqNum;
     private static InetAddress _address;
     private static int _port;
-    private static Map<UUID, PLMessage> _ackMessages;
+    private static final ConcurrentHashMap<UUID, PLMessage> _ackMessages = new ConcurrentHashMap<>();
 
     public static boolean hasAckArrived(UUID seqNum){
         return _ackMessages.containsKey(seqNum);
@@ -21,11 +22,11 @@ public class PerfectLink {
 
     public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) throws IOException {
         PLMessage message = new PLMessage(_address, _port,  content);
-        message.setSeqNum(UuidGenerator.generateUuid());
+        message.setUUID(UuidGenerator.generateUuid());
         message.setAck(false);
         long startTime = System.currentTimeMillis();
         FairLossLink.send(socket,message,hostname,port);
-        while (!hasAckArrived(message.getSeqNum())) {
+        while (!hasAckArrived(message.getUUID())) {
             if (System.currentTimeMillis() - startTime > 5000) {
                 System.out.println("Timeout occurred, resending message...\n");
                 FairLossLink.send(socket, message, hostname, port);
@@ -41,18 +42,14 @@ public class PerfectLink {
             System.out.println("PL - message received");
             if (message.isAck()) {
                 System.out.println("PL - message received and is ACK");
-                _ackMessages.put(message.getSeqNum(),message);
-            }else if (!hasAckArrived(message.getSeqNum())) { // TODO +1 ?
+                _ackMessages.put(message.getUUID(),message);
+            }else if (!hasAckArrived(message.getUUID())) {
                 message.setAck(true);
-                message.setSeqNum(message.getSeqNum());
+                message.setUUID(message.getUUID());
                 FairLossLink.send(socket, message, message.getSenderHostname(), message.getSenderPort());
                 return message.getContent();
             }
         }
-    }
-
-    public static void setDeliveredMap(Map<UUID, PLMessage> ackMessages) {
-        _ackMessages = ackMessages;
     }
 
     public static void setSource(String address, int port) throws UnknownHostException {
