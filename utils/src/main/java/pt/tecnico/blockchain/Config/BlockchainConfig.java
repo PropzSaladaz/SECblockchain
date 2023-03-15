@@ -47,15 +47,15 @@ public class BlockchainConfig
     private final String CLIENT = "C";
 
     // Members' behavior operators
-    private final String OMIT_MESSAGES = "O";
-    private final String CORRUPT_MESSAGES = "C";
-    private final String AUTHENTICATE_AS = "A";
+    public static final String OMIT_MESSAGES = "O";
+    public static final String CORRUPT_MESSAGES = "C";
+    public static final String AUTHENTICATE_AS = "A";
     private final Set<String> setOfBehaviorOperators = new HashSet<>(Arrays.asList(
             OMIT_MESSAGES, CORRUPT_MESSAGES, AUTHENTICATE_AS));
 
     private Map<Integer, Pair<String, Integer>> members = new HashMap<>();
     private Map<Integer, Pair<String, Integer>> clients = new HashMap<>();
-    private Map<Integer, Map<Integer, Pair<String, Integer>>> operations = new HashMap<>();
+    private Map<Integer, Map<Integer, Pair<String, Integer>>> behaviors = new HashMap<>();
     private Map<Integer, Map<Integer, Pair<String, Integer>>> requests = new HashMap<>();
     private int slotDuration;
     private String filePath;
@@ -90,12 +90,14 @@ public class BlockchainConfig
     }
 
 
-    public Pair<String, Integer> getOperationInSlotForProcess(int slot, int processId) {
-        return operations.get(slot).get(processId);
+    public Pair<String, Integer> getBehaviorInSlotForProcess(int slot, int processId) {
+        if (behaviors.containsKey(slot)) return behaviors.get(slot).get(processId);
+        return null;
     }
 
     public Pair<String, Integer> getRequestInSlotForProcess(int slot, int processId) {
-        return requests.get(slot).get(processId);
+        if (requests.containsKey(slot)) return requests.get(slot).get(processId);
+        return null;
     }
 
     public ArrayList<Integer> getMemberIds() {
@@ -201,7 +203,7 @@ public class BlockchainConfig
             int slot = Integer.parseInt(matcher.group("slot"));
             String operationString = matcher.group("operation");
 
-            if (operations.get(slot) == null) operations.put(slot, new HashMap());
+            if (behaviors.get(slot) == null) behaviors.put(slot, new HashMap());
 
             matcher = ARBITRARY_COMMAND_INFO_PATTERN.matcher(operationString);
             // store each individual operation
@@ -216,7 +218,7 @@ public class BlockchainConfig
                         authenticateAs = Integer.parseInt(matcher.group("authenticateAs"));
                     }
 
-                    operations.get(slot).put(processId, new Pair<>(operator, authenticateAs));
+                    behaviors.get(slot).put(processId, new Pair<>(operator, authenticateAs));
                 }
                 else {
                     throw new BlockChainException(INVALID_BEHAVIOR_OPERATOR);

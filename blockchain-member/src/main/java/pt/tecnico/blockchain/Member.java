@@ -49,6 +49,7 @@ public class Member
             MemberState memberState = new MemberState(config);
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             initializeLinks();
+            MemberSlotBehavior behavior = new MemberSlotBehavior(config, id);
             
 //            while (true) {
 //                APLMessage message = (APLMessage) AuthenticatedPerfectLink.deliver(socket);
@@ -63,13 +64,18 @@ public class Member
 
 
             Thread deliverThread = new Thread(() -> {
-                try {
-                    while(true){
+                // We need to re-call deliver method on every slot otherwise the deliver method will not have
+                // the behavior we want for the current slot, and will maintain the last behavior with which it was called
+                Timeout t = new Timeout(() -> {
+                    try {
                         AuthenticatedPerfectLink.deliver(socket);
+                    } catch (IOException | NoSuchAlgorithmException | ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
+                }, config.getSlotDuration());
+
+                ScheduledTask st = new ScheduledTask(t::run, config.getSlotDuration());
+
             });
 
            Thread senderThread = new Thread(() -> {
@@ -81,18 +87,20 @@ public class Member
                             Content content = new BlockchainMessage(message);
                             AuthenticatedPerfectLink.send(socket, content, "127.0.0.1",10002);
                         }
+                        Thread.sleep(2500);
                     }
                     //Send Message with AuthLink
-                } catch (IOException | NoSuchAlgorithmException e) {
+                } catch (IOException | NoSuchAlgorithmException | InterruptedException e) {
                     e.printStackTrace();
                 }
-            });
+           });
 
-            deliverThread.start();
-            senderThread.start();
+           behavior.track();
+           deliverThread.start();
+           senderThread.start();
 
-            deliverThread.join();
-            senderThread.join();
+           deliverThread.join();
+           senderThread.join();
 
             
         } catch (IOException e) {

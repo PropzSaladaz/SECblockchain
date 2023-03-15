@@ -18,6 +18,7 @@ import java.util.Base64;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.behavior.member.BehaviorController;
 
 
 public class AuthenticatedPerfectLink {
@@ -49,31 +50,11 @@ public class AuthenticatedPerfectLink {
     }
 
     public static void send(DatagramSocket socket, Content content, String hostname, int port) throws IOException, NoSuchAlgorithmException {
-
-        String dest = hostname + ":" + port;
-        byte[] encryptedMessage = authenticate(content,dest, _store.getPrivateKey(_id));
-        APLMessage message = new APLMessage(content, _source, _id);
-
-        message.setSignature(encryptedMessage);
-
-        System.out.println("Sending APL");
-        PerfectLink.send(socket,message,InetAddress.getByName(hostname) ,port);
-
+        BehaviorController.APLsend(socket, content, hostname, port);
     }
+
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
-       while(true){
-           try{
-               System.out.println("Waiting for PL messages...");
-               APLMessage message = (APLMessage) PerfectLink.deliver(socket);
-               PublicKey pk = _store.getPublicKey(message.getSenderPID());
-               if (pk != null && verifyAuth(message, pk)) {
-                   return message;
-               }
-               System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
-           }catch(RuntimeException e){
-               System.out.println(e.getMessage());
-           }
-       }
+        return BehaviorController.APLdeliver(socket);
     }
 
     public static void setSource(String address, int port) throws UnknownHostException {
@@ -87,6 +68,18 @@ public class AuthenticatedPerfectLink {
 
     public static void setId(int id) {
         _id = id;
+    }
+
+    public static RSAKeyStoreById getStore() {
+        return _store;
+    }
+
+    public static int getId() {
+        return _id;
+    }
+
+    public static String getSource() {
+        return _source;
     }
 
 

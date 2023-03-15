@@ -131,9 +131,9 @@ public class BlochainConfigTests
 
     @Test
     public void getOperationInSlotForProcess() {
-        Pair<String, Integer> op1 = config.getOperationInSlotForProcess(2, 1);
-        Pair<String, Integer> op2 = config.getOperationInSlotForProcess(2, 2);
-        Pair<String, Integer> op3 = config.getOperationInSlotForProcess(2, 4);
+        Pair<String, Integer> op1 = config.getBehaviorInSlotForProcess(2, 1);
+        Pair<String, Integer> op2 = config.getBehaviorInSlotForProcess(2, 2);
+        Pair<String, Integer> op3 = config.getBehaviorInSlotForProcess(2, 4);
 
         assertEquals(op1.getFirst(), "O");
         assertEquals((int)op1.getSecond(), -1);
