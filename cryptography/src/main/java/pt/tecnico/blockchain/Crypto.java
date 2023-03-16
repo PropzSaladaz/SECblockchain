@@ -89,8 +89,9 @@ public class Crypto {
     }
 
 
-    public static String computeHash(String message) throws NoSuchAlgorithmException {
-        byte[] hash = digest(message.getBytes(StandardCharsets.UTF_8));
+    public static String computeHash(String message,String previousBlockHash) throws NoSuchAlgorithmException {
+        String concatenated = message+previousBlockHash;
+        byte[] hash = digest(concatenated.getBytes(StandardCharsets.UTF_8));
         return DatatypeConverter.printHexBinary(hash);
 
     }

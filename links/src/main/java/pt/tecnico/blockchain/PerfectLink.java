@@ -29,27 +29,27 @@ public class PerfectLink {
         PLMessage message = new PLMessage(_address, _port,  content);
         message.setUUID(UuidGenerator.generateUuid());
         message.setAck(false);
-        System.out.println("Sending to: " + port);
+        //System.out.println("Sending to: " + port);
         ScheduledTask task = new ScheduledTask( () -> FairLossLink.send(socket,message,hostname,port),
                 RESEND_MESSAGE_TIMEOUT);
         Timeout timeoutTask = new Timeout( () -> {
             task.start();
             while (!hasAckArrived(message.getUUID())); // TODO Active waiting
             task.stop();
-            System.out.println("PL - Ack received");
+            //System.out.println("PL - Ack received");
         }, ASSUME_FAILURE_TIMEOUT);
         timeoutTask.addInternalScheduleTask(task);
         timeoutTask.run();
-        System.out.println("Finished sending, ready to send next message!");
+        //System.out.println("Finished sending, ready to send next message!");
     }
 
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException{
         while(true){
             PLMessage message = (PLMessage) FairLossLink.deliver(socket);
-            System.out.println("PL - message received");
+            //System.out.println("PL - message received");
             if (message.isAck()) {
-                System.out.println("PL - message received and is ACK");
+                //System.out.println("PL - message received and is ACK");
                 _ackMessages.put(message.getUUID(),message);
             }else if (!hasAckArrived(message.getUUID())) {
                 message.setAck(true);
@@ -64,9 +64,6 @@ public class PerfectLink {
         _address = InetAddress.getByName(address);
         _port = port;
     }
-
-
-
 
 
 }

@@ -95,7 +95,8 @@ public class BlockchainConfig
     }
 
     public Pair<String, Integer> getRequestInSlotForProcess(int slot, int processId) {
-        return requests.get(slot).get(processId);
+        if (requests.containsKey(slot)) return requests.get(slot).get(processId);
+        return null;
     }
 
     public ArrayList<Integer> getMemberIds() {

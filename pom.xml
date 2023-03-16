@@ -17,7 +17,8 @@
     <module>blockchain-initiator</module>
     <module>exceptions</module>
     <module>utils</module>
-<!--    <module>blockChain</module>-->
+    <module>blockChain</module>
+    <!--    <module>blockChain</module>-->
   </modules>
 
   <name>blockchain</name>

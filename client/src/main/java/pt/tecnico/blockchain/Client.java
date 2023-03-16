@@ -22,8 +22,6 @@ import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
-import pt.tecnico.blockchain.SlotTimer.*;
-
 public class Client
 {
     public static final String TYPE = "Client";
@@ -55,42 +53,12 @@ public class Client
             initKeyStore();
             initializeLinks();
 
-            DatagramSocket clientSocket = new DatagramSocket(port, InetAddress.getByName(hostname));
+            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
 
-//            ScheduledTask scheduledTask = new ScheduledTask(new BlockchainMemberFrontend(), config.getSlotDuration());
-//            scheduledTask.start();
-
-
-            Thread deliverThread = new Thread(() -> {
-                try {
-                    while(true){
-                        AuthenticatedPerfectLink.deliver(clientSocket);
-                    }
-                } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-            });
-
-            Thread senderThread = new Thread(() -> {
-                try {
-                    for (int i =0; i <5;i++)
-                    {
-                        String message = "Sidnei nao responde";
-                        Content content = new BlockchainMessage(message);
-                        AuthenticatedPerfectLink.send(clientSocket,content , "127.0.0.1", 10001);
-                    }
-                    //Send Message with AuthLink
-                } catch (IOException | NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-            });
+            ClientFrontend.setFrontEnd(socket,config.getMemberHostnames());
+            RunClient.run(socket,pid,config);
 
 
-            deliverThread.start();
-            senderThread.start();
-
-            deliverThread.join();
-            senderThread.join();
 
         } catch (SocketException e) {
             System.out.println("Could not create socket!");
@@ -106,7 +74,6 @@ public class Client
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
     }
 

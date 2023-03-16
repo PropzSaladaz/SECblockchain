@@ -24,7 +24,6 @@ public class Member
 {
     public static final String TYPE = "Member";
     private static final String DEBUG_STRING = "-debug";
-
     private static final Logger logger = LoggerFactory.getLogger(Member.class);
     private static int id;
     private static int port;
@@ -37,7 +36,6 @@ public class Member
     public static void main( String[] args ) {
         if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_PROCESS_ARGUMENTS);
         parseArgs(args);
-
         try {
             config = new BlockchainConfig();
             config.setFromAbsolutePath(args[1]);
@@ -46,55 +44,12 @@ public class Member
             if (DEBUG) printInfo();
 
             initKeyStore();
-            MemberState memberState = new MemberState(config);
+            MemberState memberState = new MemberState(config,id);
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
+            MemberFrontend.setFrontEnd(socket,config.getMemberHostnames(),config.getClientHostnames());
             initializeLinks();
-            
-//            while (true) {
-//                APLMessage message = (APLMessage) AuthenticatedPerfectLink.deliver(socket);
-//                Thread worker = new Thread(() -> {
-//                    try {
-//                        MemberServicesImpl.handleRequest((ApplicationMessage) message.getContent(), memberState);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                });
-//            }
+            RunMember.run(socket,memberState);
 
-
-            Thread deliverThread = new Thread(() -> {
-                try {
-                    while(true){
-                        AuthenticatedPerfectLink.deliver(socket);
-                    }
-                } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-            });
-
-           Thread senderThread = new Thread(() -> {
-                try {
-                    for (int i =0; i < 2 ; i++)
-                    {
-                        if (id == 1 || id == 3) {
-                            String message = "Sidnei nao responde " + i;
-                            Content content = new BlockchainMessage(message);
-                            AuthenticatedPerfectLink.send(socket, content, "127.0.0.1",10002);
-                        }
-                    }
-                    //Send Message with AuthLink
-                } catch (IOException | NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-            });
-
-            deliverThread.start();
-            senderThread.start();
-
-            deliverThread.join();
-            senderThread.join();
-
-            
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
         } catch (Exception e) {
@@ -117,7 +72,6 @@ public class Member
                 "hostname=" + hostname + "\n" +
                 "port=" + port + "\n");
     }
-
 
     private static void initializeLinks() throws UnknownHostException {
         AuthenticatedPerfectLink.setSource(hostname, port);

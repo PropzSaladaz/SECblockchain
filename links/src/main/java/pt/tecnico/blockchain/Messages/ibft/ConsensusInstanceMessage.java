@@ -14,15 +14,11 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     private int _consensusInstance;
     private int _roundNumber;
     private int _senderPID;
-    private BlockchainMessage _value;
 
-    public ConsensusInstanceMessage(String messageType, int consensusInstance, int roundNumber,
-                                    BlockchainMessage value, int senderPID, Content content) {
+    public ConsensusInstanceMessage(int consensusInstance, int roundNumber,int senderPID, Content content) {
         super(content);
-        _messageType = messageType;
         _consensusInstance = consensusInstance;
         _roundNumber = roundNumber;
-        _value = value;
         _senderPID = senderPID;
     }
 
@@ -49,10 +45,6 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
 
     public int getSenderPID() {
         return _senderPID;
-    }
-    
-    public BlockchainMessage getValue() {
-        return _value;
     }
 
     @Override

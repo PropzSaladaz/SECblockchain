@@ -1,6 +1,8 @@
 package pt.tecnico.blockchain;
 
+import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
+import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
 public class Ibft {
 
@@ -9,34 +11,41 @@ public class Ibft {
     private int _round;
     private int _preparedRound;
     private BlockchainMessage _preparedValue;
-    private BlockchainMessage _inputValue;
-    private IbftTimer timer = new IbftTimer();
+    private BlockchainMessage _value;
+    //private IbftTimer timer = new IbftTimer();
 
-    public int leader(int consensusInstance, int round) {
+
+    public Ibft(int id){_pid = id;}
+    //Next Delivery
+    public boolean leader(int consensusInstance, int round) {
         // any deterministic mapping from consensusInstance and round to the identifier of
         //   a process as long as it allows f+1 processes to eventually assume the leader role.
-        return 1;
+        return 1 == _pid;
+    }
+     public boolean checkLeader(int pid) {
+        // any deterministic mapping from consensusInstance and round to the identifier of
+        //   a process as long as it allows f+1 processes to eventually assume the leader role.
+        return pid == 1;
     }
 
-    public void start(BlockchainMessage inputValue) {
-//        _consensusInstance = consensusInstance;
+    public void start(int consensusInstance,BlockchainMessage value) {
+        _consensusInstance = consensusInstance;
         _round = 1;
         _preparedRound = -1;
-        _inputValue = inputValue;
-
-        if (leader(_consensusInstance, _round) == _pid) {
-            broadcastPrePrepare();
+        _value = value;
+        if (leader(_consensusInstance, _round)) {
+            System.out.println("IM THE LEADER \n");
         }
-        startTimer(_round);
+        //startTimer(_round);
     }
 
-    public void startTimer(int round) {
+    /*public void startTimer(int round) {
         timer.start(round);
     }
 
     public void stopTimer() {
         timer.stop();
-    }
+    }*/
 
     public int getPID() {
         return _pid;
@@ -50,16 +59,16 @@ public class Ibft {
         return _round;
     }
 
-    public void setRound(int value) {
-        _round = value;
+    public void setRound(int round) {
+        _round = round;
     }
 
     public int getPreparedRound() {
         return _preparedRound;
     }
 
-    public void setPreparedRound(int value) {
-        _preparedRound = value;
+    public void setPreparedRound(int round) {
+        _preparedRound = round;
     }
 
     public BlockchainMessage getPreparedValue() {
@@ -71,10 +80,7 @@ public class Ibft {
     }
 
     public BlockchainMessage getValue() {
-        return _inputValue;
+        return _value;
     }
 
-    public void broadcastPrePrepare() {
-        
-    }
 }

@@ -56,20 +56,20 @@ public class AuthenticatedPerfectLink {
 
         message.setSignature(encryptedMessage);
 
-        System.out.println("Sending APL");
+        //System.out.println("Sending APL");
         PerfectLink.send(socket,message,InetAddress.getByName(hostname) ,port);
 
     }
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
        while(true){
            try{
-               System.out.println("Waiting for PL messages...");
+               //System.out.println("Waiting for PL messages...");
                APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                PublicKey pk = _store.getPublicKey(message.getSenderPID());
                if (pk != null && verifyAuth(message, pk)) {
                    return message;
                }
-               System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
+               //System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
            }catch(RuntimeException e){
                System.out.println(e.getMessage());
            }
