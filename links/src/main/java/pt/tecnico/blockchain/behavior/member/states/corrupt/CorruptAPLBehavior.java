@@ -57,7 +57,7 @@ public class CorruptAPLBehavior {
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                 PublicKey pk = AuthenticatedPerfectLink.getStore().getPublicKey(message.getSenderPID());
                 System.out.println("CORRUPTED: returning message (without checking signature)");
-                return message;
+                return message.getContent();
             }catch(RuntimeException e){
                 System.out.println(e.getMessage());
             }

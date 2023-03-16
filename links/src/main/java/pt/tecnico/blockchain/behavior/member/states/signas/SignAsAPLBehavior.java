@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain.behavior.member.states.correct;
+package pt.tecnico.blockchain.behavior.member.states.signas;
 
 import pt.tecnico.blockchain.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;

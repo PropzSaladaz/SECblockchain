@@ -40,7 +40,7 @@ public class DefaultAPLBehavior {
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                 PublicKey pk = AuthenticatedPerfectLink.getStore().getPublicKey(message.getSenderPID());
                 if (pk != null && AuthenticatedPerfectLink.verifyAuth(message, pk)) {
-                    return message;
+                    return message.getContent();
                 }
                 System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
             }catch(RuntimeException e){

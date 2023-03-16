@@ -14,21 +14,17 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     private int _consensusInstance;
     private int _roundNumber;
     private int _senderPID;
-    private BlockchainMessage _value;
 
-    public ConsensusInstanceMessage(String messageType, int consensusInstance, int roundNumber,
-                                    BlockchainMessage value, int senderPID, Content content) {
+    public ConsensusInstanceMessage(int consensusInstance, int roundNumber,int senderPID, Content content) {
         super(content);
-        _messageType = messageType;
         _consensusInstance = consensusInstance;
         _roundNumber = roundNumber;
-        _value = value;
         _senderPID = senderPID;
     }
 
     @Override
     public String getApplicationMessageType() {
-        return super.CONSENSUS_INSTANCE_MESSAGE;
+        return CONSENSUS_INSTANCE_MESSAGE;
     }
 
     public String getMessageType() {
@@ -50,18 +46,15 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     public int getSenderPID() {
         return _senderPID;
     }
-    
-    public BlockchainMessage getValue() {
-        return _value;
-    }
-
-    @Override
-    public String toString (){
-        return "TODO TODO: EMPTY METHOD";
-    }
 
     @Override
     public String toString(int level) {
-        return "TODO TODO: EMPTY METHOD";
+        return toStringWithTabs("ConsensusInstanceMessage: {", level) +
+                toStringWithTabs("messageType: " + _messageType, level+1) +
+                toStringWithTabs("consensusInstance: " + _consensusInstance, level+1) +
+                toStringWithTabs("roundNumber: " + _roundNumber, level+1) +
+                toStringWithTabs("senderPID: " + _senderPID, level+1) +
+                getContent().toString(level+1) +
+                toStringWithTabs("}", level);
     }
 }
