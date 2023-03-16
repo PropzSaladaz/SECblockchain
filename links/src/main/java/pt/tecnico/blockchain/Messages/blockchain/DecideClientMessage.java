@@ -1,15 +1,15 @@
-package pt.tecnico.blockchain.Messages.ibft;
+package pt.tecnico.blockchain.Messages.blockchain;
 
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.Content;
 import java.util.List;
 
-public class DecideBlockClientMessage extends ApplicationMessage implements Content {
+public class DecideClientMessage extends ApplicationMessage implements Content {
 
     private List<Integer> _quorum;
     private String _message;
 
-    public DecideBlockClientMessage(List<Integer> quorum, String message){
+    public DecideClientMessage(List<Integer> quorum, String message){
         _quorum = quorum;
         _message = message;
     }

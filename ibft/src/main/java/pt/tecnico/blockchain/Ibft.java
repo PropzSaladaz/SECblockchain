@@ -4,37 +4,56 @@ import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
+import java.net.DatagramSocket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Ibft {
 
-    private int _pid;
-    private int _consensusInstance;
-    private int _round;
-    private int _preparedRound;
-    private BlockchainMessage _preparedValue;
-    private BlockchainMessage _value;
+    private static int _pid;
+    private static int _numProcesses;
+    private static Application _app;
+    private static int _consensusInstance;
+    private static int _round;
+    private static int _preparedRound;
+    private static Content _preparedValue;
+    private static Content _value;
+    private static List<ConsensusInstanceMessage> _prepared = new ArrayList<>();
+    private static List<ConsensusInstanceMessage> _commited = new ArrayList<>();
     //private IbftTimer timer = new IbftTimer();
 
 
-    public Ibft(int id){_pid = id;}
+    public static void init(DatagramSocket socket, int id, ArrayList<Pair<String, Integer>> members, Application app){
+        _pid = id;
+        _numProcesses = members.size();
+        _app = app;
+        IbftMessagehandler.init(socket, members);
+    }
+
+    public static Application getApp() {
+        return _app;
+    }
     //Next Delivery
-    public boolean leader(int consensusInstance, int round) {
+    public static boolean leader(int consensusInstance, int round) {
         // any deterministic mapping from consensusInstance and round to the identifier of
         //   a process as long as it allows f+1 processes to eventually assume the leader role.
         return 1 == _pid;
     }
-     public boolean checkLeader(int pid) {
-        // any deterministic mapping from consensusInstance and round to the identifier of
-        //   a process as long as it allows f+1 processes to eventually assume the leader role.
-        return pid == 1;
+     public static boolean checkLeader() {
+        return _pid == 1;
     }
 
-    public void start(int consensusInstance,BlockchainMessage value) {
-        _consensusInstance = consensusInstance;
+    public static void start(Content value) {
+        _consensusInstance = _app.getNextInstanceNumber();
         _round = 1;
         _preparedRound = -1;
         _value = value;
         if (leader(_consensusInstance, _round)) {
             System.out.println("IM THE LEADER \n");
+            _app.prepareValue(value);
+            IbftMessagehandler.doPrePrepare(value);
+
         }
         //startTimer(_round);
     }
@@ -47,15 +66,15 @@ public class Ibft {
         timer.stop();
     }*/
 
-    public int getPID() {
+    public static int getPid() {
         return _pid;
     }
 
-    public int getConsensusInstance() {
+    public static int getConsensusInstance() {
         return _consensusInstance;
     }
 
-    public int getRound() {
+    public static int getRound() {
         return _round;
     }
 
@@ -67,20 +86,45 @@ public class Ibft {
         return _preparedRound;
     }
 
-    public void setPreparedRound(int round) {
+    public static void setPreparedRound(int round) {
         _preparedRound = round;
     }
 
-    public BlockchainMessage getPreparedValue() {
+    public Content getPreparedValue() {
         return _preparedValue;
     }
 
-    public void setPreparedValue(BlockchainMessage value) {
+    public static void setPreparedValue(Content value) {
         _preparedValue = value;
     }
 
-    public BlockchainMessage getValue() {
+    public static void handleMessage(ConsensusInstanceMessage ibftMessage) {
+        IbftMessagehandler.handleMessage(ibftMessage);
+    }
+
+    public Content getValue() {
         return _value;
+    }
+
+    //Quorum Management
+    public static int getQuorumMinimumSize() {
+        return (_numProcesses + getMaxNumberOfFaultyProcesses()) / 2 + 1;
+    }
+
+    public static int getMaxNumberOfFaultyProcesses() {
+        return (int)Math.ceil((_numProcesses-1)/3);
+    }
+
+    public static boolean hasPreparedQuorum() {return _prepared.size() > getQuorumMinimumSize();}
+
+    public static void addToPreparedQuorum(ConsensusInstanceMessage message) {_prepared.add(message);}
+
+    public static void addToCommitQuorum(ConsensusInstanceMessage message) {_commited.add(message);}
+
+    public static boolean hasCommitQuorum() {return _commited.size() > getQuorumMinimumSize();}
+
+    public static List<Integer> getCommitQuorum() {
+        return _commited.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
     }
 
 }

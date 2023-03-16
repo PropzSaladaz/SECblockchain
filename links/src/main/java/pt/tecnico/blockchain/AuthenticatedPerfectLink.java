@@ -67,7 +67,7 @@ public class AuthenticatedPerfectLink {
                APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                PublicKey pk = _store.getPublicKey(message.getSenderPID());
                if (pk != null && verifyAuth(message, pk)) {
-                   return message;
+                   return message.getContent();
                }
                //System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
            }catch(RuntimeException e){

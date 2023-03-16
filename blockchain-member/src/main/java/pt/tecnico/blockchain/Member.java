@@ -7,18 +7,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.UnknownHostException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Path.BlockchainPaths;
-import pt.tecnico.blockchain.SlotTimer.*;
-import pt.tecnico.blockchain.Messages.*;
 
 public class Member
 {
@@ -44,11 +39,12 @@ public class Member
             if (DEBUG) printInfo();
 
             initKeyStore();
-            MemberState memberState = new MemberState(config,id);
-            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            MemberFrontend.setFrontEnd(socket,config.getMemberHostnames(),config.getClientHostnames());
             initializeLinks();
-            RunMember.run(socket,memberState);
+
+            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
+            MemberBlockchainAPI chain = new MemberBlockchainAPI(socket, config.getClientHostnames());
+            Ibft.init(socket, id, config.getMemberHostnames(), chain);
+            RunMember.run(socket);
 
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());

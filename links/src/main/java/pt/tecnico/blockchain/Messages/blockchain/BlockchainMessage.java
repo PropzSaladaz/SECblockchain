@@ -6,13 +6,27 @@ import pt.tecnico.blockchain.Messages.ApplicationMessage;
 public class BlockchainMessage implements Content {
     
     private String _message;
+    private String _hash;
+
+    public BlockchainMessage(String message, String hash) {
+       _message = message;
+       _hash = hash;
+    }
 
     public BlockchainMessage(String message) {
-       _message = message;
+        _message = message;
     }
     
     public String getMessage() {
         return _message;
+    }
+
+    public String getHash() {
+        return _hash;
+    }
+
+    public void setHash(String hash) {
+        _hash = hash;
     }
 
     @Override
