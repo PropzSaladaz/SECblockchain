@@ -5,6 +5,8 @@ import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Blockchain implements Application {
 
@@ -27,11 +29,21 @@ public class Blockchain implements Application {
         return _lastBlock;
     }
 
+    public void printBlockchain() {
+        Block b = _lastBlock;
+        System.out.println("New block appended: ");
+        while (b != null) {
+            System.out.print(b.toString());
+            b = b.getPreviousBlock();
+        }
+    }
+
     @Override
-    public void decide(Content value) {
+    public void decide(Content value, List<Integer> quorum) {
         BlockchainMessage message = (BlockchainMessage) value;
         Block oldLast = _lastBlock;
         _lastBlock = new Block(oldLast, message.getMessage());
+        printBlockchain();
     }
 
     @Override

@@ -2,9 +2,7 @@ package pt.tecnico.blockchain;
 
 
 
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.xml.bind.DatatypeConverter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -63,12 +61,14 @@ public class Crypto {
         }
     }
 
-    public static byte[] decryptRSAPrivate(byte[] plainBytes, PrivateKey key){
+    public static byte[] decryptRSAPrivate(byte[] plainBytes, PrivateKey key) {
         try {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, key);
             return cipher.doFinal(plainBytes);
-        } catch (Exception e) {
+        } catch (BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException |
+                IllegalBlockSizeException | InvalidKeyException e) {
+            e.printStackTrace();
             throw new RuntimeException("ERROR WHILE DECRYPTING RSA");
         }
     }
@@ -78,7 +78,9 @@ public class Crypto {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, key);
             return cipher.doFinal(plainBytes);
-        } catch (Exception e) {
+        } catch (BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException |
+                IllegalBlockSizeException | InvalidKeyException e) {
+            e.printStackTrace();
             throw new RuntimeException("ERROR WHILE DECRYPTING RSA");
         }
     }
@@ -88,12 +90,18 @@ public class Crypto {
         return digest.digest(message);
     }
 
+    public static String base64(byte[] bytes) {
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+
+    public static String base64(byte[] bytes, int length) {
+        return base64(bytes).substring(0, length) + "...";
+    }
 
     public static String computeHash(String message,String previousBlockHash) throws NoSuchAlgorithmException {
         String concatenated = message+previousBlockHash;
         byte[] hash = digest(concatenated.getBytes(StandardCharsets.UTF_8));
         return DatatypeConverter.printHexBinary(hash);
-
     }
 
 

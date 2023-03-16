@@ -1,12 +1,16 @@
 package pt.tecnico.blockchain;
 
+import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Blockchain;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
+import pt.tecnico.blockchain.Messages.blockchain.DecideClientMessage;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MemberBlockchainAPI implements Application {
     private Blockchain chain;
@@ -20,9 +24,9 @@ public class MemberBlockchainAPI implements Application {
     }
 
     @Override
-    public void decide(Content value) {
-        chain.decide(value);
-        broadcastClients(value);
+    public void decide(Content value, List<Integer> commitQuorum) {
+        chain.decide(value, commitQuorum);
+        broadcastClients(value, commitQuorum);
     }
 
     @Override
@@ -40,10 +44,11 @@ public class MemberBlockchainAPI implements Application {
         chain.prepareValue(value);
     }
 
-    public void broadcastClients(Content message) {
+    public void broadcastClients(Content message, List<Integer> commitQuorum) {
         try {
             for (Pair<String, Integer> pair : _clientHostNames ){
-                AuthenticatedPerfectLink.send(_socket, message, pair.getFirst(), pair.getSecond());
+                DecideClientMessage msg = new DecideClientMessage(commitQuorum, message);
+                AuthenticatedPerfectLink.send(_socket, msg, pair.getFirst(), pair.getSecond());
             }
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();

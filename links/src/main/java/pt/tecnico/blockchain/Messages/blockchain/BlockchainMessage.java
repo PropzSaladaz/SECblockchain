@@ -33,9 +33,10 @@ public class BlockchainMessage implements Content {
 
     @Override
     public String toString(int level) {
+        String hash = (_hash == null) ? "" : _hash.substring(0, 15) + "...";
         return  toStringWithTabs("BlockchainMessage {" , level) +
                 toStringWithTabs("message: " + _message, level + 1) +
-                toStringWithTabs("hash: " + _hash, level + 1) +
+                toStringWithTabs("hash: " + hash , level + 1) +
                 toStringWithTabs("}", level);
     }
 }

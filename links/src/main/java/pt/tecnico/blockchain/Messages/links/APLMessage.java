@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.Messages.links;
 
+import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
 
@@ -44,9 +45,8 @@ public class APLMessage extends Message implements Content {
 
     @Override
     public String toString(int level) {
-        String sign20chars = Base64.getEncoder().encodeToString(_signature).substring(0, 15) + "...";
         return  toStringWithTabs("APLMessage {", level) +
-                toStringWithTabs("signature: " + sign20chars, level + 1) +
+                toStringWithTabs("signature: " + Crypto.base64(_signature, 15), level + 1) +
                 toStringWithTabs("source: " + _source, level + 1) +
                 toStringWithTabs("sender_id: " + getSenderPID(), level + 1) +
                 getContent().toString(level + 1) +

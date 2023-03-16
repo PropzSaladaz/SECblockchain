@@ -7,6 +7,7 @@ import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
+import pt.tecnico.blockchain.logger.Logger;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -20,8 +21,8 @@ public class RunClient {
         Thread worker = new Thread(() -> {
             try {
                 while (true){
-                    APLMessage message = (APLMessage) AuthenticatedPerfectLink.deliver(socket);
-                    ClientServiceImpl.handleRequest((ApplicationMessage) message.getContent());
+                    ApplicationMessage message = (ApplicationMessage) AuthenticatedPerfectLink.deliver(socket);
+                    ClientServiceImpl.handleRequest(message);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -35,7 +36,7 @@ public class RunClient {
                 String message = request.getFirst();
                 Content appendMessage = new AppendBlockMessage(new BlockchainMessage(message));
                 try {
-                    System.out.println("Sending Block " + message + "\n");
+                    Logger.logWithTime("Sending Block " + message + "\n");
                     ClientFrontend.broadcastClientRequests(appendMessage);
                 } catch (IOException | NoSuchAlgorithmException e) {
                     e.printStackTrace();

@@ -30,17 +30,11 @@ public class PerfectLink {
         message.setUUID(UuidGenerator.generateUuid());
         message.setAck(false);
         //System.out.println("Sending to: " + port);
-        ScheduledTask task = new ScheduledTask( () -> FairLossLink.send(socket,message,hostname,port),
-                RESEND_MESSAGE_TIMEOUT);
-        Timeout timeoutTask = new Timeout( () -> {
-            task.start();
-            while (!hasAckArrived(message.getUUID())); // TODO Active waiting
-            task.stop();
-            //System.out.println("PL - Ack received");
-        }, ASSUME_FAILURE_TIMEOUT);
-        timeoutTask.addInternalScheduleTask(task);
-        timeoutTask.run();
-        //System.out.println("Finished sending, ready to send next message!");
+        ScheduledTask task = new ScheduledTask( () -> {
+            FairLossLink.send(socket, message, hostname , port);
+        }, RESEND_MESSAGE_TIMEOUT);
+        task.setStopCondition(() -> hasAckArrived(message.getUUID()));
+        task.start();
     }
 
 

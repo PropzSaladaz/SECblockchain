@@ -66,7 +66,8 @@ class IbftMessagehandler {
             //memberState.stopTimer();
             // add to blockchain
             if(Ibft.getApp().validateValue(value)){
-                Ibft.getApp().decide(value);
+                Ibft.getApp().decide(value, Ibft.getCommitQuorum());
+                Ibft.endInstance();
             }
         }
     }
@@ -74,7 +75,7 @@ class IbftMessagehandler {
     public static void doPrePrepare(Content message) {
         ConsensusInstanceMessage prepareMessage =
                 new ConsensusInstanceMessage(Ibft.getConsensusInstance()
-                        ,Ibft.getRound(),Ibft.getPid(),message);
+                        ,Ibft.getRound(), Ibft.getPid(), message);
         prepareMessage.setMessageType(ConsensusInstanceMessage.PRE_PREPARE);
         broadcastMessage(prepareMessage);
     }

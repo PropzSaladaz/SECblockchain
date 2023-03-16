@@ -16,7 +16,9 @@ public class RunMember {
                   try {
                       while (true) {
                           Content message =  AuthenticatedPerfectLink.deliver(socket);
+                          System.out.println("Before sending");
                           MemberServicesImpl.handleRequest(message);
+                          System.out.println("After sending");
                       }
                   } catch (Exception e) {
                       e.printStackTrace();

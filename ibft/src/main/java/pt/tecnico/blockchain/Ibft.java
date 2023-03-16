@@ -108,11 +108,11 @@ public class Ibft {
 
     //Quorum Management
     public static int getQuorumMinimumSize() {
-        return (_numProcesses + getMaxNumberOfFaultyProcesses()) / 2 + 1;
+        return (_numProcesses + getMaxNumberOfFaultyProcesses()) / 2;
     }
 
     public static int getMaxNumberOfFaultyProcesses() {
-        return (int)Math.ceil((_numProcesses-1)/3);
+        return (int)Math.floor((_numProcesses-1)/3);
     }
 
     public static boolean hasPreparedQuorum() {return _prepared.size() > getQuorumMinimumSize();}
@@ -125,6 +125,11 @@ public class Ibft {
 
     public static List<Integer> getCommitQuorum() {
         return _commited.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
+    }
+
+    public static void endInstance() {
+        _prepared.clear();
+        _commited.clear();
     }
 
 }

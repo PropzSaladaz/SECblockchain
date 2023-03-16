@@ -21,7 +21,6 @@ public class Block implements Serializable {
     public Block(String initialMessage)  {
         _message = initialMessage;
         _blockNumber = 0;
-        _hash = "";
     }
 
     public Block(Block previousBlock, String message) {
@@ -58,7 +57,7 @@ public class Block implements Serializable {
         buffer.put(blockBytes);
         buffer.put(messageBytes);
         byte[] digest = Crypto.digest(buffer.array());
-        return Arrays.toString(Base64.getEncoder().encode(digest));
+        return Crypto.base64(digest);
     }
 
     private static byte[] getBytesFrom(Object obj) throws IOException {
@@ -66,5 +65,11 @@ public class Block implements Serializable {
         ObjectOutputStream objectOS = new ObjectOutputStream(bytesOS);
         objectOS.writeObject(obj);
         return bytesOS.toByteArray();
+    }
+
+    @Override
+    public String toString() {
+        String hash = (_hash == null) ? "" :  _hash.substring(0,15) + "...";
+        return " -> [Message: " + _message + "  , Hash: " +  hash + "]";
     }
 }

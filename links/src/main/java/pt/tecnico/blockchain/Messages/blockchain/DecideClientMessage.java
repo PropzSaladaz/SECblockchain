@@ -7,16 +7,15 @@ import java.util.List;
 public class DecideClientMessage extends ApplicationMessage implements Content {
 
     private List<Integer> _quorum;
-    private String _message;
 
-    public DecideClientMessage(List<Integer> quorum, String message){
+    public DecideClientMessage(List<Integer> quorum, Content message){
+        super(message);
         _quorum = quorum;
-        _message = message;
     }
 
     @Override
     public String getApplicationMessageType() {
-        return super.DECIDE_BLOCK_CLIENT;
+        return DECIDE_BLOCK_CLIENT;
     }
 
 
@@ -27,7 +26,6 @@ public class DecideClientMessage extends ApplicationMessage implements Content {
     @Override
     public String toString(int level) {
         return toStringWithTabs("DecideClientMessage: {", level) +
-                toStringWithTabs("message: " + _message, level+1) +
                 toStringWithTabs("Quorum: " + _quorum.toString(), level+1) +
                 getContent().toString(level+1) +
                 toStringWithTabs("}", level);
