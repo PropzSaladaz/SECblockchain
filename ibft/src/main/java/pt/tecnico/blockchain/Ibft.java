@@ -21,7 +21,6 @@ public class Ibft {
     private static Content _value;
     private static List<ConsensusInstanceMessage> _prepared = new ArrayList<>();
     private static List<ConsensusInstanceMessage> _commited = new ArrayList<>();
-    //private IbftTimer timer = new IbftTimer();
 
 
     public static void init(DatagramSocket socket, int id, ArrayList<Pair<String, Integer>> members, Application app){
@@ -55,16 +54,8 @@ public class Ibft {
             IbftMessagehandler.doPrePrepare(value);
 
         }
-        //startTimer(_round);
+        IbftTimer.start(_round);
     }
-
-    /*public void startTimer(int round) {
-        timer.start(round);
-    }
-
-    public void stopTimer() {
-        timer.stop();
-    }*/
 
     public static int getPid() {
         return _pid;

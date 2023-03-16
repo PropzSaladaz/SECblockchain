@@ -6,22 +6,21 @@ import java.lang.Math;
 
 public class IbftTimer {
 
-    private Timer timer = new Timer();
-    private String state = "expired";
+    private static Timer timer = new Timer();
 
-    private TimerTask task = new TimerTask() {
+    private static TimerTask task = new TimerTask() {
         @Override
         public void run() {
-            state = "expired";
+            System.out.println("Round Timer Expired: Triggering <ROUND-CHANGE>");
         }
     };
 
-    public void start(int round) {
-        state = "running";
+    public static void start(int round) {
         timer.schedule(task, (long)Math.exp(round));
     }
 
-    public void stop() {
+    public static void stop() {
+        System.out.println("Stopping Round Timer before <ROUND-CHANGE>");
         timer.cancel();
     }
 }
