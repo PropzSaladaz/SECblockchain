@@ -63,7 +63,7 @@ class IbftMessagehandler {
         Content value = message.getContent();
         if (Ibft.hasCommitQuorum()) {
             System.out.println("Received Quorum Commit" + "\n");
-            //memberState.stopTimer();
+            IbftTimer.stop();
             // add to blockchain
             if(Ibft.getApp().validateValue(value)){
                 Ibft.getApp().decide(value, Ibft.getCommitQuorum());
@@ -82,6 +82,7 @@ class IbftMessagehandler {
 
     public static void broadcastMessage(Content message) {
         try {
+            System.out.println(_memberHostNames.size());
             for (Pair<String, Integer> pair : _memberHostNames ){
                 AuthenticatedPerfectLink.send(_socket, message, pair.getFirst(), pair.getSecond());
             }
