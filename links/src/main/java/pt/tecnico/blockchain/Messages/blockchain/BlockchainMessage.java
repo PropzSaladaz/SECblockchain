@@ -8,11 +8,6 @@ public class BlockchainMessage implements Content {
     private String _message;
     private String _hash;
 
-    public BlockchainMessage(String message, String hash) {
-       _message = message;
-       _hash = hash;
-    }
-
     public BlockchainMessage(String message) {
         _message = message;
     }
@@ -40,6 +35,7 @@ public class BlockchainMessage implements Content {
     public String toString(int level) {
         return  toStringWithTabs("BlockchainMessage {" , level) +
                 toStringWithTabs("message: " + _message, level + 1) +
+                toStringWithTabs("hash: " + _hash, level + 1) +
                 toStringWithTabs("}", level);
     }
 }

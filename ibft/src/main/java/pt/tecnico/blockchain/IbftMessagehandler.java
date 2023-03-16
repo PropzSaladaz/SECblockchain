@@ -33,19 +33,19 @@ class IbftMessagehandler {
 
     public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
         // TODO check if it is valid and is from the leader
-        System.out.println("Handling PrePrePare" + "\n");
-        System.out.println(message.getContent().toString(1));
-        System.out.println(message.getMessageType());
+//        System.out.println("Handling PrePrePare" + "\n");
+//        System.out.println(message.getContent().toString(1));
+//        System.out.println(message.getMessageType());
 
         //memberState.startTimer();
         message.setMessageType(ConsensusInstanceMessage.PREPARE);
-        System.out.println(message.getMessageType());
+//        System.out.println(message.getMessageType());
         broadcastMessage(message);
     }
 
     public static void handlePrepareRequest(ConsensusInstanceMessage message) {
         // TODO check if it is valid
-        System.out.println("Received Prepare" + "\n");
+//        System.out.println("Received Prepare" + "\n");
         Ibft.addToPreparedQuorum(message);
         if (Ibft.hasPreparedQuorum()) {
             System.out.println("Received Quorum Prepare" + "\n");
@@ -58,7 +58,7 @@ class IbftMessagehandler {
 
     public static void handleCommitRequest(ConsensusInstanceMessage message) {
         // TODO check if it is valid
-        System.out.println("Received Prepare" + "\n");
+//        System.out.println("Received Prepare" + "\n");
         Ibft.addToCommitQuorum(message);
         Content value = message.getContent();
         if (Ibft.hasCommitQuorum()) {

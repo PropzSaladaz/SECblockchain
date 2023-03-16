@@ -25,13 +25,12 @@ public class DecideClientMessage extends ApplicationMessage implements Content {
     }
 
     @Override
-    public String toString (){
-        return "TODO TODO: EMPTY METHOD";
-    }
-
-    @Override
     public String toString(int level) {
-        return "TODO TODO: EMPTY METHOD";
+        return toStringWithTabs("DecideClientMessage: {", level) +
+                toStringWithTabs("message: " + _message, level+1) +
+                toStringWithTabs("Quorum: " + _quorum.toString(), level+1) +
+                getContent().toString(level+1) +
+                toStringWithTabs("}", level);
     }
 
 }

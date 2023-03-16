@@ -48,12 +48,13 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     }
 
     @Override
-    public String toString (){
-        return "TODO TODO: EMPTY METHOD";
-    }
-
-    @Override
     public String toString(int level) {
-        return "TODO TODO: EMPTY METHOD";
+        return toStringWithTabs("ConsensusInstanceMessage: {", level) +
+                toStringWithTabs("messageType: " + _messageType, level+1) +
+                toStringWithTabs("consensusInstance: " + _consensusInstance, level+1) +
+                toStringWithTabs("roundNumber: " + _roundNumber, level+1) +
+                toStringWithTabs("senderPID: " + _senderPID, level+1) +
+                getContent().toString(level+1) +
+                toStringWithTabs("}", level);
     }
 }

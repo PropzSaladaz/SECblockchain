@@ -33,12 +33,11 @@ public class DecideMessage extends ApplicationMessage implements Content {
     }
 
     @Override
-    public String toString (){
-        return "TODO TODO: EMPTY METHOD";
-    }
-
-    @Override
     public String toString(int level) {
-        return "TODO TODO: EMPTY METHOD";
+        return toStringWithTabs("DecideMessage: {", level) +
+                toStringWithTabs("round: " + _round, level+1) +
+                toStringWithTabs("Quorum: " + _quorum.toString(), level+1) +
+                getContent().toString(level+1) +
+                toStringWithTabs("}", level);
     }
 }

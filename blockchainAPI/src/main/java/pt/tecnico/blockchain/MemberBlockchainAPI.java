@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Blockchain;
 
 import java.io.IOException;
 import java.net.DatagramSocket;

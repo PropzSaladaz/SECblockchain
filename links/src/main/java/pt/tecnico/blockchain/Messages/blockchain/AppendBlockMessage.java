@@ -15,12 +15,9 @@ public class AppendBlockMessage extends ApplicationMessage implements Content {
     }
 
     @Override
-    public String toString (){
-        return "TODO TODO: EMPTY METHOD";
-    }
-
-    @Override
     public String toString(int level) {
-        return "TODO TODO: EMPTY METHOD";
+        return toStringWithTabs("AppendBlockMessage: {", level) +
+                getContent().toString(level+1) +
+                toStringWithTabs("}", level);
     }
 }

@@ -13,8 +13,9 @@ import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 
 public class RunClient {
+    private static int slot = 0;
+
     public static void run(DatagramSocket socket,int pid,BlockchainConfig config){
-        int[] slotCounter = {1};
         int slotDuration = config.getSlotDuration();
         Thread worker = new Thread(() -> {
             try {
@@ -29,7 +30,7 @@ public class RunClient {
         worker.start();
 
         ScheduledTask sendertask = new ScheduledTask(() -> {
-            Pair<String, Integer> request = config.getRequestInSlotForProcess(slotCounter[0], pid);
+            Pair<String, Integer> request = config.getRequestInSlotForProcess(slot, pid);
             if(request != null){
                 String message = request.getFirst();
                 Content appendMessage = new AppendBlockMessage(new BlockchainMessage(message));
@@ -40,7 +41,7 @@ public class RunClient {
                     e.printStackTrace();
                 }
             }
-            slotCounter[0]++;
+            slot++;
         }, slotDuration);
 
         sendertask.start();
