@@ -11,6 +11,8 @@ import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.security.InvalidKeyException;
+import java.security.SignatureException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 
@@ -19,18 +21,19 @@ public class DefaultAPLBehavior {
     public static void send(DatagramSocket socket, Content content, String hostname, int port) {
 
         try {
-            //String dest = hostname + ":" + port;
             APLMessage message = new APLMessage(content, AuthenticatedPerfectLink.getSource(),
-                AuthenticatedPerfectLink.getId());
+                AuthenticatedPerfectLink.getId(), hostname + ":" + port);
 
             message.setSignature(Crypto.getSignature(MessageManager.getContentBytes(content), 
                 RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId())));
 
             System.out.println("Sending APL");
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
+
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
-        } catch (Exception e) {
+
+        } catch (InvalidKeyException | SignatureException e) {
             e.printStackTrace();
         }
     }

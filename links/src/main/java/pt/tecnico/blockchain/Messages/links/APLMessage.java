@@ -10,6 +10,7 @@ public class APLMessage extends Message implements Content {
 
     private byte[] _signature;
     private String _source;
+    private String _dest;
     private int _senderPID;
 
 
@@ -17,9 +18,10 @@ public class APLMessage extends Message implements Content {
 
     }
 
-    public APLMessage(Content content, String source, int senderPID) {
+    public APLMessage(Content content, String source, int senderPID, String dest) {
         super(content);
         _source = source;
+        _dest = dest;
         _senderPID = senderPID;
     }
 
@@ -33,6 +35,10 @@ public class APLMessage extends Message implements Content {
 
     public String getSource() {
         return _source;
+    }
+
+    public String getDest() {
+        return _dest;
     }
 
     public void setSource(byte[] source) {
