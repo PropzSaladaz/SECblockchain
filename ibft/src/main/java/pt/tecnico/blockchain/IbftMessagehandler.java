@@ -17,7 +17,7 @@ public class IbftMessagehandler {
     public static void handleMessage(ConsensusInstanceMessage message) {
         switch (message.getMessageType()) {
             case ConsensusInstanceMessage.PRE_PREPARE:
-                System.out.println("Received PrePrePare" + "\n");
+//                System.out.println("Received PrePrePare" + "\n");
                 handlePrePrepareRequest(message);
                 break;
             case ConsensusInstanceMessage.PREPARE:
@@ -54,7 +54,7 @@ public class IbftMessagehandler {
 
     public static void broadcastMessage(Content message) {
         try {
-            System.out.println(_memberHostNames.size());
+//            System.out.println(_memberHostNames.size());
             for (Pair<String, Integer> pair : _memberHostNames ){
                 AuthenticatedPerfectLink.send(_socket, message, pair.getFirst(), pair.getSecond());
             }

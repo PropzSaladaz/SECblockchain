@@ -19,7 +19,6 @@ public class DefaultAPLBehavior {
     public static void send(DatagramSocket socket, Content content, String hostname, int port) {
 
         try {
-            System.out.println("here i am");
             String dest = hostname + ":" + port;
             byte[] encryptedMessage = AuthenticatedPerfectLink.authenticate(content, dest,
                     RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
@@ -29,7 +28,6 @@ public class DefaultAPLBehavior {
             message.setSignature(encryptedMessage);
 
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
-            System.out.println("T");
 
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();

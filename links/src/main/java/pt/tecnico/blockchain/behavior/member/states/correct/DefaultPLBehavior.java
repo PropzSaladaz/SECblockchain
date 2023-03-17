@@ -34,7 +34,7 @@ public class DefaultPLBehavior {
             }
             else if (!PerfectLink.hasAckArrived(message.getUUID())) {
                 PerfectLink.sendAck(socket, message);
-                System.out.println("DELIVERING " + message.getContent());
+//                System.out.println("DELIVERING " + message.getContent());
                 return message.getContent();
             }
             return null;

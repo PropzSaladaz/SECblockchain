@@ -9,7 +9,7 @@ public class IbftBehaviorController {
 
     public static void changeState(IbftBehavior state) {
         behavior = state;
-        System.out.println("IBFT BEHAVIOR: changed state to " + behavior.TYPE());
+//        System.out.println("IBFT BEHAVIOR: changed state to " + behavior.TYPE());
     }
 
     public static String getBehaviorType() {

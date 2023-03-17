@@ -3,6 +3,7 @@ package pt.tecnico.blockchain;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.MessageManager;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
@@ -37,7 +38,7 @@ public class ClientServiceImpl {
                 try{
                     DecideBlockMessage decidedBlock = (DecideBlockMessage) message;
                     if (!verifyQuorumSignatures(decidedBlock.getQuorum())) throw new Exception();
-                    System.out.println("APPENDED: " + decidedBlock.getContent().toString());
+                    System.out.println("APPENDED: " + ((BlockchainMessage) decidedBlock.getContent()).getMessage());
                     break;
                 }catch(Exception e){
                     System.out.println("THE IBFT PROCESSES DID NOT AGREE APENDING THIS BLOCK");

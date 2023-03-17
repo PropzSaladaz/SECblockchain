@@ -48,22 +48,22 @@ public class Ibft {
      
     public static void start(Content value) {
         if (tryDecideNewInstance()) {
-            System.out.println("IBFT: free to start");
+//            System.out.println("IBFT: free to start");
             startNewInstance(value);
         } else { // Instance already active
-            System.out.println("IBFT: Busy now, put in queue");
+//            System.out.println("IBFT: Busy now, put in queue");
             addToQueue(value);
         }
     }
 
     private static void startNewInstance(Content value) {
-        System.out.println("IBFT: Starting new instance");
+//        System.out.println("IBFT: Starting new instance");
         _consensusInstance = _app.getNextInstanceNumber();
         _round = 1;
         _preparedRound = -1;
         _value = value;
         if (leader(_consensusInstance, _round) == _pid) {
-            System.out.println("IM THE LEADER \n");
+//            System.out.println("IM THE LEADER \n");
             _app.prepareValue(value);
             IbftMessagehandler.broadcastPrePrepare(value);
         }
@@ -135,29 +135,29 @@ public class Ibft {
     }
 
     public static boolean hasValidPreparedQuorum() {
-        System.out.println("Size: " + _prepared.size());
-        System.out.println("Quorum size: " + (int)(getQuorumMinimumSize() + 1));
+//        System.out.println("Size: " + _prepared.size());
+//        System.out.println("Quorum size: " + (int)(getQuorumMinimumSize() + 1));
         return (_prepared.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_prepared, _prepared.size());
     }
 
     public static synchronized void addToPreparedQuorum(ConsensusInstanceMessage message) {
-        System.out.println("mesagePID: " + message.getSenderPID());
-        System.out.println("PreparedQuorum: " + _prepared);
+//        System.out.println("mesagePID: " + message.getSenderPID());
+//        System.out.println("PreparedQuorum: " + _prepared);
         if (!quorumContainsPID(_prepared, message.getSenderPID()) && message.getConsensusInstance() == _consensusInstance) {
             _prepared.add(message);
         } else {
-           System.out.println("ERROR: Multiple messages of PREPARE of same instance from process: " + message.getSenderPID());
+           System.out.println("INFO: Multiple messages of PREPARE of same instance from process: " + message.getSenderPID());
         }    
     }
     
     public static synchronized void addToCommitQuorum(ConsensusInstanceMessage message) {
         if (!quorumContainsPID(_commited, message.getSenderPID()) && message.getConsensusInstance() == _consensusInstance) {
-            System.out.println("Adding to commited " + message);
-            System.out.println("Current instance state: " + _decidingInstance);
-            System.out.println("Instance: " + _consensusInstance);
+//            System.out.println("Adding to commited " + message);
+//            System.out.println("Current instance state: " + _decidingInstance);
+//            System.out.println("Instance: " + _consensusInstance);
             _commited.add(message);
         } else {
-           System.out.println("ERROR: Multiple messages of COMMIT of same instance from process: " + message.getSenderPID());
+           System.out.println("INFO: Multiple messages of COMMIT of same instance from process: " + message.getSenderPID());
         }    
     }
 
@@ -170,34 +170,34 @@ public class Ibft {
     }
 
     public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum, int quorumSize) {
-        System.out.println("Verify quorum");
+//        System.out.println(" quorum");
         try {
             if(quorum.size() == quorumSize){
                 List<ConsensusInstanceMessage> verifiedQuorum = quorum.stream().filter(msg -> {
                     try {
-                        System.out.println("exiting0");
+//                        System.out.println("exiting0");
                         boolean value = Crypto.verifySignature(
                                 MessageManager.getContentBytes(msg.getContent()),
                                 msg.getSignatureBytes(),
                                 RSAKeyStoreById.getPublicKey(msg.getSenderPID()));
-                        System.out.println("Verifying sig: " + value);
+//                        System.out.println("Verifying sig: " + value);
                         return value;
 
                     } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException | IOException e) {
                         e.printStackTrace();
-                        System.out.println("exiting1");
+//                        System.out.println("exiting1");
                         return false;
                     }
                 }).collect(Collectors.toList());
 
                 return verifiedQuorum.size() == quorumSize;
             }else{
-                System.out.println("exiting2");
+//                System.out.println("exiting2");
                 return false;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("exiting3");
+//            System.out.println("exiting3");
             return false;
         }
     }
@@ -217,7 +217,7 @@ public class Ibft {
         _prepared.clear();
         _commited.clear();
         if (hasMessageInQueue()) {
-            System.out.println("IBFT: fetching from queue to start a new instance");
+//            System.out.println("IBFT: fetching from queue to start a new instance");
             Ibft.startNewInstance(_messageQueue.remove(_messageQueue.size() - 1));
         } else {
             _decidingInstance = false;

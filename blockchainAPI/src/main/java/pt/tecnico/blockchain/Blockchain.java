@@ -29,8 +29,7 @@ public class Blockchain implements Application {
 
     public void printBlockchain() {
         Block b = _lastBlock;
-        System.out.println("\n\033[31m\033[1mNew block appended: ");
-        System.out.println("Sending message: \n");
+        System.out.println("\n\033[36m\033[1mNew block appended: ");
         while (b != null) {
             System.out.print(b.toString());
             b = b.getPreviousBlock();
