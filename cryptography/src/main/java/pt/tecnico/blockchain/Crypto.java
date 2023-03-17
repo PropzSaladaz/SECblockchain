@@ -4,12 +4,10 @@ package pt.tecnico.blockchain;
 
 import javax.crypto.*;
 import javax.xml.bind.DatatypeConverter;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.UUID;
+
 
 public class Crypto {
 
@@ -104,5 +102,29 @@ public class Crypto {
         return DatatypeConverter.printHexBinary(hash);
     }
 
+    public static byte[] getSignature(byte[] contentBytes, PrivateKey privateKey, String source, String dest) 
+            throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(contentBytes);
+        signature.update(source.getBytes());
+        signature.update(dest.getBytes());
+        return signature.sign();
+    }
 
+    public static byte[] getSignature(byte[] contentBytes, PrivateKey privateKey) 
+            throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(contentBytes);
+        return signature.sign();
+    }
+
+    public static boolean verifySignature(byte[] contentBytes, byte[] digitalSignature, PublicKey publicKey) 
+            throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initVerify(publicKey);
+        signature.update(contentBytes);
+        return signature.verify(digitalSignature);
+    }
 }

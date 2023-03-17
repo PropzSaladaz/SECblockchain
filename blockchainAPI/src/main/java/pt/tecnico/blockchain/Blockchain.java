@@ -5,8 +5,6 @@ import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Blockchain implements Application {
 
@@ -41,10 +39,10 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public void decide(Content value, List<Integer> quorum) {
-        BlockchainMessage message = (BlockchainMessage) value;
+    public void decide(Content value) {
+        BlockchainMessage blockValue = (BlockchainMessage) value;
         Block oldLast = _lastBlock;
-        _lastBlock = new Block(oldLast, message.getMessage());
+        _lastBlock = new Block(oldLast, blockValue.getMessage());
         printBlockchain();
     }
 

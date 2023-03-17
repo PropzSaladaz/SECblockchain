@@ -29,6 +29,12 @@ public class PerfectLink {
         return _ackMessages.containsKey(seqNum);
     }
 
+    public static void sendAck(DatagramSocket socket, PLMessage message) {
+        message.setAck(true);
+        message.setUUID(message.getUUID());
+        FairLossLink.send(socket, message, message.getSenderHostname(), message.getSenderPort());
+    }
+
     public static void setSource(String address, int port) throws UnknownHostException {
         _address = InetAddress.getByName(address);
         _port = port;

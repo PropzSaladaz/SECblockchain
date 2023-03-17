@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.DatagramPacket;
 
+
 public class MessageManager {
 
     public static DatagramPacket createPacket(FLLMessage message, InetAddress address, int remotePort) throws IOException {
@@ -22,6 +23,10 @@ public class MessageManager {
         return (FLLMessage) objectIS.readObject();
     }
 
-
-
+    public static byte[] getContentBytes(Content content) throws IOException {
+        ByteArrayOutputStream bytesOS = new ByteArrayOutputStream();
+        ObjectOutputStream objectOS = new ObjectOutputStream(bytesOS);
+        objectOS.writeObject(content);
+        return bytesOS.toByteArray();
+    }
 }

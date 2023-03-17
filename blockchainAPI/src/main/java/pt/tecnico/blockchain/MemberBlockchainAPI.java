@@ -1,32 +1,27 @@
 package pt.tecnico.blockchain;
 
-import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Blockchain;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
-import pt.tecnico.blockchain.Messages.blockchain.DecideClientMessage;
+import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MemberBlockchainAPI implements Application {
     private Blockchain chain;
-    private ArrayList<Pair<String, Integer>> _clientHostNames;
     private DatagramSocket _socket;
 
-    public MemberBlockchainAPI(DatagramSocket socket, ArrayList<Pair<String, Integer>> clients) {
+    public MemberBlockchainAPI(DatagramSocket socket) {
         chain = new Blockchain();
         _socket = socket;
-        _clientHostNames = clients;
     }
 
     @Override
-    public void decide(Content value, List<Integer> commitQuorum) {
-        chain.decide(value, commitQuorum);
-        broadcastClients(value, commitQuorum);
+    public void decide(Content message) {
+        DecideBlockMessage decideMsg = (DecideBlockMessage) message;
+        chain.decide(decideMsg.getContent());
+        broadcastToClient(decideMsg);
     }
 
     @Override
@@ -44,12 +39,12 @@ public class MemberBlockchainAPI implements Application {
         chain.prepareValue(value);
     }
 
-    public void broadcastClients(Content message, List<Integer> commitQuorum) {
+    public void broadcastToClient(Content message) {
         try {
-            for (Pair<String, Integer> pair : _clientHostNames ){
-                DecideClientMessage msg = new DecideClientMessage(commitQuorum, message);
-                AuthenticatedPerfectLink.send(_socket, msg, pair.getFirst(), pair.getSecond());
-            }
+            DecideBlockMessage decideMsg = (DecideBlockMessage) message;
+            BlockchainMessage blockMessage = (BlockchainMessage) decideMsg.getContent();
+            AuthenticatedPerfectLink.send(_socket, decideMsg, blockMessage.getAddress(), blockMessage.getPort());
+
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class IbftMessagehandler {
     static ArrayList<Pair<String, Integer>> _memberHostNames;
     static DatagramSocket _socket;
-
+    static int _pid;
 
     public static void handleMessage(ConsensusInstanceMessage message) {
         switch (message.getMessageType()) {
@@ -35,7 +35,7 @@ public class IbftMessagehandler {
     public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
         IbftBehaviorController.handlePrePrepareRequest(message);
     }
-
+    
     public static void handlePrepareRequest(ConsensusInstanceMessage message) {
         IbftBehaviorController.handlePrepareRequest(message);
     }
@@ -43,8 +43,8 @@ public class IbftMessagehandler {
     public static void handleCommitRequest(ConsensusInstanceMessage message) {
         IbftBehaviorController.handleCommitRequest(message);
     }
-
-    public static void doPrePrepare(Content message) {
+    
+    public static void broadcastPrePrepare(Content message) {
         ConsensusInstanceMessage prepareMessage =
                 new ConsensusInstanceMessage(Ibft.getConsensusInstance()
                         ,Ibft.getRound(), Ibft.getPid(), message);
@@ -63,7 +63,8 @@ public class IbftMessagehandler {
         }
     }
 
-    public static void init(DatagramSocket socket, ArrayList<Pair<String, Integer>> memberHostNames) {
+    public static void init(DatagramSocket socket, ArrayList<Pair<String, Integer>> memberHostNames, int pid) {
+        _pid = pid;
         _socket = socket;
         _memberHostNames = memberHostNames;
     }

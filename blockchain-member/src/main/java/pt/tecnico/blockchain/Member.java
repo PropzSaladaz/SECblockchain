@@ -24,7 +24,6 @@ public class Member
     private static int port;
     private static String hostname;
     private static boolean DEBUG = false;
-    private static RSAKeyStoreById store;
     private static BlockchainConfig config;
 
 
@@ -42,7 +41,7 @@ public class Member
             MemberSlotBehavior behavior = new MemberSlotBehavior(config, id);
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            MemberBlockchainAPI chain = new MemberBlockchainAPI(socket, config.getClientHostnames());
+            MemberBlockchainAPI chain = new MemberBlockchainAPI(socket);
             Ibft.init(socket, id, config.getMemberHostnames(), chain);
 
             Thread.sleep(config.timeUntilStart());
@@ -75,17 +74,15 @@ public class Member
 
     private static void initializeLinks() throws UnknownHostException {
         AuthenticatedPerfectLink.setSource(hostname, port);
-        AuthenticatedPerfectLink.setKeyStore(store);
         AuthenticatedPerfectLink.setId(id);
     }
 
     private static void initKeyStore() throws Exception {
-        store = new RSAKeyStoreById();
-        store.addPrivate(BlockchainPaths.MEMBER_KEYDIR_PATH
+        RSAKeyStoreById.addPrivate(BlockchainPaths.MEMBER_KEYDIR_PATH
                 .append(KeyFilename.getWithPrivExtension(TYPE, id))
                 .getPath());
-        store.addPublics(BlockchainPaths.CLIENT_KEYDIR_PATH.getPath());
-        store.addPublics(BlockchainPaths.MEMBER_KEYDIR_PATH.getPath());
+        RSAKeyStoreById.addPublics(BlockchainPaths.CLIENT_KEYDIR_PATH.getPath());
+        RSAKeyStoreById.addPublics(BlockchainPaths.MEMBER_KEYDIR_PATH.getPath());
     }
 
     private static void parseArgs(String[] args) {

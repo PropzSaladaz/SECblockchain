@@ -9,12 +9,9 @@ import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Path.ModulePath;
 
 import java.io.IOException;
-import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 
 import static org.junit.Assert.assertEquals;
-import static pt.tecnico.blockchain.Path.BlockchainPaths.CLIENT_KEYDIR_PATH;
-import static pt.tecnico.blockchain.Path.BlockchainPaths.MEMBER_KEYDIR_PATH;
 
 @Ignore
 public class RSAKeyStoreByIdTests {
@@ -57,10 +54,9 @@ public class RSAKeyStoreByIdTests {
 
     @Test
     public void readPublics() throws Exception {
-        RSAKeyStoreById store = new RSAKeyStoreById();
-        store.addPublics(tmpKeys.getPath());
+        RSAKeyStoreById.addPublics(tmpKeys.getPath());
 
-        assertEquals(5, store.getPublicCount());
+        assertEquals(5, RSAKeyStoreById.getPublicCount());
     }
 
     @AfterClass

@@ -2,8 +2,6 @@ package pt.tecnico.blockchain;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.io.FileInputStream;
 
 public class AESKeyReader {

@@ -6,11 +6,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Base64;
-
-import pt.tecnico.blockchain.Crypto;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
 public class Block implements Serializable {
     private Block _previousBlock;

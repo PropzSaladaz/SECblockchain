@@ -33,9 +33,7 @@ public class DefaultPLBehavior {
             if (message.isAck()) {
                 PerfectLink.putACK(message.getUUID(),message);
             }else if (!PerfectLink.hasAckArrived(message.getUUID())) {
-                message.setAck(true);
-                message.setUUID(message.getUUID());
-                FairLossLink.send(socket, message, message.getSenderHostname(), message.getSenderPort());
+                PerfectLink.sendAck(socket, message);
                 return message.getContent();
             }
         }

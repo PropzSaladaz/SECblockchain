@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyPair;
-import java.util.regex.Pattern;
 
 public class RSAKeyWriter {
     public static String PRIVATE_EXT = "-priv.der";

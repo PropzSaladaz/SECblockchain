@@ -2,24 +2,31 @@ package pt.tecnico.blockchain.Messages.blockchain;
 
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+
 import java.util.List;
 
-public class DecideClientMessage extends ApplicationMessage implements Content {
+public class DecideBlockMessage extends ApplicationMessage implements Content {
 
-    private List<Integer> _quorum;
+    private int _consensusInstance;
+    private List<ConsensusInstanceMessage> _quorum;
 
-    public DecideClientMessage(List<Integer> quorum, Content message){
+    public DecideBlockMessage(int consensusInstance, Content message, List<ConsensusInstanceMessage> quorum){
         super(message);
+        _consensusInstance = consensusInstance;
         _quorum = quorum;
     }
-
+    
     @Override
     public String getApplicationMessageType() {
-        return DECIDE_BLOCK_CLIENT;
+        return DECIDE_BLOCK_MESSAGE;
     }
 
+    public int getConsensusInstance() {
+        return _consensusInstance;
+    }
 
-    public List<Integer> getQuorum() {
+    public List<ConsensusInstanceMessage> getQuorum() {
         return _quorum;
     }
 

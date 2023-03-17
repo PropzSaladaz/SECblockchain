@@ -27,12 +27,12 @@ public class RunClient {
                 }
             }
         });
-
         ScheduledTask sendertask = new ScheduledTask(() -> {
             Pair<String, Integer> request = config.getRequestInSlotForProcess(slot, pid);
+            Pair<String, Integer> hostname = config.getMemberHostname(pid);
             if(request != null){
                 String message = request.getFirst();
-                Content appendMessage = new AppendBlockMessage(new BlockchainMessage(message));
+                Content appendMessage = new AppendBlockMessage(new BlockchainMessage(message,hostname.getFirst(), hostname.getSecond()));
                 try {
                     Logger.logWithTime("Sending Block " + message + "\n");
                     ClientFrontend.broadcastClientRequests(appendMessage);
@@ -45,8 +45,6 @@ public class RunClient {
 
         worker.start();
         sendertask.start();
-
-
     }
 
 

@@ -3,10 +3,6 @@ package pt.tecnico.blockchain;
 import pt.tecnico.blockchain.Messages.*;
 import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
-import pt.tecnico.blockchain.Messages.blockchain.DecideMessage;
-
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
 public class MemberServicesImpl {
 

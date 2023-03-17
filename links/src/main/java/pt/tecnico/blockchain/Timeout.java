@@ -3,8 +3,6 @@ package pt.tecnico.blockchain;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Keeps all tasks that will be created inside Run

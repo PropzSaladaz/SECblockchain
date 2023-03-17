@@ -4,7 +4,6 @@ import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
 
-import java.util.Base64;
 
 public class APLMessage extends Message implements Content {
 
