@@ -2,6 +2,12 @@ package pt.tecnico.blockchain.Messages.ibft;
 
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.MessageManager;
+import pt.tecnico.blockchain.Crypto;
+import java.security.PrivateKey;
+
+import java.nio.charset.StandardCharsets;
+
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
 public class ConsensusInstanceMessage extends ApplicationMessage implements Content {
@@ -14,6 +20,7 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     private int _consensusInstance;
     private int _roundNumber;
     private int _senderPID;
+    private byte[] _signature;
 
     public ConsensusInstanceMessage(int consensusInstance, int roundNumber,int senderPID, Content content) {
         super(content);
@@ -45,6 +52,18 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
 
     public int getSenderPID() {
         return _senderPID;
+    }
+
+    public void signMessage(PrivateKey key, Content content) {
+        try {
+            _signature = Crypto.getSignature(MessageManager.getContentBytes(content), key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] getSignatureBytes() {
+        return _signature;
     }
 
     @Override

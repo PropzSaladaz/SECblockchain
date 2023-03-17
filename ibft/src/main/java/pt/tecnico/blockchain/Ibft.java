@@ -1,10 +1,15 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.Messages.MessageManager;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 
+import java.io.IOException;
 import java.net.DatagramSocket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,36 +27,32 @@ public class Ibft {
     private static List<ConsensusInstanceMessage> _prepared = new ArrayList<>();
     private static List<ConsensusInstanceMessage> _commited = new ArrayList<>();
 
-
     public static void init(DatagramSocket socket, int id, ArrayList<Pair<String, Integer>> members, Application app){
         _pid = id;
         _numProcesses = members.size();
         _app = app;
-        IbftMessagehandler.init(socket, members);
+        IbftMessagehandler.init(socket, members, _pid);
     }
 
     public static Application getApp() {
         return _app;
     }
-    //Next Delivery
-    public static boolean leader(int consensusInstance, int round) {
+
+    public static int leader(int consensusInstance, int round) {
         // any deterministic mapping from consensusInstance and round to the identifier of
         //   a process as long as it allows f+1 processes to eventually assume the leader role.
-        return 1 == _pid;
+        return 1;
     }
-     public static boolean checkLeader() {
-        return _pid == 1;
-    }
-
+     
     public static void start(Content value) {
         _consensusInstance = _app.getNextInstanceNumber();
         _round = 1;
         _preparedRound = -1;
         _value = value;
-        if (leader(_consensusInstance, _round)) {
+        if (leader(_consensusInstance, _round) == _pid) {
             System.out.println("IM THE LEADER \n");
             _app.prepareValue(value);
-            IbftMessagehandler.doPrePrepare(value);
+            IbftMessagehandler.broadcastPrePrepare(value);
 
         }
         IbftTimer.start(_round);
@@ -97,7 +98,6 @@ public class Ibft {
         return _value;
     }
 
-    //Quorum Management
     public static int getQuorumMinimumSize() {
         return (_numProcesses + getMaxNumberOfFaultyProcesses()) / 2;
     }
@@ -106,16 +106,66 @@ public class Ibft {
         return (int)Math.floor((_numProcesses-1)/3);
     }
 
-    public static boolean hasPreparedQuorum() {return _prepared.size() > getQuorumMinimumSize();}
+    public static boolean hasValidPreparedQuorum() {
+        return _prepared.size() > getQuorumMinimumSize() && verifyQuorumSignatures(_prepared, _prepared.size());
+    }
 
-    public static void addToPreparedQuorum(ConsensusInstanceMessage message) {_prepared.add(message);}
+    public static void addToPreparedQuorum(ConsensusInstanceMessage message) { 
+        if (!quorumContainsPID(_prepared, _pid)) {
+            _prepared.add(message);
+        } else {
+           System.out.println("ERROR: Multiple messages of PREAPRE of same instance from process: " + message.getSenderPID());
+        }    
+    }
+    
+    public static void addToCommitQuorum(ConsensusInstanceMessage message) {
+        if (!quorumContainsPID(_commited, _pid)) {
+            _commited.add(message);
+        } else {
+           System.out.println("ERROR: Multiple messages of PREAPRE of same instance from process: " + message.getSenderPID());
+        }    
+    }
 
-    public static void addToCommitQuorum(ConsensusInstanceMessage message) {_commited.add(message);}
+    public static boolean quorumContainsPID(List<ConsensusInstanceMessage> quorum, Integer pid) {
+        return getQuorumPIDs(quorum).contains(pid);
+    }
 
-    public static boolean hasCommitQuorum() {return _commited.size() > getQuorumMinimumSize();}
+    public static boolean hasValidCommitQuorum() {
+        return _commited.size() > getQuorumMinimumSize() && verifyQuorumSignatures(_commited, _commited.size());
+    }
 
-    public static List<Integer> getCommitQuorum() {
-        return _commited.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
+    public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum, int quorumSize) {
+        try {
+            List<ConsensusInstanceMessage> verifiedQuorum = quorum.stream().filter(msg -> {
+                try {
+                    return Crypto.verifySignature(
+                        MessageManager.getContentBytes(msg.getContent()),
+                        msg.getSignatureBytes(), 
+                        RSAKeyStoreById.getPublicKey(msg.getSenderPID()));
+
+                } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException | IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }).collect(Collectors.toList());
+
+            return verifiedQuorum.size() == quorumSize;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static List<Integer> getQuorumPIDs(List<ConsensusInstanceMessage> quorum) {
+        return quorum.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
+    }
+
+    public static List<ConsensusInstanceMessage> getCommitQuorum() {
+        return _commited;
+    }
+    public static List<ConsensusInstanceMessage> getPreparedQuorum() {
+        return _prepared;
     }
 
     public static void endInstance() {

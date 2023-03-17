@@ -8,10 +8,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.security.NoSuchAlgorithmException;
-
-
-import pt.tecnico.blockchain.Messages.*;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 import static pt.tecnico.blockchain.Path.BlockchainPaths.CLIENT_KEYDIR_PATH;
@@ -20,7 +16,6 @@ import static pt.tecnico.blockchain.Path.BlockchainPaths.MEMBER_KEYDIR_PATH;
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
 public class Client
 {
@@ -32,7 +27,6 @@ public class Client
     private static String hostname;
     private static boolean DEBUG = false;
     private static final String DEBUG_STRING = "-debug";
-    private static RSAKeyStoreById store;
     private static BlockchainConfig config;
 
 
@@ -94,16 +88,14 @@ public class Client
 
     private static void initializeLinks() throws UnknownHostException {
         AuthenticatedPerfectLink.setSource(hostname, port);
-        AuthenticatedPerfectLink.setKeyStore(store);
         AuthenticatedPerfectLink.setId(pid);
     }
     
     private static void initKeyStore() throws Exception {
-        store = new RSAKeyStoreById();
-        store.addPrivate(CLIENT_KEYDIR_PATH
+        RSAKeyStoreById.addPrivate(CLIENT_KEYDIR_PATH
                 .append(KeyFilename.getWithPrivExtension(TYPE, pid))
                 .getPath());
-        store.addPublics(MEMBER_KEYDIR_PATH.getPath());
+        RSAKeyStoreById.addPublics(MEMBER_KEYDIR_PATH.getPath());
     }
 
     private static void parseArgs(String[] args) {

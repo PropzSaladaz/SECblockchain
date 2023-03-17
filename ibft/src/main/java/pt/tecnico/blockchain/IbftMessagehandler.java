@@ -1,17 +1,23 @@
 package pt.tecnico.blockchain;
 
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.Messages.MessageManager;
+import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
+import java.util.stream.Collectors;
+
+
 class IbftMessagehandler {
     static ArrayList<Pair<String, Integer>> _memberHostNames;
     static DatagramSocket _socket;
-
+    static int _pid;
 
     public static void handleMessage(ConsensusInstanceMessage message) {
         switch (message.getMessageType()) {
@@ -32,47 +38,46 @@ class IbftMessagehandler {
     }
 
     public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
-        // TODO check if it is valid and is from the leader
-//        System.out.println("Handling PrePrePare" + "\n");
-//        System.out.println(message.getContent().toString(1));
-//        System.out.println(message.getMessageType());
-
-        //memberState.startTimer();
-        message.setMessageType(ConsensusInstanceMessage.PREPARE);
-//        System.out.println(message.getMessageType());
-        broadcastMessage(message);
+        System.out.println("Received Pre Prepare");
+        if (Ibft.leader(message.getConsensusInstance(), message.getRound()) == message.getSenderPID()) {
+            IbftTimer.start(message.getRound());
+            message.setMessageType(ConsensusInstanceMessage.PREPARE);
+            message.signMessage(RSAKeyStoreById.getPrivateKey(_pid), message);
+            broadcastMessage(message);
+        }
+        System.out.println("Received Pre Prepare from a fake leader with PID: " + message.getSenderPID());
     }
-
+    
     public static void handlePrepareRequest(ConsensusInstanceMessage message) {
-        // TODO check if it is valid
-//        System.out.println("Received Prepare" + "\n");
+        System.out.println("Received Prepare");
         Ibft.addToPreparedQuorum(message);
-        if (Ibft.hasPreparedQuorum()) {
+        if (Ibft.hasValidPreparedQuorum()) {
             System.out.println("Received Quorum Prepare" + "\n");
             Ibft.setPreparedRound(message.getRound());
             Ibft.setPreparedValue(message.getContent());
             message.setMessageType(ConsensusInstanceMessage.COMMIT);
+            message.signMessage(RSAKeyStoreById.getPrivateKey(_pid), message);
             broadcastMessage(message);
         }
     }
 
     public static void handleCommitRequest(ConsensusInstanceMessage message) {
-        // TODO check if it is valid
-//        System.out.println("Received Prepare" + "\n");
+        System.out.println("Received Prepare");
         Ibft.addToCommitQuorum(message);
         Content value = message.getContent();
-        if (Ibft.hasCommitQuorum()) {
+        if (Ibft.hasValidCommitQuorum()) {
             System.out.println("Received Quorum Commit" + "\n");
             IbftTimer.stop();
-            // add to blockchain
             if (Ibft.getApp().validateValue(value)){
-                Ibft.getApp().decide(value, Ibft.getCommitQuorum());
+                Ibft.getApp().decide(new DecideBlockMessage(
+                    Ibft.getConsensusInstance(), message.getContent(), Ibft.getCommitQuorum()
+                ));
                 Ibft.endInstance();
             }
         }
     }
-
-    public static void doPrePrepare(Content message) {
+    
+    public static void broadcastPrePrepare(Content message) {
         ConsensusInstanceMessage prepareMessage =
                 new ConsensusInstanceMessage(Ibft.getConsensusInstance()
                         ,Ibft.getRound(), Ibft.getPid(), message);
@@ -91,7 +96,8 @@ class IbftMessagehandler {
         }
     }
 
-    public static void init(DatagramSocket socket, ArrayList<Pair<String, Integer>> memberHostNames) {
+    public static void init(DatagramSocket socket, ArrayList<Pair<String, Integer>> memberHostNames, int pid) {
+        _pid = pid;
         _socket = socket;
         _memberHostNames = memberHostNames;
     }

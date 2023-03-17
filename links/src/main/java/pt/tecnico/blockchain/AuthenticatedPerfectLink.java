@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -12,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.util.Arrays;
-import java.util.Base64;
 
 
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
@@ -24,7 +22,6 @@ import pt.tecnico.blockchain.behavior.member.BehaviorController;
 public class AuthenticatedPerfectLink {
 
     private static String _source;
-    private static RSAKeyStoreById _store;
     private static int _id;
 
     public static byte[] digestAuth(Content content, String source, String dest) throws NoSuchAlgorithmException, IOException {
@@ -62,16 +59,8 @@ public class AuthenticatedPerfectLink {
         PerfectLink.setSource(address, port);
     }
 
-    public static void setKeyStore(RSAKeyStoreById store) {
-        _store = store;
-    }
-
     public static void setId(int id) {
         _id = id;
-    }
-
-    public static RSAKeyStoreById getStore() {
-        return _store;
     }
 
     public static int getId() {

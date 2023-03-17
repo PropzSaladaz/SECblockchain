@@ -4,6 +4,7 @@ import pt.tecnico.blockchain.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.PerfectLink;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -35,7 +36,7 @@ public class CorruptAPLBehavior {
             String dest = hostname + ":" + port;
             CorruptedMessage corrupted = new CorruptedMessage();
             byte[] encryptedMessage = AuthenticatedPerfectLink.authenticate(corrupted, dest,
-                    AuthenticatedPerfectLink.getStore().getPrivateKey(AuthenticatedPerfectLink.getId()));
+                    RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
             APLMessage message = new APLMessage(corrupted, AuthenticatedPerfectLink.getSource(),
                     AuthenticatedPerfectLink.getId());
 
@@ -55,7 +56,7 @@ public class CorruptAPLBehavior {
             try{
                 System.out.println("CORRUPTED: Waiting for APL messages...");
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
-                PublicKey pk = AuthenticatedPerfectLink.getStore().getPublicKey(message.getSenderPID());
+                PublicKey pk = RSAKeyStoreById.getPublicKey(message.getSenderPID());
                 System.out.println("CORRUPTED: returning message (without checking signature)");
                 return message.getContent();
             }catch(RuntimeException e){

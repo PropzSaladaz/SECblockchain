@@ -5,9 +5,8 @@ import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
-import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
-import pt.tecnico.blockchain.logger.Logger;
+import pt.tecnico.blockchain.Keys.logger.Logger;
 
 import java.io.IOException;
 import java.net.DatagramSocket;

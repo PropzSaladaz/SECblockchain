@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain.logger;
+package pt.tecnico.blockchain.Keys.logger;
 
 import java.time.LocalDateTime;
 
