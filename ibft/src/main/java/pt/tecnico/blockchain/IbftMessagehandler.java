@@ -2,13 +2,14 @@ package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.behavior.IbftBehaviorController;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-class IbftMessagehandler {
+public class IbftMessagehandler {
     static ArrayList<Pair<String, Integer>> _memberHostNames;
     static DatagramSocket _socket;
 
@@ -32,44 +33,15 @@ class IbftMessagehandler {
     }
 
     public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
-        // TODO check if it is valid and is from the leader
-//        System.out.println("Handling PrePrePare" + "\n");
-//        System.out.println(message.getContent().toString(1));
-//        System.out.println(message.getMessageType());
-
-        //memberState.startTimer();
-        message.setMessageType(ConsensusInstanceMessage.PREPARE);
-//        System.out.println(message.getMessageType());
-        broadcastMessage(message);
+        IbftBehaviorController.handlePrePrepareRequest(message);
     }
 
     public static void handlePrepareRequest(ConsensusInstanceMessage message) {
-        // TODO check if it is valid
-//        System.out.println("Received Prepare" + "\n");
-        Ibft.addToPreparedQuorum(message);
-        if (Ibft.hasPreparedQuorum()) {
-            System.out.println("Received Quorum Prepare" + "\n");
-            Ibft.setPreparedRound(message.getRound());
-            Ibft.setPreparedValue(message.getContent());
-            message.setMessageType(ConsensusInstanceMessage.COMMIT);
-            broadcastMessage(message);
-        }
+        IbftBehaviorController.handlePrepareRequest(message);
     }
 
     public static void handleCommitRequest(ConsensusInstanceMessage message) {
-        // TODO check if it is valid
-//        System.out.println("Received Prepare" + "\n");
-        Ibft.addToCommitQuorum(message);
-        Content value = message.getContent();
-        if (Ibft.hasCommitQuorum()) {
-            System.out.println("Received Quorum Commit" + "\n");
-            IbftTimer.stop();
-            // add to blockchain
-            if (Ibft.getApp().validateValue(value)){
-                Ibft.getApp().decide(value, Ibft.getCommitQuorum());
-                Ibft.endInstance();
-            }
-        }
+        IbftBehaviorController.handleCommitRequest(message);
     }
 
     public static void doPrePrepare(Content message) {

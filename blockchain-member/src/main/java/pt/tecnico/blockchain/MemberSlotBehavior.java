@@ -2,7 +2,10 @@ package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
-import pt.tecnico.blockchain.behavior.member.BehaviorController;
+import pt.tecnico.blockchain.behavior.IbftBehaviorController;
+import pt.tecnico.blockchain.behavior.correct.IbftCorrect;
+import pt.tecnico.blockchain.behavior.corrupt.IbftCorrupt;
+import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
 import pt.tecnico.blockchain.behavior.member.states.correct.CorrectState;
 import pt.tecnico.blockchain.behavior.member.states.corrupt.ArbitraryState;
 import pt.tecnico.blockchain.behavior.member.states.ommit.OmissionState;
@@ -29,18 +32,22 @@ public class MemberSlotBehavior {
             if (behavior != null) {
                 switch(behavior.getFirst()) {
                     case OMIT_MESSAGES:
-                        BehaviorController.changeState(new OmissionState());
+                        LinkBehaviorController.changeState(new OmissionState());
                         break;
                     case CORRUPT_MESSAGES:
-                        BehaviorController.changeState(new ArbitraryState());
+                        LinkBehaviorController.changeState(new ArbitraryState());
+                        IbftBehaviorController.changeState(new IbftCorrupt());
                         break;
                     case AUTHENTICATE_AS:
-                        BehaviorController.changeState(new SignAsState(behavior.getSecond()));
+                        LinkBehaviorController.changeState(new SignAsState(behavior.getSecond()));
                         break;
                     default:
                         break;
                 }
-            } else BehaviorController.changeState(new CorrectState()); // No commands for current slot
+            } else {
+                LinkBehaviorController.changeState(new CorrectState()); // No commands for current slot
+                IbftBehaviorController.changeState(new IbftCorrect());
+            }
             slot++;
         }, slotDuration);
         task.start();

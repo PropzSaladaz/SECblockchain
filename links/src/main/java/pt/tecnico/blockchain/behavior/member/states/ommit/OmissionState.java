@@ -1,16 +1,14 @@
 package pt.tecnico.blockchain.behavior.member.states.ommit;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.behavior.member.states.correct.Behavior;
-import pt.tecnico.blockchain.behavior.member.states.correct.DefaultAPLBehavior;
-import pt.tecnico.blockchain.behavior.member.states.correct.DefaultFLLBehavior;
+import pt.tecnico.blockchain.behavior.member.states.correct.LinkBehavior;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.security.NoSuchAlgorithmException;
 
-public class OmissionState extends Behavior {
+public class OmissionState extends LinkBehavior {
 
     public static final String TYPE = "Omit";
 
@@ -21,7 +19,6 @@ public class OmissionState extends Behavior {
 
     @Override
     public void APLsend(DatagramSocket socket, Content content, String hostname, int port) {
-        System.out.println("Omission behavior APL send called!");
         OmissionAPLBehavior.send(socket, content, hostname, port);
     }
 

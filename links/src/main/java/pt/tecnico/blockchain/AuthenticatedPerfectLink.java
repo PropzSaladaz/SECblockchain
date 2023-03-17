@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -12,13 +11,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.util.Arrays;
-import java.util.Base64;
 
 
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.behavior.member.BehaviorController;
+import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
 
 
 public class AuthenticatedPerfectLink {
@@ -50,11 +48,11 @@ public class AuthenticatedPerfectLink {
     }
 
     public static void send(DatagramSocket socket, Content content, String hostname, int port) throws IOException, NoSuchAlgorithmException {
-        BehaviorController.APLsend(socket, content, hostname, port);
+        LinkBehaviorController.APLsend(socket, content, hostname, port);
     }
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
-        return BehaviorController.APLdeliver(socket);
+        return LinkBehaviorController.APLdeliver(socket);
     }
 
     public static void setSource(String address, int port) throws UnknownHostException {

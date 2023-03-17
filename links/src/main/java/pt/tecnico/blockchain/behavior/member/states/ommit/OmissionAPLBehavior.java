@@ -2,7 +2,7 @@ package pt.tecnico.blockchain.behavior.member.states.ommit;
 
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.behavior.member.BehaviorController;
+import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -21,12 +21,15 @@ public class OmissionAPLBehavior {
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
             NoSuchAlgorithmException {
-//        System.out.println("I will enter omission infinite loop");
-//        while(BehaviorController.getBehaviorType().equals(OmissionState.TYPE)){
-//            // Do nothing while on omission state
-//            // TODO thread gets stuck here even after behavior changed
-//        }
-//        System.out.println("left omission state");
+        while(LinkBehaviorController.getBehaviorType().equals(OmissionState.TYPE)){
+            // Do nothing while on omission state
+            try { // When added some delay it gets out of the loop
+                Thread.sleep(10);
+            } catch(InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
         return null;
     }
 }

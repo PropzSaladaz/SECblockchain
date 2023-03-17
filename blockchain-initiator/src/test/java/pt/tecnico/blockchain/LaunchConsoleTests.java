@@ -40,7 +40,7 @@ public class LaunchConsoleTests
     public void launchMavenConsole() throws IOException {
         // Should open a console and execute a blockchain-member java program passing the following 2 arguments
         String memberPath = rootModule.getParent().append("blockchain-member").getPath();
-        String configPath = rootModule.append("config.in").getPath();
+        String configPath = rootModule.append("omit-messages.in").getPath();
         String processId = "2";
         Console console = new MavenConsole(processId, configPath, "-debug");
         console.setDirectory(memberPath);

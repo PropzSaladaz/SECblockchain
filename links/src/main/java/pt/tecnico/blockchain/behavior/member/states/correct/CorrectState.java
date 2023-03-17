@@ -1,8 +1,6 @@
 package pt.tecnico.blockchain.behavior.member.states.correct;
 
-import pt.tecnico.blockchain.behavior.member.states.correct.Behavior;
-
-public class CorrectState extends Behavior {
+public class CorrectState extends LinkBehavior {
 
     @Override
     public String TYPE() {

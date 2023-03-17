@@ -18,13 +18,13 @@ public class RunClient {
     public static void run(DatagramSocket socket,int pid,BlockchainConfig config){
         int slotDuration = config.getSlotDuration();
         Thread worker = new Thread(() -> {
-            try {
-                while (true){
+            while (true){
+                try {
                     ApplicationMessage message = (ApplicationMessage) AuthenticatedPerfectLink.deliver(socket);
                     ClientServiceImpl.handleRequest(message);
+                } catch (ClassCastException | IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
+                    System.out.println("Received a corrupted message, ignoring...");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         });
 

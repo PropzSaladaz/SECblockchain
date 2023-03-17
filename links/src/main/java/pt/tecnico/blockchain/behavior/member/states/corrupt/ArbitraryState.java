@@ -1,8 +1,7 @@
 package pt.tecnico.blockchain.behavior.member.states.corrupt;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.behavior.member.states.correct.Behavior;
-import pt.tecnico.blockchain.behavior.member.states.corrupt.CorruptAPLBehavior;
+import pt.tecnico.blockchain.behavior.member.states.correct.LinkBehavior;
 import pt.tecnico.blockchain.behavior.member.states.correct.DefaultAPLBehavior;
 import pt.tecnico.blockchain.behavior.member.states.correct.DefaultFLLBehavior;
 
@@ -14,8 +13,8 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Act arbitrary in several layers to corrupt messages
  */
-public class ArbitraryState extends Behavior {
-    private double prob = 0.6;
+public class ArbitraryState extends LinkBehavior {
+    private double prob = 1;
 
     private boolean actArbitrary() {
         return Math.random() < prob;
