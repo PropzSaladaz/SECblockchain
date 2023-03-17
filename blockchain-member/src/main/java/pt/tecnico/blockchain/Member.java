@@ -35,7 +35,6 @@ public class Member
             config = new BlockchainConfig();
             config.setFromAbsolutePath(args[1]);
             setHostnameFromConfig();
-
             if (DEBUG) printInfo();
 
             initKeyStore();
@@ -45,6 +44,9 @@ public class Member
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             MemberBlockchainAPI chain = new MemberBlockchainAPI(socket, config.getClientHostnames());
             Ibft.init(socket, id, config.getMemberHostnames(), chain);
+
+            Thread.sleep(config.timeUntilStart());
+
             RunMember.run(socket, config.getSlotDuration());
             behavior.track();
 

@@ -10,7 +10,7 @@ import pt.tecnico.blockchain.Messages.links.PLMessage;
 import pt.tecnico.blockchain.behavior.member.BehaviorController;
 
 public class PerfectLink {
-    public static final int RESEND_MESSAGE_TIMEOUT = 3000;
+    public static final int RESEND_MESSAGE_TIMEOUT = 5000;
 
     private static final ConcurrentHashMap<UUID, PLMessage> _ackMessages = new ConcurrentHashMap<>();
     private static InetAddress _address;

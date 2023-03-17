@@ -15,7 +15,7 @@ public class BehaviorController {
 
     public static void changeState(Behavior state) {
         behavior = state;
-        System.out.println("BEHAVIOR: changed state to " + state.TYPE());
+        System.out.println("BEHAVIOR: changed state to " + behavior.TYPE());
     }
 
     public static String getBehaviorType() {
@@ -23,7 +23,6 @@ public class BehaviorController {
     }
 
     public static void APLsend(DatagramSocket socket, Content content, String hostname, int port) {
-        System.out.println("Call APLSend behavior");
         behavior.APLsend(socket, content, hostname, port);
     }
 

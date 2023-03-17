@@ -21,9 +21,12 @@ public class OmissionAPLBehavior {
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
             NoSuchAlgorithmException {
-        while(BehaviorController.getBehaviorType().equals(OmissionState.TYPE)){
-            // Do nothing while on omission state
-        }
+//        System.out.println("I will enter omission infinite loop");
+//        while(BehaviorController.getBehaviorType().equals(OmissionState.TYPE)){
+//            // Do nothing while on omission state
+//            // TODO thread gets stuck here even after behavior changed
+//        }
+//        System.out.println("left omission state");
         return null;
     }
 }

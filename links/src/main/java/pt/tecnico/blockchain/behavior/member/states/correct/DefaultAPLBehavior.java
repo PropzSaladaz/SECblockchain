@@ -24,7 +24,6 @@ public class DefaultAPLBehavior {
 
             message.setSignature(encryptedMessage);
 
-            System.out.println("Sending APL");
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
@@ -36,7 +35,6 @@ public class DefaultAPLBehavior {
             NoSuchAlgorithmException {
         while(true){
             try{
-                System.out.println("Waiting for PL messages...");
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                 PublicKey pk = AuthenticatedPerfectLink.getStore().getPublicKey(message.getSenderPID());
                 if (pk != null && AuthenticatedPerfectLink.verifyAuth(message, pk)) {

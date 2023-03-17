@@ -21,6 +21,8 @@ public class Ibft {
     private static Content _value;
     private static List<ConsensusInstanceMessage> _prepared = new ArrayList<>();
     private static List<ConsensusInstanceMessage> _commited = new ArrayList<>();
+    private static List<Content> _messageQueue = new ArrayList<>();
+    private static boolean _decidingInstance;
 
 
     public static void init(DatagramSocket socket, int id, ArrayList<Pair<String, Integer>> members, Application app){
@@ -39,11 +41,24 @@ public class Ibft {
         //   a process as long as it allows f+1 processes to eventually assume the leader role.
         return 1 == _pid;
     }
-     public static boolean checkLeader() {
+    public static boolean checkLeader() {
         return _pid == 1;
     }
 
+
+
     public static void start(Content value) {
+        if (tryDecideNewInstance()) {
+            System.out.println("IBFT: free to start");
+            startNewInstance(value);
+        } else { // Instance already active
+            System.out.println("IBFT: Busy now, put in queue");
+            addToQueue(value);
+        }
+    }
+
+    private static void startNewInstance(Content value) {
+        System.out.println("IBFT: Starting new instance");
         _consensusInstance = _app.getNextInstanceNumber();
         _round = 1;
         _preparedRound = -1;
@@ -55,6 +70,22 @@ public class Ibft {
 
         }
         IbftTimer.start(_round);
+    }
+
+    public static synchronized boolean tryDecideNewInstance() {
+        if (!_decidingInstance) {
+            _decidingInstance = true;
+            return true;
+        }
+        return false;
+    }
+
+    public static synchronized boolean hasMessageInQueue() {
+        return _messageQueue.size() > 0;
+    }
+
+    public static synchronized void addToQueue(Content value) {
+        _messageQueue.add(value);
     }
 
     public static int getPid() {
@@ -121,5 +152,11 @@ public class Ibft {
     public static void endInstance() {
         _prepared.clear();
         _commited.clear();
+        if (hasMessageInQueue()) {
+            System.out.println("IBFT: fetching from queue to start a new instance");
+            Ibft.startNewInstance(_messageQueue.remove(_messageQueue.size() - 1));
+        } else {
+            _decidingInstance = false;
+        }
     }
 }

@@ -15,7 +15,7 @@ public class IbftTimer {
             public void run() {
                 System.out.println("Round Timer Expired: Triggering <ROUND-CHANGE>");
             }
-        }, (long)Math.exp(round));
+        }, (long)Math.exp(round) * 1000);
     }
 
     public static void stop() {

@@ -54,8 +54,10 @@ public class Client
             initializeLinks();
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-
             ClientFrontend.setFrontEnd(socket,config.getMemberHostnames());
+
+            Thread.sleep(config.timeUntilStart());
+
             RunClient.run(socket,pid,config);
 
 

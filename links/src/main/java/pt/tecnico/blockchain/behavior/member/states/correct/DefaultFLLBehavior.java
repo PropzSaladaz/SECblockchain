@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.behavior.member.states.correct;
 
+import pt.tecnico.blockchain.Keys.logger.Logger;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Messages.links.FLLMessage;
@@ -14,7 +15,7 @@ public class DefaultFLLBehavior {
     public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) {
         try {
             FLLMessage message = new FLLMessage(content);
-            System.out.println("Sending FLL message: \n" + message.toString());
+            Logger.logWithTime("\n\033[36m\033[1mSending message: \033[0m\n" + message.toString());
             socket.send(MessageManager.createPacket(message, hostname, port));
         }catch (IOException e) {
             e.printStackTrace();
@@ -22,12 +23,11 @@ public class DefaultFLLBehavior {
     }
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException {
-        System.out.println("Waiting for FLL messages...");
         byte[] buffer = new byte[2048];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         FLLMessage message = MessageManager.createMessage(packet.getData());
-        System.out.println("FLL message received: \n" + message.toString());
+        Logger.logWithTime("\n\033[32m\033[1mMessage received: \033[0m\n" + message.toString());
         return message.getContent();
     }
 }
