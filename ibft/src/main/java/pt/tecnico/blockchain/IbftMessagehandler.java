@@ -38,6 +38,13 @@ class IbftMessagehandler {
 //        System.out.println(message.getMessageType());
 
         //memberState.startTimer();
+        try{
+            if(!Ibft.getConfig().getMemberIds().contains(message.getSenderPID())){
+                throw new NotClientAppendException();
+            }
+        }catch(NotClientAppendException e){
+            e.printError();
+        }
         message.setMessageType(ConsensusInstanceMessage.PREPARE);
 //        System.out.println(message.getMessageType());
         broadcastMessage(message);

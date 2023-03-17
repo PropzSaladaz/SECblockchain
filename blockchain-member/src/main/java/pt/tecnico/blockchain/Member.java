@@ -43,7 +43,7 @@ public class Member
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             MemberBlockchainAPI chain = new MemberBlockchainAPI(socket, config.getClientHostnames());
-            Ibft.init(socket, id, config.getMemberHostnames(), chain);
+            Ibft.init(socket, id, config.getMemberHostnames(), chain,config);
             RunMember.run(socket);
 
         } catch (IOException e) {

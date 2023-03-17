@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain;
 
+import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
@@ -19,12 +20,14 @@ public class Ibft {
     private static int _preparedRound;
     private static Content _preparedValue;
     private static Content _value;
+    private static BlockchainConfig _config;
     private static List<ConsensusInstanceMessage> _prepared = new ArrayList<>();
     private static List<ConsensusInstanceMessage> _commited = new ArrayList<>();
 
 
-    public static void init(DatagramSocket socket, int id, ArrayList<Pair<String, Integer>> members, Application app){
+    public static void init(DatagramSocket socket, int id, ArrayList<Pair<String, Integer>> members, Application app,BlockchainConfig config){
         _pid = id;
+        _config = config;
         _numProcesses = members.size();
         _app = app;
         IbftMessagehandler.init(socket, members);
@@ -60,6 +63,11 @@ public class Ibft {
     public static int getPid() {
         return _pid;
     }
+
+    public static BlockchainConfig getConfig() {
+        return _config;
+    }
+
 
     public static int getConsensusInstance() {
         return _consensusInstance;
