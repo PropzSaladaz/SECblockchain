@@ -28,14 +28,15 @@ public class DefaultPLBehavior {
 
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException{
-        while(true){
             PLMessage message = (PLMessage) FairLossLink.deliver(socket);
             if (message.isAck()) {
                 PerfectLink.putACK(message.getUUID(),message);
-            }else if (!PerfectLink.hasAckArrived(message.getUUID())) {
+            }
+            else if (!PerfectLink.hasAckArrived(message.getUUID())) {
                 PerfectLink.sendAck(socket, message);
+                System.out.println("DELIVERING " + message.getContent());
                 return message.getContent();
             }
-        }
+            return null;
     }
 }

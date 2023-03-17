@@ -16,10 +16,11 @@ public class DefaultIbftBehavior {
         System.out.println("Received Pre Prepare");
         if (Ibft.leader(message.getConsensusInstance(), message.getRound()) == message.getSenderPID()) {
             IbftTimer.start(message.getRound());
-            message.setMessageType(ConsensusInstanceMessage.PREPARE);
-            message.setSenderPID(Ibft.getPid());
-            message.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
-            broadcastMessage(message);
+            ConsensusInstanceMessage msg = new ConsensusInstanceMessage(message.getConsensusInstance(),
+                    message.getRound(), Ibft.getPid(), message.getContent());
+            msg.setMessageType(ConsensusInstanceMessage.PREPARE);
+            msg.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
+            if (message.getConsensusInstance() == Ibft.getConsensusInstance()) broadcastMessage(msg);
         }
         System.out.println("Received Pre Prepare from a fake leader with PID: " + message.getSenderPID());
     }
@@ -31,10 +32,11 @@ public class DefaultIbftBehavior {
             System.out.println("Received Quorum Prepare" + "\n");
             Ibft.setPreparedRound(message.getRound());
             Ibft.setPreparedValue(message.getContent());
-            message.setMessageType(ConsensusInstanceMessage.COMMIT);
-            message.setSenderPID(Ibft.getPid());
-            message.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
-            broadcastMessage(message);
+            ConsensusInstanceMessage msg = new ConsensusInstanceMessage(message.getConsensusInstance(),
+                    message.getRound(), Ibft.getPid(), message.getContent());
+            msg.setMessageType(ConsensusInstanceMessage.COMMIT);
+            msg.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
+            broadcastMessage(msg);
         }
     }
 

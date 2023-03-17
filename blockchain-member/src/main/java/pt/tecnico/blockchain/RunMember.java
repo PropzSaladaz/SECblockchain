@@ -15,7 +15,7 @@ public class RunMember {
             try {
                 while (true) {
                     Content message =  AuthenticatedPerfectLink.deliver(socket);
-                    MemberServicesImpl.handleRequest(message);
+                    if (message != null) MemberServicesImpl.handleRequest(message);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

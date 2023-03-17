@@ -66,7 +66,6 @@ public class Ibft {
             System.out.println("IM THE LEADER \n");
             _app.prepareValue(value);
             IbftMessagehandler.broadcastPrePrepare(value);
-
         }
         IbftTimer.start(_round);
     }
@@ -136,22 +135,29 @@ public class Ibft {
     }
 
     public static boolean hasValidPreparedQuorum() {
-        return _prepared.size() > getQuorumMinimumSize() && verifyQuorumSignatures(_prepared, _prepared.size());
+        System.out.println("Size: " + _prepared.size());
+        System.out.println("Quorum size: " + (int)(getQuorumMinimumSize() + 1));
+        return (_prepared.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_prepared, _prepared.size());
     }
 
-    public static void addToPreparedQuorum(ConsensusInstanceMessage message) { 
-        if (!quorumContainsPID(_prepared, _pid)) {
+    public static synchronized void addToPreparedQuorum(ConsensusInstanceMessage message) {
+        System.out.println("mesagePID: " + message.getSenderPID());
+        System.out.println("PreparedQuorum: " + _prepared);
+        if (!quorumContainsPID(_prepared, message.getSenderPID()) && message.getConsensusInstance() == _consensusInstance) {
             _prepared.add(message);
         } else {
-           System.out.println("ERROR: Multiple messages of PREAPRE of same instance from process: " + message.getSenderPID());
+           System.out.println("ERROR: Multiple messages of PREPARE of same instance from process: " + message.getSenderPID());
         }    
     }
     
-    public static void addToCommitQuorum(ConsensusInstanceMessage message) {
-        if (!quorumContainsPID(_commited, _pid)) {
+    public static synchronized void addToCommitQuorum(ConsensusInstanceMessage message) {
+        if (!quorumContainsPID(_commited, message.getSenderPID()) && message.getConsensusInstance() == _consensusInstance) {
+            System.out.println("Adding to commited " + message);
+            System.out.println("Current instance state: " + _decidingInstance);
+            System.out.println("Instance: " + _consensusInstance);
             _commited.add(message);
         } else {
-           System.out.println("ERROR: Multiple messages of PREAPRE of same instance from process: " + message.getSenderPID());
+           System.out.println("ERROR: Multiple messages of COMMIT of same instance from process: " + message.getSenderPID());
         }    
     }
 
@@ -160,7 +166,7 @@ public class Ibft {
     }
 
     public static boolean hasValidCommitQuorum() {
-        return _commited.size() > getQuorumMinimumSize() && verifyQuorumSignatures(_commited, _commited.size());
+        return ( _commited.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_commited, _commited.size());
     }
 
     public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum, int quorumSize) {
@@ -207,7 +213,7 @@ public class Ibft {
         return new ArrayList<ConsensusInstanceMessage>(_prepared);
     }
 
-    public static void endInstance() {
+    public static synchronized void endInstance() {
         _prepared.clear();
         _commited.clear();
         if (hasMessageInQueue()) {
