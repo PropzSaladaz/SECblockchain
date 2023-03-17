@@ -130,7 +130,7 @@ public class Ibft {
 
     //Quorum Management
     public static int getQuorumMinimumSize() {
-        return (_numProcesses + getMaxNumberOfFaultyProcesses()) / 2;
+        return (int)Math.floor(_numProcesses + getMaxNumberOfFaultyProcesses()) / 2;
     }
 
     public static int getMaxNumberOfFaultyProcesses() {

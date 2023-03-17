@@ -1,19 +1,18 @@
 package pt.tecnico.blockchain.behavior.member;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.behavior.member.states.correct.Behavior;
+import pt.tecnico.blockchain.behavior.member.states.correct.LinkBehavior;
 import pt.tecnico.blockchain.behavior.member.states.correct.CorrectState;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 
-public class BehaviorController {
-    private static Behavior behavior = new CorrectState();
+public class LinkBehaviorController {
+    private static LinkBehavior behavior = new CorrectState();
 
-    public static void changeState(Behavior state) {
+    public static void changeState(LinkBehavior state) {
         behavior = state;
         System.out.println("BEHAVIOR: changed state to " + behavior.TYPE());
     }

@@ -31,11 +31,13 @@ public class Blockchain implements Application {
 
     public void printBlockchain() {
         Block b = _lastBlock;
-        System.out.println("New block appended: ");
+        System.out.println("\n\033[31m\033[1mNew block appended: ");
+        System.out.println("Sending message: \n");
         while (b != null) {
             System.out.print(b.toString());
             b = b.getPreviousBlock();
         }
+        System.out.println("\033[0m");
     }
 
     @Override

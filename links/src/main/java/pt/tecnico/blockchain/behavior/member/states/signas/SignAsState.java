@@ -1,11 +1,11 @@
 package pt.tecnico.blockchain.behavior.member.states.signas;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.behavior.member.states.correct.Behavior;
+import pt.tecnico.blockchain.behavior.member.states.correct.LinkBehavior;
 
 import java.net.DatagramSocket;
 
-public class SignAsState extends Behavior {
+public class SignAsState extends LinkBehavior {
     private int signAs;
 
     public SignAsState(int id) {

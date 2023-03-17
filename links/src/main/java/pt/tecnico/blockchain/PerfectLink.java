@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import pt.tecnico.blockchain.Messages.*;
 import pt.tecnico.blockchain.Messages.links.PLMessage;
-import pt.tecnico.blockchain.behavior.member.BehaviorController;
+import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
 
 public class PerfectLink {
     public static final int RESEND_MESSAGE_TIMEOUT = 5000;
@@ -17,11 +17,11 @@ public class PerfectLink {
     private static int _port;
 
     public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) {
-        BehaviorController.PLsend(socket, content, hostname, port);
+        LinkBehaviorController.PLsend(socket, content, hostname, port);
     }
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException{
-        return BehaviorController.PLdeliver(socket);
+        return LinkBehaviorController.PLdeliver(socket);
     }
 
 
