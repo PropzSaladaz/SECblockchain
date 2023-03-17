@@ -13,12 +13,10 @@ import java.util.regex.Matcher;
 
 public class RSAKeyStoreById {
 
-    private static Map<Integer, PrivateKey> privateKeys;
-    private static Map<Integer, PublicKey> publicKeys;
+    private static Map<Integer, PrivateKey> privateKeys = new HashMap<>();
+    private static Map<Integer, PublicKey> publicKeys = new HashMap<>();
 
     public RSAKeyStoreById() {
-        privateKeys = new HashMap<>();
-        publicKeys = new HashMap<>();
     }
 
     public static PublicKey getPublicKey(int id) {

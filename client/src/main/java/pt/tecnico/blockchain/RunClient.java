@@ -15,7 +15,7 @@ import java.security.NoSuchAlgorithmException;
 public class RunClient {
     private static int slot = 0;
 
-    public static void run(DatagramSocket socket,int pid,BlockchainConfig config){
+    public static void run(DatagramSocket socket,int pid, BlockchainConfig config){
         int slotDuration = config.getSlotDuration();
         Thread worker = new Thread(() -> {
             while (true){
@@ -32,7 +32,9 @@ public class RunClient {
             Pair<String, Integer> hostname = config.getMemberHostname(pid);
             if(request != null){
                 String message = request.getFirst();
-                Content appendMessage = new AppendBlockMessage(new BlockchainMessage(message,hostname.getFirst(), hostname.getSecond()));
+                Content appendMessage = new AppendBlockMessage(
+                    new BlockchainMessage(message, hostname.getFirst(), hostname.getSecond())
+                );
                 try {
                     Logger.logWithTime("Sending Block " + message + "\n");
                     ClientFrontend.broadcastClientRequests(appendMessage);

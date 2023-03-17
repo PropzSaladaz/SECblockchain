@@ -52,7 +52,7 @@ public class Client
 
             Thread.sleep(config.timeUntilStart());
 
-            RunClient.run(socket,pid,config);
+            RunClient.run(socket, pid, config);
 
 
 
