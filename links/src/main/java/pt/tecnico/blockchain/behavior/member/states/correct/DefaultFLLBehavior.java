@@ -23,7 +23,7 @@ public class DefaultFLLBehavior {
     }
 
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException {
-        byte[] buffer = new byte[2048];
+        byte[] buffer = new byte[16284];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         FLLMessage message = MessageManager.createMessage(packet.getData());

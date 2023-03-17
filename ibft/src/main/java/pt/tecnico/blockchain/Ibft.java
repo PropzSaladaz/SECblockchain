@@ -201,10 +201,10 @@ public class Ibft {
     }
 
     public static List<ConsensusInstanceMessage> getCommitQuorum() {
-        return _commited;
+        return new ArrayList<ConsensusInstanceMessage>(_commited);
     }
     public static List<ConsensusInstanceMessage> getPreparedQuorum() {
-        return _prepared;
+        return new ArrayList<ConsensusInstanceMessage>(_prepared);
     }
 
     public static void endInstance() {

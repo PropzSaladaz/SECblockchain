@@ -12,6 +12,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.List;
 
+import pt.tecnico.blockchain.Messages.Content;
+
 public class ClientServiceImpl {
 
     public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum) 
@@ -28,8 +30,9 @@ public class ClientServiceImpl {
         return true;
     }
 
-    public static void handleRequest(ApplicationMessage message) {
-        switch (message.getApplicationMessageType()) {
+    public static void handleRequest(Content message) {
+        ApplicationMessage msg = (ApplicationMessage) message;
+        switch (msg.getApplicationMessageType()) {
             case ApplicationMessage.DECIDE_BLOCK_MESSAGE:
                 try{
                     DecideBlockMessage decidedBlock = (DecideBlockMessage) message;

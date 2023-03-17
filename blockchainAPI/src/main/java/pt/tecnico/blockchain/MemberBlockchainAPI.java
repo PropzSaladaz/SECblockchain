@@ -41,9 +41,10 @@ public class MemberBlockchainAPI implements Application {
 
     public void broadcastToClient(Content message) {
         try {
+            System.out.println("Broadcasting decide block message to client");
             DecideBlockMessage decideMsg = (DecideBlockMessage) message;
             BlockchainMessage blockMessage = (BlockchainMessage) decideMsg.getContent();
-            AuthenticatedPerfectLink.send(_socket, decideMsg, blockMessage.getAddress(), blockMessage.getPort());
+            AuthenticatedPerfectLink.send(_socket, message, blockMessage.getAddress(), blockMessage.getPort());
 
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();

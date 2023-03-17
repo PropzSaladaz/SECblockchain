@@ -20,8 +20,7 @@ public class RunClient {
         Thread worker = new Thread(() -> {
             while (true){
                 try {
-                    ApplicationMessage message = (ApplicationMessage) AuthenticatedPerfectLink.deliver(socket);
-                    ClientServiceImpl.handleRequest(message);
+                    ClientServiceImpl.handleRequest(AuthenticatedPerfectLink.deliver(socket));
                 } catch (ClassCastException | IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
                     System.out.println("Received a corrupted message, ignoring...");
                 }

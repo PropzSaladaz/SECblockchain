@@ -54,6 +54,10 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
         return _senderPID;
     }
 
+    public void setSenderPID(int value) {
+        _senderPID = value;
+    }
+
     public void signMessage(PrivateKey key, Content content) {
         try {
             _signature = Crypto.getSignature(MessageManager.getContentBytes(content), key);
@@ -67,8 +71,14 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     }
 
     @Override
+    public String toString(){
+       return toString(0);
+   }
+
+    @Override
     public String toString(int level) {
         return toStringWithTabs("ConsensusInstanceMessage: {", level) +
+                toStringWithTabs("signature: " + _signature, level+1) +
                 toStringWithTabs("messageType: " + _messageType, level+1) +
                 toStringWithTabs("consensusInstance: " + _consensusInstance, level+1) +
                 toStringWithTabs("roundNumber: " + _roundNumber, level+1) +
