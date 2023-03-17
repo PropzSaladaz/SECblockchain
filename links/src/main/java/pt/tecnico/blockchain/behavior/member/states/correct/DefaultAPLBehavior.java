@@ -19,7 +19,7 @@ public class DefaultAPLBehavior {
     public static void send(DatagramSocket socket, Content content, String hostname, int port) {
 
         try {
-
+            System.out.println("here i am");
             String dest = hostname + ":" + port;
             byte[] encryptedMessage = AuthenticatedPerfectLink.authenticate(content, dest,
                     RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
@@ -29,6 +29,7 @@ public class DefaultAPLBehavior {
             message.setSignature(encryptedMessage);
 
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
+            System.out.println("T");
 
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
@@ -41,13 +42,12 @@ public class DefaultAPLBehavior {
             try{
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                 PublicKey pk = RSAKeyStoreById.getPublicKey(message.getSenderPID());
-                if (pk != null && 
-                    Crypto.verifySignature(MessageManager.getContentBytes(message.getContent()), message.getSignatureBytes(), pk)) {
+                if (pk != null && AuthenticatedPerfectLink.verifyAuth(message, pk)) {
                     return message.getContent();
                 }
                 System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
             } catch(Exception e){
-                System.out.println(e.getMessage());
+                e.printStackTrace();
             }
         }
     }

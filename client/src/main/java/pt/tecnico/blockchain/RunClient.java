@@ -29,7 +29,7 @@ public class RunClient {
         });
         ScheduledTask sendertask = new ScheduledTask(() -> {
             Pair<String, Integer> request = config.getRequestInSlotForProcess(slot, pid);
-            Pair<String, Integer> hostname = config.getMemberHostname(pid);
+            Pair<String, Integer> hostname = config.getClientHostname(pid);
             if(request != null){
                 String message = request.getFirst();
                 Content appendMessage = new AppendBlockMessage(
