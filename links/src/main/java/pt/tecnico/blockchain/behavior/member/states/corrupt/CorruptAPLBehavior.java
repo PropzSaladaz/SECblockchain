@@ -36,20 +36,20 @@ public class CorruptAPLBehavior {
     public static void send(DatagramSocket socket, Content content, String hostname, int port) {
 
         try {
+            String dest = hostname + ":" + port;
             CorruptedMessage corrupted = new CorruptedMessage();
+            byte[] encryptedMessage = AuthenticatedPerfectLink.authenticate(corrupted, dest,
+                    RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
+                    
             APLMessage message = new APLMessage(corrupted, AuthenticatedPerfectLink.getSource(),
-                AuthenticatedPerfectLink.getId(), hostname + ":" + port);
+                    AuthenticatedPerfectLink.getId());
 
-            message.setSignature(Crypto.getSignature(MessageManager.getContentBytes(content), 
-                RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId())));
+            message.setSignature(encryptedMessage);
 
             System.out.println("CORRUPTED: Sending Corrupted APL message");
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
 
         } catch (NoSuchAlgorithmException | IOException e) {
-            e.printStackTrace();
-
-        } catch (InvalidKeyException | SignatureException e) {
             e.printStackTrace();
         }
 
@@ -57,7 +57,7 @@ public class CorruptAPLBehavior {
     }
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
             NoSuchAlgorithmException {
-                
+
         while(true){
             try {
                 System.out.println("CORRUPTED: Waiting for APL messages...");

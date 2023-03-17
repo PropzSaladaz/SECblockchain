@@ -7,17 +7,14 @@ import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 
 public class MemberBlockchainAPI implements Application {
     private Blockchain chain;
-    private ArrayList<Pair<String, Integer>> _clientHostNames;
     private DatagramSocket _socket;
 
-    public MemberBlockchainAPI(DatagramSocket socket, ArrayList<Pair<String, Integer>> clients) {
+    public MemberBlockchainAPI(DatagramSocket socket) {
         chain = new Blockchain();
         _socket = socket;
-        _clientHostNames = clients;
     }
 
     @Override

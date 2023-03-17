@@ -102,6 +102,16 @@ public class Crypto {
         return DatatypeConverter.printHexBinary(hash);
     }
 
+    public static byte[] getSignature(byte[] contentBytes, PrivateKey privateKey, String source, String dest) 
+            throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(contentBytes);
+        signature.update(source.getBytes());
+        signature.update(dest.getBytes());
+        return signature.sign();
+    }
+
     public static byte[] getSignature(byte[] contentBytes, PrivateKey privateKey) 
             throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         Signature signature = Signature.getInstance("SHA256withRSA");

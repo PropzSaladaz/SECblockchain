@@ -11,12 +11,13 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ClientServiceImpl {
 
-    public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum) throws IOException, SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-        for(ConsensusInstanceMessage consensusMessage: quorum){
+    public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum) 
+        throws IOException, SignatureException, NoSuchAlgorithmException, InvalidKeyException {
+
+        for (ConsensusInstanceMessage consensusMessage: quorum){
            if (!Crypto.verifySignature(
                     MessageManager.getContentBytes(consensusMessage.getContent()),
                     consensusMessage.getSignatureBytes(),
