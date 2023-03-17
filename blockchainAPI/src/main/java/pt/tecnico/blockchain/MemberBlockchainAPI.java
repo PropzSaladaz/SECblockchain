@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class MemberBlockchainAPI implements Application {
     public void decide(Content message) {
         DecideBlockMessage decideMsg = (DecideBlockMessage) message;
         chain.decide(decideMsg.getContent());
-        broadcastClients(decideMsg);
+        broadcastToClient(decideMsg);
     }
 
     @Override
@@ -41,12 +42,12 @@ public class MemberBlockchainAPI implements Application {
         chain.prepareValue(value);
     }
 
-    public void broadcastClients(Content message) {
+    public void broadcastToClient(Content message) {
         try {
             DecideBlockMessage decideMsg = (DecideBlockMessage) message;
-            for (Pair<String, Integer> pair : _clientHostNames ){
-                AuthenticatedPerfectLink.send(_socket, decideMsg, pair.getFirst(), pair.getSecond());
-            }
+            BlockchainMessage blockMessage = (BlockchainMessage) decideMsg.getContent();
+            AuthenticatedPerfectLink.send(_socket, decideMsg, blockMessage.getAddress(), blockMessage.getPort());
+
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
