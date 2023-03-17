@@ -136,21 +136,24 @@ public class Ibft {
 
     public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum, int quorumSize) {
         try {
-            List<ConsensusInstanceMessage> verifiedQuorum = quorum.stream().filter(msg -> {
-                try {
-                    return Crypto.verifySignature(
-                        MessageManager.getContentBytes(msg.getContent()),
-                        msg.getSignatureBytes(), 
-                        RSAKeyStoreById.getPublicKey(msg.getSenderPID()));
+            if(quorum.size() == quorumSize){
+                List<ConsensusInstanceMessage> verifiedQuorum = quorum.stream().filter(msg -> {
+                    try {
+                        return Crypto.verifySignature(
+                                MessageManager.getContentBytes(msg.getContent()),
+                                msg.getSignatureBytes(),
+                                RSAKeyStoreById.getPublicKey(msg.getSenderPID()));
 
-                } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException | IOException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-            }).collect(Collectors.toList());
+                    } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException | IOException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }).collect(Collectors.toList());
 
-            return verifiedQuorum.size() == quorumSize;
-            
+                return verifiedQuorum.size() == quorumSize;
+            }else{
+                return false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;

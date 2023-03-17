@@ -5,6 +5,7 @@ import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
 public class AppendBlockMessage extends ApplicationMessage implements Content {
 
+
     public AppendBlockMessage(Content content) {
         super(content);
     }
@@ -20,4 +21,5 @@ public class AppendBlockMessage extends ApplicationMessage implements Content {
                 getContent().toString(level+1) +
                 toStringWithTabs("}", level);
     }
+
 }
