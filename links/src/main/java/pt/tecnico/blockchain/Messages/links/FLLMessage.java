@@ -23,4 +23,10 @@ public class FLLMessage extends Message implements Content {
         return getContent().toString(level);
     }
 
+    @Override
+    public boolean equals(Content another) {
+        FLLMessage m = (FLLMessage) another;
+        return getContent().equals(m.getContent());
+    }
+
 }

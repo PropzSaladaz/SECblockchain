@@ -3,6 +3,9 @@ package pt.tecnico.blockchain.Messages.links;
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
+import pt.tecnico.blockchain.Messages.MessageManager;
+
+import java.util.Arrays;
 
 
 public class APLMessage extends Message implements Content {
@@ -50,5 +53,14 @@ public class APLMessage extends Message implements Content {
                 toStringWithTabs("sender_id: " + getSenderPID(), level + 1) +
                 getContent().toString(level + 1) +
                 toStringWithTabs("}", level);
+    }
+
+    @Override
+    public boolean equals(Content another) {
+        APLMessage m = (APLMessage) another;
+        return Arrays.equals(_signature, m.getSignatureBytes()) &&
+                _source.equals(m.getSource()) &&
+                _senderPID == m.getSenderPID() &&
+                getContent().equals(m.getContent());
     }
 }

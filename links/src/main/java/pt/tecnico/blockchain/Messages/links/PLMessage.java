@@ -56,4 +56,14 @@ public class PLMessage extends Message implements Content {
                 getContent().toString(level + 1) +
                 toStringWithTabs("}", level);
     }
+
+    @Override
+    public boolean equals(Content another) {
+        PLMessage m = (PLMessage) another;
+        return _uuid == m.getUUID() &&
+                _ack == m.isAck() &&
+                _senderHostname == m.getSenderHostname() &&
+                _senderPort == m.getSenderPort() &&
+                getContent().equals(m.getContent());
+    }
 }
