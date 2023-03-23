@@ -15,7 +15,7 @@ public class DefaultFLLBehavior {
     public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) {
         try {
             FLLMessage message = new FLLMessage(content);
-//            Logger.logWithTime("\n\033[36m\033[1mSending message: \033[0m\n" + message.toString());
+            Logger.logWithTime("\n\033[36m\033[1mSending message: \033[0m\n" + message.toString());
             socket.send(MessageManager.createPacket(message, hostname, port));
         }catch (IOException e) {
             e.printStackTrace();
@@ -27,7 +27,7 @@ public class DefaultFLLBehavior {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         FLLMessage message = MessageManager.createMessage(packet.getData());
-//        Logger.logWithTime("\n\033[32m\033[1mMessage received: \033[0m\n" + message.toString());
+        Logger.logWithTime("\n\033[32m\033[1mMessage received: \033[0m\n" + message.toString());
         return message.getContent();
     }
 }

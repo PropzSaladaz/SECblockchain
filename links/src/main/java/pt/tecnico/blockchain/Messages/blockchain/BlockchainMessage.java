@@ -54,4 +54,17 @@ public class BlockchainMessage implements Content {
                 toStringWithTabs("hash: " + hash , level + 1) +
                 toStringWithTabs("}", level);
     }
+
+    @Override
+    public boolean equals(Content another) {
+        try {
+            BlockchainMessage m = (BlockchainMessage) another;
+            return _port == m.getPort() &&
+                    _address.equals(m.getAddress()) &&
+                    _message.equals(m.getMessage()) &&
+                    _hash.equals(m.getHash());
+        } catch(ClassCastException  e) {
+            return false;
+        }
+    }
 }

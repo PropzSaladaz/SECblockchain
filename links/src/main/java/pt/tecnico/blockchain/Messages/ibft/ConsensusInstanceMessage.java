@@ -89,11 +89,16 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
 
     @Override
     public boolean equals(Content another) {
-        ConsensusInstanceMessage m = (ConsensusInstanceMessage) another;
-        return _consensusInstance == m.getConsensusInstance() &&
-                _roundNumber == m.getRound() &&
-                _senderPID == m.getSenderPID() &&
-                getContent().equals(m.getContent());
+        try {
+            ConsensusInstanceMessage m = (ConsensusInstanceMessage) another;
+            return _consensusInstance == m.getConsensusInstance() &&
+                    _roundNumber == m.getRound() &&
+                    _senderPID == m.getSenderPID() &&
+                    getContent().equals(m.getContent());
+        } catch(ClassCastException e) {
+            return false;
+        }
+
     }
 
 

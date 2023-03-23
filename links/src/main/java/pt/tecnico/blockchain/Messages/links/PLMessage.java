@@ -59,11 +59,15 @@ public class PLMessage extends Message implements Content {
 
     @Override
     public boolean equals(Content another) {
-        PLMessage m = (PLMessage) another;
-        return _uuid == m.getUUID() &&
-                _ack == m.isAck() &&
-                _senderHostname == m.getSenderHostname() &&
-                _senderPort == m.getSenderPort() &&
-                getContent().equals(m.getContent());
+        try {
+            PLMessage m = (PLMessage) another;
+            return _uuid == m.getUUID() &&
+                    _ack == m.isAck() &&
+                    _senderHostname == m.getSenderHostname() &&
+                    _senderPort == m.getSenderPort() &&
+                    getContent().equals(m.getContent());
+        } catch(ClassCastException e) {
+            return false;
+        }
     }
 }

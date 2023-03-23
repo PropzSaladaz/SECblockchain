@@ -40,15 +40,19 @@ public class DecideBlockMessage extends ApplicationMessage implements Content {
 
     @Override
     public boolean equals(Content another) {
-        DecideBlockMessage m = (DecideBlockMessage) another;
-        boolean sameQuorum = false;
-        if (_quorum.size() == m.getQuorum().size()) {
-            for (int i = 0 ; i < _quorum.size() ; i++) {
-                if (!_quorum.get(i).equals(m.getQuorum().get(i))) return false;
+        try {
+            DecideBlockMessage m = (DecideBlockMessage) another;
+            if (_quorum.size() == m.getQuorum().size()) {
+                for (int i = 0 ; i < _quorum.size() ; i++) {
+                    if (!_quorum.get(i).equals(m.getQuorum().get(i))) return false;
+                }
+                return _consensusInstance == m.getConsensusInstance();
             }
-            return _consensusInstance == m.getConsensusInstance();
+            return false;
+        } catch( ClassCastException e) {
+            return false;
         }
-        return false;
+
     }
 
 }

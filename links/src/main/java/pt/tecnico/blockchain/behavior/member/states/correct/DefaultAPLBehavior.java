@@ -20,13 +20,9 @@ public class DefaultAPLBehavior {
 
         try {
             String dest = hostname + ":" + port;
-            byte[] encryptedMessage = AuthenticatedPerfectLink.authenticate(content, dest,
-                    RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
-            APLMessage message = new APLMessage(content, AuthenticatedPerfectLink.getSource(),
+            APLMessage message = new APLMessage(content, AuthenticatedPerfectLink.getSource(), dest,
                     AuthenticatedPerfectLink.getId());
-
-            message.setSignature(encryptedMessage);
-
+            message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
 
         } catch (NoSuchAlgorithmException | IOException e) {
@@ -41,7 +37,7 @@ public class DefaultAPLBehavior {
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                 if (message == null) return message;
                 PublicKey pk = RSAKeyStoreById.getPublicKey(message.getSenderPID());
-                if (pk != null && AuthenticatedPerfectLink.verifyAuth(message, pk)) {
+                if (pk != null && AuthenticatedPerfectLink.validateMessage(message, pk)) {
                     return message.getContent();
 
                 }

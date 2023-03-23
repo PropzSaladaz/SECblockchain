@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.PrivateKey;
+import java.time.Instant;
 import java.util.Arrays;
 
 
@@ -19,6 +20,8 @@ import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
 
 
 public class AuthenticatedPerfectLink {
+
+    public static long ALLOWED_MESSAGE_WAITING = 1000; // 1 second
 
     private static String _source;
     private static int _id;
@@ -39,10 +42,8 @@ public class AuthenticatedPerfectLink {
         return Crypto.encryptRSAPrivate(digest,privateKey);
     }
 
-    public static boolean verifyAuth(APLMessage message,PublicKey publicKey) throws NoSuchAlgorithmException, IOException,RuntimeException {
-        byte[] digest = digestAuth(message.getContent(), message.getSource(), _source);
-        byte[] decryptedDigest = Crypto.decryptRSAPublic(message.getSignatureBytes(), publicKey);
-        return Arrays.equals(digest, decryptedDigest);
+    public static boolean validateMessage(APLMessage message, PublicKey pk) throws NoSuchAlgorithmException, IOException {
+        return verifyAuth(message, pk) && verifyTimestamp(message);
     }
 
     public static void send(DatagramSocket socket, Content content, String hostname, int port) throws IOException, NoSuchAlgorithmException {
@@ -70,6 +71,14 @@ public class AuthenticatedPerfectLink {
         return _source;
     }
 
+    private static boolean verifyAuth(APLMessage message,PublicKey publicKey) throws NoSuchAlgorithmException, IOException,RuntimeException {
+        byte[] digest = digestAuth(message.getContent(), message.getSource(), _source);
+        byte[] decryptedDigest = Crypto.decryptRSAPublic(message.getSignatureBytes(), publicKey);
+        return Arrays.equals(digest, decryptedDigest);
+    }
 
+    private static boolean verifyTimestamp(APLMessage m) {
+        return Instant.now().toEpochMilli() - m.getTimestamp() < ALLOWED_MESSAGE_WAITING;
+    }
 
 }

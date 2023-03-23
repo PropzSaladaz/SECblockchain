@@ -31,6 +31,11 @@ public class CorruptAPLBehavior {
                     toStringWithTabs("message: " + content, tabs+1) +
                     toStringWithTabs("}", tabs);
         }
+
+        @Override
+        public boolean equals(Content another) {
+            return false;
+        }
     }
 
     public static void send(DatagramSocket socket, Content content, String hostname, int port) {
@@ -38,13 +43,11 @@ public class CorruptAPLBehavior {
         try {
             String dest = hostname + ":" + port;
             CorruptedMessage corrupted = new CorruptedMessage();
-            byte[] encryptedMessage = AuthenticatedPerfectLink.authenticate(corrupted, dest,
-                    RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
                     
-            APLMessage message = new APLMessage(corrupted, AuthenticatedPerfectLink.getSource(),
+            APLMessage message = new APLMessage(corrupted, AuthenticatedPerfectLink.getSource(), dest,
                     AuthenticatedPerfectLink.getId());
 
-            message.setSignature(encryptedMessage);
+            message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
 
             System.out.println("CORRUPTED: Sending Corrupted APL message");
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);

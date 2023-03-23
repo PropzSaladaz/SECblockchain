@@ -22,4 +22,14 @@ public class AppendBlockMessage extends ApplicationMessage implements Content {
                 toStringWithTabs("}", level);
     }
 
+    @Override
+    public boolean equals(Content another) {
+        try {
+            AppendBlockMessage m = (AppendBlockMessage) another;
+            return getContent().equals(m.getContent());
+        } catch (ClassCastException c) {
+            return false;
+        }
+    }
+
 }
