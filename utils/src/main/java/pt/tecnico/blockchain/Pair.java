@@ -30,4 +30,9 @@ public class Pair<T1, T2> {
     public int hashCode() {
         return Objects.hash(t1, t2);
     }
+
+    @Override
+    public String toString() {
+        return Objects.toString(t1) + ":" + Objects.toString(t2);
+    }
 }

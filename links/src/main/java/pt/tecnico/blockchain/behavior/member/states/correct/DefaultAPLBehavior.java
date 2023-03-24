@@ -39,7 +39,6 @@ public class DefaultAPLBehavior {
                 PublicKey pk = RSAKeyStoreById.getPublicKey(message.getSenderPID());
                 if (pk != null && AuthenticatedPerfectLink.validateMessage(message, pk)) {
                     return message.getContent();
-
                 }
                 System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
             } catch(Exception e){

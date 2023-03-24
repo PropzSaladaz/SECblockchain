@@ -26,9 +26,12 @@ public class ScheduledTask {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
+                _task.run();
+                /*                 
                 if (stopConditionMet.get()) {
                     stop();
                 } else _task.run();
+                 */
             }
         };
         _timer.schedule(task, 0, interval);

@@ -42,12 +42,11 @@ public class DefaultIbftBehavior {
     }
 
     public static void handleCommitRequest(ConsensusInstanceMessage message) {
-//        System.out.println("Received Prepare");
+//        System.out.println("Received Commit");
         if (Ibft.hasSamePreparedValue(message)) {
             Ibft.addToCommitQuorum(message);
             if (Ibft.hasValidCommitQuorum()) {
                 Content value = message.getContent();
-//            System.out.println("Received Quorum Commit" + "\n");
                 IbftTimer.stop();
                 if (Ibft.getApp().validateValue(value)) {
                     Ibft.getApp().decide(new DecideBlockMessage(
