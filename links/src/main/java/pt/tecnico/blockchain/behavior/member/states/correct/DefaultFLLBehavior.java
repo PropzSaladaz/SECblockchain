@@ -25,6 +25,7 @@ public class DefaultFLLBehavior {
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException {
         byte[] buffer = new byte[16284];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        System.out.println("Waiting for messages....");
         socket.receive(packet);
         FLLMessage message = MessageManager.createMessage(packet.getData());
         Logger.logWithTime("\n\033[32m\033[1mMessage received: \033[0m\n" + message.toString());

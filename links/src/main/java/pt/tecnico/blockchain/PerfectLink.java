@@ -2,7 +2,6 @@ package pt.tecnico.blockchain;
 
 import java.net.*;
 import java.io.*;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import pt.tecnico.blockchain.Messages.*;
@@ -12,7 +11,8 @@ import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
 public class PerfectLink {
     public static final int RESEND_MESSAGE_TIMEOUT = 5000;
 
-    private static final ConcurrentHashMap<UUID, PLMessage> _ackMessages = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Pair<InetAddress, Integer>, Integer> _ackSeqNum = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Pair<InetAddress, Integer>, Integer> _deliveredSeqNum = new ConcurrentHashMap<>();
     private static InetAddress _address;
     private static int _port;
 
@@ -24,24 +24,42 @@ public class PerfectLink {
         return LinkBehaviorController.PLdeliver(socket);
     }
 
+    public static Integer getDeliveredSeqNum(Pair<InetAddress,Integer> hostInfo) {
+        Integer seqNum = _deliveredSeqNum.get(hostInfo);
+        if (seqNum == null) {
+            _deliveredSeqNum.put(hostInfo, 0);
+            seqNum = 0;
+        }
+        return seqNum;
+    }
 
-    public static boolean hasAckArrived(UUID seqNum){
-        return _ackMessages.containsKey(seqNum);
+    public static Integer getAckSeqNum(Pair<InetAddress,Integer> hostInfo) {
+        Integer seqNum = _ackSeqNum.get(hostInfo);
+        if (seqNum == null) {
+            _ackSeqNum.put(hostInfo, 0);
+            seqNum = 0;
+        }
+        return seqNum;
+    }
+
+    public static void incrAckSeqNum(Pair<InetAddress,Integer> hostInfo) {
+        _ackSeqNum.put(hostInfo, _ackSeqNum.get(hostInfo)+1);
+    }
+
+    public static void incrDeliveredSeqNum(Pair<InetAddress,Integer> hostInfo) {
+        _deliveredSeqNum.put(hostInfo, _deliveredSeqNum.get(hostInfo)+1);
     }
 
     public static void sendAck(DatagramSocket socket, PLMessage message) {
-        message.setAck(true);
-        message.setUUID(message.getUUID());
-        FairLossLink.send(socket, message, message.getSenderHostname(), message.getSenderPort());
+        PLMessage ackMessage = new PLMessage(_address, _port, message.getContent());
+        ackMessage.setSeqNum(message.getSeqNum()+1);
+        ackMessage.setAck(true);
+        FairLossLink.send(socket, ackMessage, message.getSenderHostname(), message.getSenderPort());
     }
 
     public static void setSource(String address, int port) throws UnknownHostException {
         _address = InetAddress.getByName(address);
         _port = port;
-    }
-
-    public static void putACK(UUID id, PLMessage message) {
-        _ackMessages.put(id, message);
     }
 
     public static InetAddress getAddress() {
@@ -51,5 +69,4 @@ public class PerfectLink {
     public static int getPort() {
         return _port;
     }
-
 }

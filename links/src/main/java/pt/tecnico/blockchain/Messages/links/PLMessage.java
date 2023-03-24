@@ -4,11 +4,10 @@ import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
 
 import java.net.InetAddress;
-import java.util.UUID;
 
 public class PLMessage extends Message implements Content {
 
-    private UUID _uuid;
+    private int _seqNum;
     private Boolean _ack;
     private InetAddress _senderHostname;
     private int _senderPort;
@@ -22,12 +21,12 @@ public class PLMessage extends Message implements Content {
         _senderPort = senderPort;
 
     }
-    public UUID getUUID() {
-        return _uuid;
+    public int getSeqNum() {
+        return _seqNum;
     }
 
-    public void setUUID(UUID value) {
-        _uuid = value;
+    public void setSeqNum(int value) {
+        _seqNum = value;
     }
 
     public Boolean isAck() {
@@ -49,7 +48,7 @@ public class PLMessage extends Message implements Content {
     @Override
     public String toString(int level) {
         return  toStringWithTabs("PLMessage: {", level) +
-                toStringWithTabs("seq_number: " + _uuid, level + 1) +
+                toStringWithTabs("seq_number: " + _seqNum, level + 1) +
                 toStringWithTabs("Ack: " + _ack, level + 1) +
                 toStringWithTabs("sender_hostname: " + _senderHostname, level + 1) +
                 toStringWithTabs("sender_port: " + _senderPort, level + 1) +
@@ -61,7 +60,7 @@ public class PLMessage extends Message implements Content {
     public boolean equals(Content another) {
         try {
             PLMessage m = (PLMessage) another;
-            return _uuid == m.getUUID() &&
+            return _seqNum == m.getSeqNum() &&
                     _ack == m.isAck() &&
                     _senderHostname == m.getSenderHostname() &&
                     _senderPort == m.getSenderPort() &&
