@@ -35,10 +35,11 @@ public class DefaultPLBehavior {
         PLMessage message = (PLMessage) FairLossLink.deliver(socket);
         Pair<InetAddress,Integer> sender = new Pair<InetAddress,Integer>(message.getSenderHostname(), message.getSenderPort());
         Integer seqNum = message.getSeqNum();
-        if (message.isAck() && seqNum >= PerfectLink.getAckSeqNum(sender)) {
-            PerfectLink.stopStubbornTask(sender.toString() + Integer.toString(seqNum-1));
+        System.out.println("Received message with seqNum: " + seqNum);
+        if (message.isAck()) {
+            PerfectLink.stopStubbornTask(sender.toString() + Integer.toString(seqNum));
         }
-        else if (!message.isAck() && seqNum == PerfectLink.getDeliveredSeqNum(sender)) {
+        else if (!message.isAck() && seqNum >= PerfectLink.getDeliveredSeqNum(sender)) {
             PerfectLink.incrDeliveredSeqNum(sender);
             PerfectLink.sendAck(socket, message);
             return message.getContent();

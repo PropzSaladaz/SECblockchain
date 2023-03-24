@@ -71,8 +71,9 @@ public class PerfectLink {
 
     public static void sendAck(DatagramSocket socket, PLMessage message) {
         PLMessage ackMessage = new PLMessage(_address, _port, message.getContent());
-        ackMessage.setSeqNum(message.getSeqNum()+1);
+        ackMessage.setSeqNum(message.getSeqNum());
         ackMessage.setAck(true);
+        System.out.println("Sending ack for message with seqNum: " + ackMessage.getSeqNum());
         FairLossLink.send(socket, ackMessage, message.getSenderHostname(), message.getSenderPort());
     }
 
