@@ -1,11 +1,9 @@
 package pt.tecnico.blockchain;
 
-import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
 import pt.tecnico.blockchain.Messages.Content;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.security.NoSuchAlgorithmException;
 
 public class RunMember {
 

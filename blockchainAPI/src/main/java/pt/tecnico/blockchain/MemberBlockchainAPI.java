@@ -21,7 +21,7 @@ public class MemberBlockchainAPI implements Application {
     public void decide(Content message) {
         DecideBlockMessage decideMsg = (DecideBlockMessage) message;
         chain.decide(decideMsg.getContent());
-        broadcastToClient(decideMsg);
+        sendDecisionToClient(decideMsg);
     }
 
     @Override
@@ -39,9 +39,9 @@ public class MemberBlockchainAPI implements Application {
         chain.prepareValue(value);
     }
 
-    public void broadcastToClient(Content message) {
+    public void sendDecisionToClient(Content message) {
         try {
-//            System.out.println("Broadcasting decide block message to client");
+//            System.out.println("Sending decide block message to client");
             DecideBlockMessage decideMsg = (DecideBlockMessage) message;
             BlockchainMessage blockMessage = (BlockchainMessage) decideMsg.getContent();
             AuthenticatedPerfectLink.send(_socket, message, blockMessage.getAddress(), blockMessage.getPort());

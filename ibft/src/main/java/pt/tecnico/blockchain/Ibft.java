@@ -162,7 +162,7 @@ public class Ibft {
     }
 
     public static boolean hasSamePreparedValue(ConsensusInstanceMessage m) {
-        return m.getContent().equals(_value);
+        return m.getContent().equals(_preparedValue);
     }
 
     public static boolean quorumContainsPID(List<ConsensusInstanceMessage> quorum, Integer pid) {

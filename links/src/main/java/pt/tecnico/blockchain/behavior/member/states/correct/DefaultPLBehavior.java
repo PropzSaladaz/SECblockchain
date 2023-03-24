@@ -4,15 +4,12 @@ import pt.tecnico.blockchain.FairLossLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.links.PLMessage;
 import pt.tecnico.blockchain.PerfectLink;
-import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
-import pt.tecnico.blockchain.UuidGenerator;
 import pt.tecnico.blockchain.Pair;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-import static pt.tecnico.blockchain.PerfectLink.RESEND_MESSAGE_TIMEOUT;
 
 public class DefaultPLBehavior {
 

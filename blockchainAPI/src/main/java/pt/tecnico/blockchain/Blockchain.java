@@ -40,8 +40,7 @@ public class Blockchain implements Application {
     @Override
     public void decide(Content value) {
         BlockchainMessage blockValue = (BlockchainMessage) value;
-        Block oldLast = _lastBlock;
-        _lastBlock = new Block(oldLast, blockValue.getMessage());
+        _lastBlock = new Block(_lastBlock, blockValue.getMessage());
         printBlockchain();
     }
 
@@ -49,7 +48,7 @@ public class Blockchain implements Application {
     public boolean validateValue(Content value) {
         try {
             BlockchainMessage newBlock = (BlockchainMessage) value;
-            String predictedHash = Block.computeHash(_lastBlock, newBlock.getMessage());
+            String predictedHash = Block.computeHash(_lastBlock.getBlockHash(), newBlock.getMessage());
             return newBlock.getHash().equals(predictedHash);
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -65,8 +64,8 @@ public class Blockchain implements Application {
     @Override
     public void prepareValue(Content value) {
         try {
-            BlockchainMessage msg = (BlockchainMessage) value;
-            msg.setHash(Block.computeHash(_lastBlock, msg.getMessage()));
+            BlockchainMessage block = (BlockchainMessage) value;
+            block.setHash(Block.computeHash(_lastBlock.getBlockHash(), block.getMessage()));
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

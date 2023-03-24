@@ -21,7 +21,7 @@ public class Block implements Serializable {
     public Block(Block previousBlock, String message) {
         try {
             _previousBlock = previousBlock;
-            _hash = computeHash(previousBlock, message);
+            _hash = computeHash(previousBlock.getBlockHash(), message);
             _blockNumber = _previousBlock.getBlockNumber()+1;
             _message = message;
         } catch (IOException | NoSuchAlgorithmException e) {
@@ -45,8 +45,8 @@ public class Block implements Serializable {
         return _hash;
     }
 
-    public static String computeHash(Block previousBlock, String message) throws IOException, NoSuchAlgorithmException {
-        byte[] blockBytes = getBytesFrom(previousBlock);
+    public static String computeHash(String previousBlockHash, String message) throws IOException, NoSuchAlgorithmException {
+        byte[] blockBytes = getBytesFrom(previousBlockHash);
         byte[] messageBytes = getBytesFrom(message);
         ByteBuffer buffer = ByteBuffer.allocate(blockBytes.length + messageBytes.length);
         buffer.put(blockBytes);
