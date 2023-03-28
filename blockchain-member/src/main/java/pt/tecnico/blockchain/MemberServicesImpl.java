@@ -2,9 +2,25 @@ package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.*;
 import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
+import java.util.ArrayList;
+
 public class MemberServicesImpl {
+
+    static ArrayList<Pair<String, Integer>> _clients;
+
+
+    public static void initClientandMembers(ArrayList<Pair<String, Integer>> clients){
+        _clients = clients;
+    }
+
+    public static boolean checkIfExistsClient(String address, int port){
+        for (Pair<String,Integer> pair : _clients) if(pair.getFirst().equals(address) && pair.getSecond() == port) return true;
+        return false;
+
+    }
 
     public static void handleRequest(Content message) {
         try {
@@ -13,6 +29,8 @@ public class MemberServicesImpl {
                 switch (appMsg.getApplicationMessageType()) {
                     case ApplicationMessage.APPEND_BLOCK_MESSAGE:
                         AppendBlockMessage msg = (AppendBlockMessage) message;
+                        BlockchainMessage blockAppend = (BlockchainMessage) msg.getContent();
+                        if(!checkIfExistsClient(blockAppend.getAddress(), blockAppend.getPort())) throw new RuntimeException();
                         Ibft.start(msg.getContent());
                         break;
                     case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
@@ -25,7 +43,10 @@ public class MemberServicesImpl {
                 }
             }
         } catch (ClassCastException e) {
-            System.out.println("Corrupted message");
+            System.out.println("Corrupted message\n");
+        } catch (RuntimeException e){
+            System.out.println("Non Authorization To Perform Operation\n");
+
         }
     }
 }

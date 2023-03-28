@@ -42,6 +42,7 @@ public class Member
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             MemberBlockchainAPI chain = new MemberBlockchainAPI(socket);
+            MemberServicesImpl.initClientandMembers(config.getClientHostnames());
             Ibft.init(socket, id, config.getMemberHostnames(), chain);
 
             Thread.sleep(config.timeUntilStart());

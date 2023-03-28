@@ -94,7 +94,7 @@ public class Ibft {
     public static int getConsensusInstance() {
         return _consensusInstance;
     }
-
+ 
     public static int getRound() {
         return _round;
     }
@@ -138,7 +138,7 @@ public class Ibft {
     public static boolean hasValidPreparedQuorum() {
 //        System.out.println("Size: " + _prepared.size());
 //        System.out.println("Quorum size: " + (int)(getQuorumMinimumSize() + 1));
-        return (_prepared.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_prepared, _prepared.size());
+        return (_prepared.size() == getQuorumMinimumSize() + 1  && verifyQuorumSignatures(_prepared, _prepared.size()) && checkPrepareQuorumContent());
     }
 
     public static synchronized void addToPreparedQuorum(ConsensusInstanceMessage message) {
@@ -172,6 +172,16 @@ public class Ibft {
 
     public static boolean hasValidCommitQuorum() {
         return ( _commited.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_commited, _commited.size());
+    }
+
+    public static boolean checkPrepareQuorumContent(){
+        ConsensusInstanceMessage message = null;
+        for(ConsensusInstanceMessage consensusMessage: _prepared){
+            if(message == null) message = consensusMessage;
+            if(!message.getContent().equals(consensusMessage.getContent())) return false;
+
+        }
+        return true;
     }
 
     public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum, int quorumSize) {

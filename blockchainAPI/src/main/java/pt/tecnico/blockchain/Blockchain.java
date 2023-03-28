@@ -15,10 +15,6 @@ public class Blockchain implements Application {
     }
 
 
-    public int getNextBlockNumber() {
-        return _lastBlock.getBlockNumber() + 1;
-    }
-
     public String getLastBlockHash() {
         return _lastBlock.getBlockHash();
     }
@@ -31,7 +27,7 @@ public class Blockchain implements Application {
         Block b = _lastBlock;
         System.out.println("\n\033[36m\033[1mNew block appended: ");
         while (b != null) {
-            System.out.print(b.toString());
+            System.out.print(b);
             b = b.getPreviousBlock();
         }
         System.out.println("\033[0m");
@@ -58,7 +54,7 @@ public class Blockchain implements Application {
 
     @Override
     public int getNextInstanceNumber() {
-        return getNextBlockNumber();
+        return _lastBlock.getBlockNumber() + 1;
     }
 
     @Override
