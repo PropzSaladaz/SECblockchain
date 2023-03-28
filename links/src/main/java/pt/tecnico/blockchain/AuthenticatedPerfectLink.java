@@ -4,26 +4,26 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.PrivateKey;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Base64;
 
 
-import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
 
 
 public class AuthenticatedPerfectLink {
 
+    public static long ALLOWED_MESSAGE_WAITING = 1000; // 1 second
+
     private static String _source;
-    private static RSAKeyStoreById _store;
     private static int _id;
 
     public static byte[] digestAuth(Content content, String source, String dest) throws NoSuchAlgorithmException, IOException {
@@ -42,38 +42,16 @@ public class AuthenticatedPerfectLink {
         return Crypto.encryptRSAPrivate(digest,privateKey);
     }
 
-    public static boolean verifyAuth(APLMessage message,PublicKey publicKey) throws NoSuchAlgorithmException, IOException,RuntimeException {
-        byte[] digest = digestAuth(message.getContent(), message.getSource(), _source);
-        byte[] decryptedDigest = Crypto.decryptRSAPublic(message.getSignatureBytes(), publicKey);
-        return Arrays.equals(digest, decryptedDigest);
+    public static boolean validateMessage(APLMessage message, PublicKey pk) throws NoSuchAlgorithmException, IOException {
+        return verifyAuth(message, pk) && verifyTimestamp(message);
     }
 
     public static void send(DatagramSocket socket, Content content, String hostname, int port) throws IOException, NoSuchAlgorithmException {
-
-        String dest = hostname + ":" + port;
-        byte[] encryptedMessage = authenticate(content,dest, _store.getPrivateKey(_id));
-        APLMessage message = new APLMessage(content, _source, _id);
-
-        message.setSignature(encryptedMessage);
-
-        //System.out.println("Sending APL");
-        PerfectLink.send(socket,message,InetAddress.getByName(hostname) ,port);
-
+        LinkBehaviorController.APLsend(socket, content, hostname, port);
     }
+
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
-       while(true){
-           try{
-               //System.out.println("Waiting for PL messages...");
-               APLMessage message = (APLMessage) PerfectLink.deliver(socket);
-               PublicKey pk = _store.getPublicKey(message.getSenderPID());
-               if (pk != null && verifyAuth(message, pk)) {
-                   return message.getContent();
-               }
-               //System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
-           }catch(RuntimeException e){
-               System.out.println(e.getMessage());
-           }
-       }
+        return LinkBehaviorController.APLdeliver(socket);
     }
 
     public static void setSource(String address, int port) throws UnknownHostException {
@@ -81,14 +59,26 @@ public class AuthenticatedPerfectLink {
         PerfectLink.setSource(address, port);
     }
 
-    public static void setKeyStore(RSAKeyStoreById store) {
-        _store = store;
-    }
-
     public static void setId(int id) {
         _id = id;
     }
 
+    public static int getId() {
+        return _id;
+    }
 
+    public static String getSource() {
+        return _source;
+    }
+
+    private static boolean verifyAuth(APLMessage message,PublicKey publicKey) throws NoSuchAlgorithmException, IOException,RuntimeException {
+        byte[] digest = digestAuth(message.getContent(), message.getSource(), _source);
+        byte[] decryptedDigest = Crypto.decryptRSAPublic(message.getSignatureBytes(), publicKey);
+        return Arrays.equals(digest, decryptedDigest);
+    }
+
+    private static boolean verifyTimestamp(APLMessage m) {
+        return Instant.now().toEpochMilli() - m.getTimestamp() < ALLOWED_MESSAGE_WAITING;
+    }
 
 }

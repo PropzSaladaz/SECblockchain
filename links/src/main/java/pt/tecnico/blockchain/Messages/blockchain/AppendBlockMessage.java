@@ -5,13 +5,14 @@ import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
 public class AppendBlockMessage extends ApplicationMessage implements Content {
 
+
     public AppendBlockMessage(Content content) {
         super(content);
     }
 
     @Override
     public String getApplicationMessageType() {
-        return super.APPEND_BLOCK_MESSAGE;
+        return APPEND_BLOCK_MESSAGE;
     }
 
     @Override
@@ -20,4 +21,15 @@ public class AppendBlockMessage extends ApplicationMessage implements Content {
                 getContent().toString(level+1) +
                 toStringWithTabs("}", level);
     }
+
+    @Override
+    public boolean equals(Content another) {
+        try {
+            AppendBlockMessage m = (AppendBlockMessage) another;
+            return getContent().equals(m.getContent());
+        } catch (ClassCastException c) {
+            return false;
+        }
+    }
+
 }

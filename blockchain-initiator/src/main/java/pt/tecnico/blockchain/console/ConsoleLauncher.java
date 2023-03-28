@@ -30,7 +30,7 @@ public class ConsoleLauncher extends BaseConsole implements Console {
     @Override
     public Process launch() throws IOException {
         setOSConsoleLaunchCommands(windowTitle, commands);
-        System.out.println(Arrays.toString(launchCommands.getCommands()));
+//        System.out.println(Arrays.toString(launchCommands.getCommands()));
         ProcessBuilder pb = new ProcessBuilder(launchCommands.getCommands());
         pb.directory(new File(consoleDir)); // set console path
         return pb.start();

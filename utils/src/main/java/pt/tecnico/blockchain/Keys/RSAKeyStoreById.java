@@ -13,37 +13,35 @@ import java.util.regex.Matcher;
 
 public class RSAKeyStoreById {
 
-    private Map<Integer, PrivateKey> privateKeys;
-    private Map<Integer, PublicKey> publicKeys;
+    private static Map<Integer, PrivateKey> privateKeys = new HashMap<>();
+    private static Map<Integer, PublicKey> publicKeys = new HashMap<>();
 
     public RSAKeyStoreById() {
-        privateKeys = new HashMap<>();
-        publicKeys = new HashMap<>();
     }
 
-    public PublicKey getPublicKey(int id) {
+    public static PublicKey getPublicKey(int id) {
         return publicKeys.get(id);
     }
 
-    public PrivateKey getPrivateKey(int id) {
+    public static PrivateKey getPrivateKey(int id) {
         return privateKeys.get(id);
     }
 
-    public void addPrivates(String directoryPath) throws Exception {
+    public static void addPrivates(String directoryPath) throws Exception {
         File dir = new File(directoryPath);
         for (File file : dir.listFiles()) {
             if (file.isFile()) addPrivate(file.getPath());
         }
     }
 
-    public void addPublics(String directoryPath) throws Exception {
+    public static void addPublics(String directoryPath) throws Exception {
         File dir = new File(directoryPath);
         for (File file : dir.listFiles()) {
             if (file.isFile()) addPublic(file.getPath());
         }
     }
 
-    public void addPrivate(String keyPath) throws Exception {
+    public static void addPrivate(String keyPath) throws Exception {
         Matcher fileMatcher = KeyFilename.PRIV_FILE_PATTERN_EXT.matcher(keyPath);
         if (fileMatcher.find()) {
             int id = Integer.parseInt(fileMatcher.group(KeyFilename.PROCESS_ID_GROUP));
@@ -51,7 +49,7 @@ public class RSAKeyStoreById {
         }
     }
 
-    public void addPublic(String keyPath) throws Exception {
+    public static void addPublic(String keyPath) throws Exception {
         Matcher fileMatcher = KeyFilename.PUB_FILE_PATTERN_EXT.matcher(keyPath);
         if (fileMatcher.find()) {
             int id = Integer.parseInt(fileMatcher.group(KeyFilename.PROCESS_ID_GROUP));
@@ -59,11 +57,11 @@ public class RSAKeyStoreById {
         }
     }
 
-    public int getPrivateCount() {
+    public static int getPrivateCount() {
         return privateKeys.size();
     }
 
-    public int getPublicCount() {
+    public static int getPublicCount() {
         return publicKeys.size();
     }
 }

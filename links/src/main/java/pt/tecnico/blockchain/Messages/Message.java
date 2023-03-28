@@ -17,6 +17,10 @@ public abstract class Message implements Serializable {
         return _content;
     }
 
+    public void setContent(Content content) {
+        _content = content;
+    }
+
     @Override
      public String toString(){
         return _content.toString();

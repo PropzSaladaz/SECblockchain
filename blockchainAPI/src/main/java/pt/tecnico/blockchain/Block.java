@@ -6,11 +6,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Base64;
-
-import pt.tecnico.blockchain.Crypto;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
 
 public class Block implements Serializable {
     private Block _previousBlock;
@@ -26,7 +21,7 @@ public class Block implements Serializable {
     public Block(Block previousBlock, String message) {
         try {
             _previousBlock = previousBlock;
-            _hash = computeHash(previousBlock, message);
+            _hash = computeHash(previousBlock.getBlockHash(), message);
             _blockNumber = _previousBlock.getBlockNumber()+1;
             _message = message;
         } catch (IOException | NoSuchAlgorithmException e) {
@@ -50,8 +45,8 @@ public class Block implements Serializable {
         return _hash;
     }
 
-    public static String computeHash(Block previousBlock, String message) throws IOException, NoSuchAlgorithmException {
-        byte[] blockBytes = getBytesFrom(previousBlock);
+    public static String computeHash(String previousBlockHash, String message) throws IOException, NoSuchAlgorithmException {
+        byte[] blockBytes = getBytesFrom(previousBlockHash);
         byte[] messageBytes = getBytesFrom(message);
         ByteBuffer buffer = ByteBuffer.allocate(blockBytes.length + messageBytes.length);
         buffer.put(blockBytes);

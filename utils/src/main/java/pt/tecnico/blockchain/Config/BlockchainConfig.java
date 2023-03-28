@@ -6,6 +6,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +24,8 @@ public class BlockchainConfig
 {
     private final String CONFIG_PATH = File.separator + "blockchain-initiator";
 
-    private final Pattern COMMAND_PATTERN = Pattern.compile("^(?<command>[PART])");
+    private final Pattern COMMAND_PATTERN = Pattern.compile("^(?<command>[PARTS])");
+    private final Pattern START_TIME_PATTERN = Pattern.compile("^S (?<hours>\\d{2}):(?<minutes>\\d{2}):(?<seconds>\\d{2})$");
     private final Pattern CREATE_PROCESS_PATTERN = Pattern.compile("^P (?<processId>\\d+)" +
             " (?<processType>[MC])" +
             " (?<hostname>[\\w\\d.-\\/]+):(?<port>\\d+)$");
@@ -37,6 +42,7 @@ public class BlockchainConfig
             ", (?<messageDelay>\\d+)\\))");
 
     // Commands
+    private final String START_TIME = "S";
     private final String CREATE_PROCESS = "P";
     private final String SLOT_DELAY = "T";
     private final String ARBITRARY_BEHAVIOR = "A";
@@ -47,17 +53,18 @@ public class BlockchainConfig
     private final String CLIENT = "C";
 
     // Members' behavior operators
-    private final String OMIT_MESSAGES = "O";
-    private final String CORRUPT_MESSAGES = "C";
-    private final String AUTHENTICATE_AS = "A";
+    public static final String OMIT_MESSAGES = "O";
+    public static final String CORRUPT_MESSAGES = "C";
+    public static final String AUTHENTICATE_AS = "A";
     private final Set<String> setOfBehaviorOperators = new HashSet<>(Arrays.asList(
             OMIT_MESSAGES, CORRUPT_MESSAGES, AUTHENTICATE_AS));
 
     private Map<Integer, Pair<String, Integer>> members = new HashMap<>();
     private Map<Integer, Pair<String, Integer>> clients = new HashMap<>();
-    private Map<Integer, Map<Integer, Pair<String, Integer>>> operations = new HashMap<>();
+    private Map<Integer, Map<Integer, Pair<String, Integer>>> behaviors = new HashMap<>();
     private Map<Integer, Map<Integer, Pair<String, Integer>>> requests = new HashMap<>();
     private int slotDuration;
+    private long startTime;
     private String filePath;
 
     public BlockchainConfig() {
@@ -90,8 +97,9 @@ public class BlockchainConfig
     }
 
 
-    public Pair<String, Integer> getOperationInSlotForProcess(int slot, int processId) {
-        return operations.get(slot).get(processId);
+    public Pair<String, Integer> getBehaviorInSlotForProcess(int slot, int processId) {
+        if (behaviors.containsKey(slot)) return behaviors.get(slot).get(processId);
+        return null;
     }
 
     public Pair<String, Integer> getRequestInSlotForProcess(int slot, int processId) {
@@ -135,6 +143,11 @@ public class BlockchainConfig
         return filePath;
     }
 
+    public long timeUntilStart() {
+        long currentTimeInMillis = System.currentTimeMillis();
+        return startTime - currentTimeInMillis;
+    }
+
 
     private void parseLine(String line) throws BlockChainException {
         Matcher commandMatcher = COMMAND_PATTERN.matcher(line);
@@ -153,9 +166,26 @@ public class BlockchainConfig
                 case CLIENT_REQUEST:
                     parseClientRequest(line);
                     break;
+                case START_TIME:
+                    parseStartTime(line);
+                    break;
                 default:
                     break;
             }
+        }
+        else {
+            throw new BlockChainException(WRONG_FILE_FORMAT);
+        }
+    }
+
+    private void parseStartTime(String line) {
+        Matcher matcher = START_TIME_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            int hours = Integer.parseInt(matcher.group("hours"));
+            int minutes = Integer.parseInt(matcher.group("minutes"));
+            int seconds = Integer.parseInt(matcher.group("seconds"));
+            LocalDateTime desiredDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(hours, minutes, seconds));
+            startTime = desiredDateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
         }
         else {
             throw new BlockChainException(WRONG_FILE_FORMAT);
@@ -202,7 +232,7 @@ public class BlockchainConfig
             int slot = Integer.parseInt(matcher.group("slot"));
             String operationString = matcher.group("operation");
 
-            if (operations.get(slot) == null) operations.put(slot, new HashMap());
+            if (behaviors.get(slot) == null) behaviors.put(slot, new HashMap());
 
             matcher = ARBITRARY_COMMAND_INFO_PATTERN.matcher(operationString);
             // store each individual operation
@@ -217,7 +247,7 @@ public class BlockchainConfig
                         authenticateAs = Integer.parseInt(matcher.group("authenticateAs"));
                     }
 
-                    operations.get(slot).put(processId, new Pair<>(operator, authenticateAs));
+                    behaviors.get(slot).put(processId, new Pair<>(operator, authenticateAs));
                 }
                 else {
                     throw new BlockChainException(INVALID_BEHAVIOR_OPERATOR);

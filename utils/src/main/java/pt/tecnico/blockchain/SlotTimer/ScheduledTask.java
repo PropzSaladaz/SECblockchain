@@ -8,7 +8,7 @@ public class ScheduledTask {
     
     private Runnable _task;
     private int interval;
-    private Timer _timer = new Timer();
+    private Timer _timer;
     private Supplier<Boolean> stopConditionMet = () -> false;
 
     public ScheduledTask(Runnable task) {
@@ -22,12 +22,16 @@ public class ScheduledTask {
     }
     
     public void start() {
+        _timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
+                _task.run();
+                /*                 
                 if (stopConditionMet.get()) {
                     stop();
                 } else _task.run();
+                 */
             }
         };
         _timer.schedule(task, 0, interval);
