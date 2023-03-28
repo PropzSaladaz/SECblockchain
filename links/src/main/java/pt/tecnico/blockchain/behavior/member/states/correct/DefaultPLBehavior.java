@@ -18,32 +18,34 @@ public class DefaultPLBehavior {
 
     public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) {
         PLMessage message = new PLMessage(PerfectLink.getAddress(), PerfectLink.getPort(),  content);
-        Pair<InetAddress, Integer> receiverInfo = new Pair<InetAddress,Integer>(hostname, port);
+        Pair<InetAddress, Integer> receiverInfo = new Pair<>(hostname, port);
         Integer currentSeqNum = PerfectLink.getAckSeqNum(receiverInfo);
         message.setSeqNum(currentSeqNum);
-        PerfectLink.incrAckSeqNum(receiverInfo);
         message.setAck(false);
-        ScheduledTask task = new ScheduledTask( () -> {
-            FairLossLink.send(socket, message, hostname , port);
-        }, RESEND_MESSAGE_TIMEOUT);
+        PerfectLink.incrAckSeqNum(receiverInfo);
+        ScheduledTask task = new ScheduledTask( () -> FairLossLink.send(socket, message, hostname , port),
+                RESEND_MESSAGE_TIMEOUT);
+        PerfectLink.addToStubbornTasks(receiverInfo.toString() + currentSeqNum, task);
         task.start();
-        PerfectLink.addToStubbornTasks(receiverInfo.toString() + Integer.toString(currentSeqNum), task);        
     }
 
 
+    /**
+     * Only returns if received a valid PL message.
+     * If the message is invalid simply ignore it and wait for a valid one.
+     */
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException{
-        PLMessage message = (PLMessage) FairLossLink.deliver(socket);
-        Pair<InetAddress,Integer> sender = new Pair<InetAddress,Integer>(message.getSenderHostname(), message.getSenderPort());
-        Integer seqNum = message.getSeqNum();
-        System.out.println("Received message with seqNum: " + seqNum);
-        if (message.isAck()) {
-            PerfectLink.stopStubbornTask(sender.toString() + Integer.toString(seqNum));
+        while (true) {
+            PLMessage message = (PLMessage) FairLossLink.deliver(socket);
+            Pair<InetAddress,Integer> sender = new Pair<>(message.getSenderHostname(), message.getSenderPort());
+            if (message.isAck()) {
+                PerfectLink.stopStubbornTask(sender.toString() + message.getSeqNum());
+            }
+            else if (!message.isAck() && message.getSeqNum() >= PerfectLink.getDeliveredSeqNum(sender)) {
+                PerfectLink.incrDeliveredSeqNum(sender);
+                PerfectLink.sendAck(socket, message);
+                return message.getContent();
+            }
         }
-        else if (!message.isAck() && seqNum >= PerfectLink.getDeliveredSeqNum(sender)) {
-            PerfectLink.incrDeliveredSeqNum(sender);
-            PerfectLink.sendAck(socket, message);
-            return message.getContent();
-        }
-        return null;
     }
 }

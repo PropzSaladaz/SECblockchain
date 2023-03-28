@@ -12,21 +12,21 @@ import static pt.tecnico.blockchain.IbftMessagehandler.broadcastMessage;
 
 public class DefaultIbftBehavior {
 
-    public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
+    public synchronized static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
 //        System.out.println("Received Pre Prepare");
         if (Ibft.leader(message.getConsensusInstance(), message.getRound()) == message.getSenderPID() &&
                 message.getConsensusInstance() == Ibft.getConsensusInstance()) {
-            IbftTimer.start(message.getRound());
             ConsensusInstanceMessage msg = new ConsensusInstanceMessage(message.getConsensusInstance(),
-                    message.getRound(), Ibft.getPid(), message.getContent());
+            message.getRound(), Ibft.getPid(), message.getContent());
             msg.setMessageType(ConsensusInstanceMessage.PREPARE);
             msg.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
             broadcastMessage(msg);
         }
+        IbftTimer.start(message.getRound());
 //        System.out.println("Received Pre Prepare from a fake leader with PID: " + message.getSenderPID());
     }
 
-    public static void handlePrepareRequest(ConsensusInstanceMessage message) {
+    public synchronized static void handlePrepareRequest(ConsensusInstanceMessage message) {
 //        System.out.println("Received Prepare");
         Ibft.addToPreparedQuorum(message);
         if (Ibft.hasValidPreparedQuorum()) {
@@ -41,7 +41,7 @@ public class DefaultIbftBehavior {
         }
     }
 
-    public static void handleCommitRequest(ConsensusInstanceMessage message) {
+    public synchronized static void handleCommitRequest(ConsensusInstanceMessage message) {
 //        System.out.println("Received Commit");
         if (Ibft.hasSamePreparedValue(message)) {
             Ibft.addToCommitQuorum(message);
@@ -49,10 +49,12 @@ public class DefaultIbftBehavior {
                 Content value = message.getContent();
                 IbftTimer.stop();
                 if (Ibft.getApp().validateValue(value)) {
+                    System.out.println("Committed quorum ->   " + Ibft.getCommitQuorum());
                     Ibft.getApp().decide(new DecideBlockMessage(
                             Ibft.getConsensusInstance(), message.getContent(), Ibft.getCommitQuorum()
                     ));
                     Ibft.endInstance();
+                    System.out.println("Quorum size after endisntance = " + Ibft.getCommitQuorum().size());
                 }
             }
         }

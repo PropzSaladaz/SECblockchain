@@ -15,9 +15,9 @@ public class PerfectLink {
 
     private static final ConcurrentHashMap<Pair<InetAddress, Integer>, Integer> _ackSeqNum = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Pair<InetAddress, Integer>, Integer> _deliveredSeqNum = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, ScheduledTask> _stubbornTasks = new ConcurrentHashMap<>();
     private static InetAddress _address;
     private static int _port;
-    private static final ConcurrentHashMap<String, ScheduledTask> _stubbornTasks = new ConcurrentHashMap<>();
 
     public static void send(DatagramSocket socket, Content content, InetAddress hostname, int port) {
         LinkBehaviorController.PLsend(socket, content, hostname, port);
@@ -46,12 +46,10 @@ public class PerfectLink {
     }
 
     public static void addToStubbornTasks(String key, ScheduledTask task) {
-        System.out.println("\n\n\n\n@@@@ Adding " + key + " @@@@\n\n\n\n");
         _stubbornTasks.put(key, task);
     }
 
     public static void stopStubbornTask(String key) {
-        System.out.println("\n\n\n\n@@@@ Removing " + key + " @@@@\n\n\n\n");
         ScheduledTask task = _stubbornTasks.get(key);
         if (task == null) {
             System.out.println("ERROR: Trying to stop a stubborn task that does not exist.");
@@ -73,7 +71,6 @@ public class PerfectLink {
         PLMessage ackMessage = new PLMessage(_address, _port, message.getContent());
         ackMessage.setSeqNum(message.getSeqNum());
         ackMessage.setAck(true);
-        System.out.println("Sending ack for message with seqNum: " + ackMessage.getSeqNum());
         FairLossLink.send(socket, ackMessage, message.getSenderHostname(), message.getSenderPort());
     }
 
