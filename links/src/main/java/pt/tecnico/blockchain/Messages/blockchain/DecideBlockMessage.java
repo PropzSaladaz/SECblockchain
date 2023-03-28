@@ -32,8 +32,12 @@ public class DecideBlockMessage extends ApplicationMessage implements Content {
 
     @Override
     public String toString(int level) {
+        StringBuilder quorums = new StringBuilder();
+        for (ConsensusInstanceMessage m : _quorum) {
+            quorums.append(m.toString(level+2));
+        }
         return toStringWithTabs("DecideBlockMessage: {", level) +
-                toStringWithTabs("Quorum: " + _quorum.toString(), level+1) +
+                toStringWithTabs("Quorum:\n" + quorums ,level+1) +
                 getContent().toString(level+1) +
                 toStringWithTabs("}", level);
     }

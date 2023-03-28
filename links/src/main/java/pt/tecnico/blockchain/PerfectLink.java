@@ -46,12 +46,10 @@ public class PerfectLink {
     }
 
     public static void addToStubbornTasks(String key, ScheduledTask task) {
-        System.out.println("\n\n\n\n@@@@ Adding " + key + " @@@@\n\n\n\n");
         _stubbornTasks.put(key, task);
     }
 
     public static void stopStubbornTask(String key) {
-        System.out.println("\n\n\n\n@@@@ Removing " + key + " @@@@\n\n\n\n");
         ScheduledTask task = _stubbornTasks.get(key);
         if (task == null) {
             System.out.println("ERROR: Trying to stop a stubborn task that does not exist.");
