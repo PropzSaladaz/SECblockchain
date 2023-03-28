@@ -14,7 +14,7 @@ import java.security.NoSuchAlgorithmException;
  * Act arbitrary in several layers to corrupt messages
  */
 public class ArbitraryState extends LinkBehavior {
-    private double prob = 1;
+    private double prob = 0.4;
 
     private boolean actArbitrary() {
         return Math.random() < prob;

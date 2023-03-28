@@ -49,10 +49,12 @@ public class DefaultIbftBehavior {
                 Content value = message.getContent();
                 IbftTimer.stop();
                 if (Ibft.getApp().validateValue(value)) {
+                    System.out.println("Committed quorum ->   " + Ibft.getCommitQuorum());
                     Ibft.getApp().decide(new DecideBlockMessage(
                             Ibft.getConsensusInstance(), message.getContent(), Ibft.getCommitQuorum()
                     ));
                     Ibft.endInstance();
+                    System.out.println("Quorum size after endisntance = " + Ibft.getCommitQuorum().size());
                 }
             }
         }

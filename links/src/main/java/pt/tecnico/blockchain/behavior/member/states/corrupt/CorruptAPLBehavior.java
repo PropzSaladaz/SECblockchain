@@ -43,15 +43,12 @@ public class CorruptAPLBehavior {
         try {
             String dest = hostname + ":" + port;
             CorruptedMessage corrupted = new CorruptedMessage();
-                    
+
             APLMessage message = new APLMessage(corrupted, AuthenticatedPerfectLink.getSource(), dest,
                     AuthenticatedPerfectLink.getId());
-
             message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
-
             System.out.println("CORRUPTED: Sending Corrupted APL message");
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
-
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
         }
@@ -60,15 +57,12 @@ public class CorruptAPLBehavior {
     }
     public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
             NoSuchAlgorithmException {
-
         while(true){
             try {
                 System.out.println("CORRUPTED: Waiting for APL messages...");
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
-                PublicKey pk = RSAKeyStoreById.getPublicKey(message.getSenderPID());
                 System.out.println("CORRUPTED: returning message (without checking signature)");
                 return message.getContent();
-
             }catch(RuntimeException e){
                 System.out.println(e.getMessage());
             }
