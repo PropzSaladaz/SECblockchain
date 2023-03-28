@@ -114,7 +114,7 @@ public class Ibft {
     }
 
     public static synchronized boolean hasValidPreparedQuorum() {
-        return (_prepared.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_prepared, _prepared.size());
+        return (_prepared.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_prepared, _prepared.size()) && checkPrepareQuorumContent();
     }
 
     public static synchronized void addToPreparedQuorum(ConsensusInstanceMessage message) {
@@ -141,7 +141,7 @@ public class Ibft {
         return getQuorumPIDs(quorum).contains(pid);
     }
 
-    public synchronized static boolean hasValidCommitQuorum() {
+    public static synchronized boolean hasValidCommitQuorum() {
         return ( _commited.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_commited, _commited.size());
     }
 
@@ -181,7 +181,7 @@ public class Ibft {
         }
     }
 
-    public static List<Integer> getQuorumPIDs(List<ConsensusInstanceMessage> quorum) {
+    public static synchronized  List<Integer> getQuorumPIDs(List<ConsensusInstanceMessage> quorum) {
         return quorum.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
     }
 
@@ -202,12 +202,12 @@ public class Ibft {
         }
     }
 
-    private static void clearQuorums() {
+    private static synchronized void clearQuorums() {
         _prepared.clear();
         _commited.clear();
     }
 
-    private static void clearInstanceValues() {
+    private static synchronized void clearInstanceValues() {
         _preparedValue = null;
     }
 }
