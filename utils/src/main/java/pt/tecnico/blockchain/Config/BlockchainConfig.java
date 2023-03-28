@@ -6,10 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -184,8 +181,10 @@ public class BlockchainConfig
             int hours = Integer.parseInt(matcher.group("hours"));
             int minutes = Integer.parseInt(matcher.group("minutes"));
             int seconds = Integer.parseInt(matcher.group("seconds"));
-            LocalDateTime desiredDateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(hours, minutes, seconds));
-            startTime = desiredDateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+            ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
+            LocalDateTime desiredLocalDateTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), hours, minutes, seconds);
+            ZonedDateTime desiredDateTime = ZonedDateTime.ofLocal(desiredLocalDateTime, ZoneId.systemDefault(), ZoneOffset.UTC);
+            startTime = desiredDateTime.toInstant().toEpochMilli();
         }
         else {
             throw new BlockChainException(WRONG_FILE_FORMAT);
