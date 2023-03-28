@@ -9,17 +9,20 @@ public class RunMember {
 
     public static void run(DatagramSocket socket, int slotDuration) throws IOException {
 
-        Thread worker = new Thread(() -> {
-            try {
-                while (true) {
-                    Content message =  AuthenticatedPerfectLink.deliver(socket);
-                    if (message != null) MemberServicesImpl.handleRequest(message);
+        try {
+            while (true) {
+                Content message =  AuthenticatedPerfectLink.deliver(socket);
+                if (message != null) {
+                    Thread worker = new Thread(() -> {
+                        Content workerMessage = message;
+                        MemberServicesImpl.handleRequest(workerMessage);
+                    });
+                    worker.start();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        });
-        worker.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

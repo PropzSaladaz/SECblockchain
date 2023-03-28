@@ -47,7 +47,7 @@ public class Ibft {
         return 1;
     }
      
-    public static void start(Content value) {
+    public synchronized static void start(Content value) {
         if (tryDecideNewInstance()) {
 //            System.out.println("IBFT: free to start");
             startNewInstance(value);
@@ -57,7 +57,7 @@ public class Ibft {
         }
     }
 
-    private static void startNewInstance(Content value) {
+    private synchronized static void startNewInstance(Content value) {
 //        System.out.println("IBFT: Starting new instance");
         _consensusInstance = _app.getNextInstanceNumber();
         _round = 1;
@@ -135,7 +135,7 @@ public class Ibft {
         return (int)Math.floor((_numProcesses-1)/3);
     }
 
-    public static boolean hasValidPreparedQuorum() {
+    public static synchronized boolean hasValidPreparedQuorum() {
 //        System.out.println("Size: " + _prepared.size());
 //        System.out.println("Quorum size: " + (int)(getQuorumMinimumSize() + 1));
         return (_prepared.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_prepared, _prepared.size());
@@ -162,7 +162,7 @@ public class Ibft {
         }    
     }
 
-    public static boolean hasSamePreparedValue(ConsensusInstanceMessage m) {
+    public synchronized static boolean hasSamePreparedValue(ConsensusInstanceMessage m) {
         return m.getContent().equals(_preparedValue);
     }
 
@@ -170,7 +170,7 @@ public class Ibft {
         return getQuorumPIDs(quorum).contains(pid);
     }
 
-    public static boolean hasValidCommitQuorum() {
+    public synchronized static boolean hasValidCommitQuorum() {
         return ( _commited.size() == getQuorumMinimumSize() + 1 ) && verifyQuorumSignatures(_commited, _commited.size());
     }
 
@@ -211,10 +211,10 @@ public class Ibft {
         return quorum.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
     }
 
-    public static List<ConsensusInstanceMessage> getCommitQuorum() {
+    public synchronized static List<ConsensusInstanceMessage> getCommitQuorum() {
         return new ArrayList<ConsensusInstanceMessage>(_commited);
     }
-    public static List<ConsensusInstanceMessage> getPreparedQuorum() {
+    public synchronized static List<ConsensusInstanceMessage> getPreparedQuorum() {
         return new ArrayList<ConsensusInstanceMessage>(_prepared);
     }
 
