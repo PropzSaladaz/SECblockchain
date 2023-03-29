@@ -17,7 +17,6 @@ public class IbftMessagehandler {
     public static void handleMessage(ConsensusInstanceMessage message) {
         switch (message.getMessageType()) {
             case ConsensusInstanceMessage.PRE_PREPARE:
-//                System.out.println("Received PrePrePare" + "\n");
                 handlePrePrepareRequest(message);
                 break;
             case ConsensusInstanceMessage.PREPARE:
@@ -32,15 +31,15 @@ public class IbftMessagehandler {
         }
     }
 
-    public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
+    public static synchronized void handlePrePrepareRequest(ConsensusInstanceMessage message) {
         IbftBehaviorController.handlePrePrepareRequest(message);
     }
     
-    public static void handlePrepareRequest(ConsensusInstanceMessage message) {
+    public static synchronized void handlePrepareRequest(ConsensusInstanceMessage message) {
         IbftBehaviorController.handlePrepareRequest(message);
     }
 
-    public static void handleCommitRequest(ConsensusInstanceMessage message) {
+    public static synchronized void handleCommitRequest(ConsensusInstanceMessage message) {
         IbftBehaviorController.handleCommitRequest(message);
     }
     

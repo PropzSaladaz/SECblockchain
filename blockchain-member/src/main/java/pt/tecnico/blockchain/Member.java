@@ -1,8 +1,5 @@
 package pt.tecnico.blockchain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
@@ -19,7 +16,6 @@ public class Member
 {
     public static final String TYPE = "Member";
     private static final String DEBUG_STRING = "-debug";
-    private static final Logger logger = LoggerFactory.getLogger(Member.class);
     private static int id;
     private static int port;
     private static String hostname;
@@ -34,7 +30,10 @@ public class Member
             config = new BlockchainConfig();
             config.setFromAbsolutePath(args[1]);
             setHostnameFromConfig();
-            if (DEBUG) printInfo();
+            if (DEBUG) {
+                Logger.setDebug();
+                Logger.logDebug(getProcessInfo());
+            }
 
             initKeyStore();
             initializeLinks();
@@ -47,8 +46,8 @@ public class Member
 
             Thread.sleep(config.timeUntilStart());
 
-            RunMember.run(socket, config.getSlotDuration());
             behavior.track();
+            RunMember.run(socket, config.getSlotDuration());
 
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());
@@ -67,10 +66,10 @@ public class Member
             DEBUG = true;
     }
 
-    private static void printInfo() {
-        logger.info("ID=" + id + "\n" +
+    private static String getProcessInfo() {
+        return "ID=" + id + "\n" +
                 "hostname=" + hostname + "\n" +
-                "port=" + port + "\n");
+                "port=" + port + "\n";
     }
 
     private static void initializeLinks() throws UnknownHostException {

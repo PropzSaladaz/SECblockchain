@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.behavior.member;
 
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.behavior.member.states.correct.LinkBehavior;
 import pt.tecnico.blockchain.behavior.member.states.correct.CorrectState;
@@ -14,7 +15,7 @@ public class LinkBehaviorController {
 
     public static void changeState(LinkBehavior state) {
         behavior = state;
-        System.out.println("BEHAVIOR: changed state to " + behavior.TYPE());
+        Logger.logBehavior("changed state to " + behavior.TYPE());
     }
 
     public static String getBehaviorType() {

@@ -13,13 +13,13 @@ public class IbftTimer {
         _timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("Round Timer Expired: Triggering <ROUND-CHANGE>");
+                Logger.logDebug("Round Timer Expired: Triggering <ROUND-CHANGE>");
             }
         }, (long)Math.exp(round) * 1000);
     }
 
     public static void stop() {
-        System.out.println("Stopping Round Timer before <ROUND-CHANGE>");
+        Logger.logDebug("Stopping Round Timer before <ROUND-CHANGE>");
         _timer.cancel();
     }
 }

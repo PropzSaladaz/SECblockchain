@@ -34,7 +34,7 @@ public class DefaultPLBehavior {
      * Only returns if received a valid PL message.
      * If the message is invalid simply ignore it and wait for a valid one.
      */
-    public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException{
+    public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException {
         while (true) {
             PLMessage message = (PLMessage) FairLossLink.deliver(socket);
             Pair<InetAddress,Integer> sender = new Pair<>(message.getSenderHostname(), message.getSenderPort());

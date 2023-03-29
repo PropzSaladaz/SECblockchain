@@ -1,8 +1,5 @@
 package pt.tecnico.blockchain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -21,7 +18,6 @@ public class Client
 {
     public static final String TYPE = "Client";
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
     private static int pid;
     private static int port;
     private static String hostname;
@@ -34,15 +30,16 @@ public class Client
 
         if (!correctNumberArgs(args)) throw new BlockChainException(INVALID_PROCESS_ARGUMENTS);
         parseArgs(args);
-        if (DEBUG) logger.info("Debug mode on");
 
         try {
-            if (DEBUG) System.out.println(args[1]);
             config = new BlockchainConfig();
             config.setFromAbsolutePath(args[1]);
             setHostnameFromConfig();
 
-            if (DEBUG) printInfo();
+            if (DEBUG) {
+                Logger.setDebug();
+                Logger.logDebug(getProcessInfo());
+            }
 
             initKeyStore();
             initializeLinks();
@@ -82,10 +79,10 @@ public class Client
             DEBUG = true;
     }
 
-    private static void printInfo() {
-        logger.info("ID=" + pid + "\n" +
+    private static String getProcessInfo() {
+        return "ID=" + pid + "\n" +
                 "hostname=" + hostname + "\n" +
-                "port=" + port + "\n");
+                "port=" + port + "\n";
     }
 
     private static void initializeLinks() throws UnknownHostException {

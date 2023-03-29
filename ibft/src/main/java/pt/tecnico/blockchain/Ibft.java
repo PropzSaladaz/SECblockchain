@@ -1,6 +1,5 @@
 package pt.tecnico.blockchain;
 
-import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.MessageManager;
@@ -49,13 +48,13 @@ public class Ibft {
     public synchronized static void start(Content value) {
         if (tryDecideNewInstance()) {
             startNewInstance(value);
-        } else { // Instance already active
-            addToQueue(value);
+        } else { // Instance already active either because of a PREPARE , COMMIT or client message
+            // there are cases where a PREPARE comes before a client message, and we fall in this condition
+            addToQueueIfNotStartedAlready(value);
         }
     }
 
     private synchronized static void startNewInstance(Content value) {
-        _consensusInstance = _app.getNextInstanceNumber();
         _round = 1;
         _preparedRound = -1;
         if (leader(_consensusInstance, _round) == _pid) {
@@ -77,8 +76,14 @@ public class Ibft {
         return _messageQueue.size() > 0;
     }
 
-    public static synchronized void addToQueue(Content value) {
-        _messageQueue.add(value);
+    private static synchronized void addToQueueIfNotStartedAlready(Content value) {
+        if (valueIsNotInPreparedNorInCommitted(value)) _messageQueue.add(value);
+    }
+
+    private static boolean valueIsNotInPreparedNorInCommitted(Content value) {
+        if (_prepared.size() > 0 && _prepared.get(0).equals(value)) return false;
+        if (_commited.size() > 0 && _commited.get(0).equals(value)) return false;
+        return true;
     }
 
     public static int getPid() {
@@ -93,11 +98,11 @@ public class Ibft {
         return _round;
     }
 
-    public static void setPreparedRound(int round) {
+    public static synchronized void setPreparedRound(int round) {
         _preparedRound = round;
     }
 
-    public static void setPreparedValue(Content value) {
+    public static synchronized void setPreparedValue(Content value) {
         _preparedValue = value;
     }
 
@@ -106,11 +111,11 @@ public class Ibft {
     }
 
     public static int getQuorumMinimumSize() {
-        return (int)Math.floor(_numProcesses + getMaxNumberOfFaultyProcesses()) / 2;
+        return (int)Math.floor((_numProcesses + getMaxNumberOfFaultyProcesses()) / 2.0);
     }
 
     public static int getMaxNumberOfFaultyProcesses() {
-        return (int)Math.floor((_numProcesses-1)/3);
+        return (int)Math.floor((_numProcesses-1) / 3.0);
     }
 
     public static synchronized boolean hasValidPreparedQuorum() {
@@ -118,19 +123,25 @@ public class Ibft {
     }
 
     public static synchronized void addToPreparedQuorum(ConsensusInstanceMessage message) {
-        if (!quorumContainsPID(_prepared, message.getSenderPID()) && message.getConsensusInstance() == _consensusInstance) {
-            _prepared.add(message);
-        } else {
-           System.out.println("INFO: Multiple messages of PREPARE of same instance from process: " + message.getSenderPID());
-        }    
+        if (!quorumContainsPID(_prepared, message.getSenderPID())) {
+            if (message.getConsensusInstance() == _consensusInstance){
+                Logger.logDebug("Added PREPARE to prepare quorum");
+                _prepared.add(message);
+            } else Logger.logWarning("Received a PREPARE message for a wrong instance. Expected:" + _consensusInstance
+                    + "got: " + message.getConsensusInstance());
+        } else Logger.logWarning("Multiple messages of PREPARE of same instance from process: "
+                + message.getSenderPID());
     }
     
     public static synchronized void addToCommitQuorum(ConsensusInstanceMessage message) {
-        if (!quorumContainsPID(_commited, message.getSenderPID()) && message.getConsensusInstance() == _consensusInstance) {
-            _commited.add(message);
-        } else {
-           System.out.println("INFO: Multiple messages of COMMIT of same instance from process: " + message.getSenderPID());
-        }    
+        if (!quorumContainsPID(_commited, message.getSenderPID())) {
+            if(message.getConsensusInstance() == _consensusInstance) {
+                Logger.logDebug("Added COMMIT to prepare quorum");
+                _commited.add(message);
+            } else Logger.logWarning("Received a COMMIT message for a wrong instance. Expected:" + _consensusInstance
+                    + "got: " + message.getConsensusInstance());
+        } else System.out.println("Multiple messages of COMMIT of same instance from process: "
+                + message.getSenderPID());
     }
 
     public synchronized static boolean hasSamePreparedValue(ConsensusInstanceMessage m) {
@@ -150,7 +161,6 @@ public class Ibft {
         for(ConsensusInstanceMessage consensusMessage: _prepared){
             if(message == null) message = consensusMessage;
             if(!message.getContent().equals(consensusMessage.getContent())) return false;
-
         }
         return true;
     }
@@ -170,7 +180,6 @@ public class Ibft {
                         return false;
                     }
                 }).collect(Collectors.toList());
-
                 return verifiedQuorum.size() == quorumSize;
             }else{
                 return false;
@@ -193,8 +202,10 @@ public class Ibft {
     }
 
     public static synchronized void endInstance() {
+        Logger.logDebug("Ending instance");
         clearQuorums();
-        clearInstanceValues();
+        setPreparedValue(null);
+        _consensusInstance = _app.getNextInstanceNumber();
         if (hasMessageInQueue()) {
             Ibft.startNewInstance(_messageQueue.remove(_messageQueue.size() - 1));
         } else {
@@ -205,9 +216,5 @@ public class Ibft {
     private static synchronized void clearQuorums() {
         _prepared.clear();
         _commited.clear();
-    }
-
-    private static synchronized void clearInstanceValues() {
-        _preparedValue = null;
     }
 }

@@ -87,8 +87,10 @@ public class Initiator {
         Matcher commandMatcher = ARGUMENTS.matcher(arguments);
         if (commandMatcher.matches()) {
             configFile =        commandMatcher.group("configFile");
-            GENERATE_NEW_KEYS = commandMatcher.group("generate").strip().equals(GENERATE_FLAG);
-            DEBUG =             commandMatcher.group("debug").strip().equals(DEBUG_FLAG);
+            GENERATE_NEW_KEYS = commandMatcher.group("generate") != null &&
+                    commandMatcher.group("generate").strip().equals(GENERATE_FLAG);
+            DEBUG =             commandMatcher.group("debug") != null &&
+                    commandMatcher.group("debug").strip().equals(DEBUG_FLAG);
         }
     }
 

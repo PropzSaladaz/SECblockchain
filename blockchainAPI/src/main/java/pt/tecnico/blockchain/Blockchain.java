@@ -25,12 +25,12 @@ public class Blockchain implements Application {
 
     public void printBlockchain() {
         Block b = _lastBlock;
-        System.out.println("\n\033[36m\033[1mNew block appended: ");
+        StringBuilder s = new StringBuilder("New block appended: ");
         while (b != null) {
-            System.out.print(b);
+            s.append(b);
             b = b.getPreviousBlock();
         }
-        System.out.println("\033[0m");
+        Logger.logInfo(s.toString());
     }
 
     @Override

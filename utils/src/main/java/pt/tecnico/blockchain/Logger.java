@@ -1,8 +1,12 @@
 package pt.tecnico.blockchain;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 import static pt.tecnico.blockchain.Logger.TextColor.*;
 
 public class Logger {
+    private static boolean debug = false;
     private static final String defaultCode = "\033[%sm";
     private static final String hexaCode = "\u001b[%sm";
 
@@ -30,26 +34,56 @@ public class Logger {
         }
     }
 
+    public static void setDebug() {
+        debug = true;
+    }
+
     public static void logByzantine(String message) {
-        printMessageWithColor(message, MAGENTA);
+        printMessageWithColor("[BYZANTINE]: " + message, MAGENTA);
+    }
+
+    public static void logBehavior(String message) {
+        printMessageWithColor("[BEHAVIOR]: " + message, GREEN);
+    }
+
+    public static void logInfo(String message) {
+        printMessageWithColor("[INFO]: " + message, CYAN);
     }
 
     public static void logWarning(String message) {
-        printMessageWithColor(message, YELLOW);
+        printMessageWithColor("[WARNING]: " + message, YELLOW);
     }
 
     public static void logDebug(String message) {
-        printMessageWithHexaColor(message, HEXA_GREY);
+        if (debug) printMessageWithHexaColorAndTime(message, HEXA_GREY);
     }
 
-    private static synchronized void printMessageWithColor(String message, TextColor color) {
+    //TODO put back synchronized
+    private static void printMessageWithColor(String message, TextColor color) {
         System.out.println(String.format(defaultCode, color.getCode()) +
+                message + String.format(defaultCode, RESET.getCode()));
+    }
+
+    private static synchronized void printMessageWithColorAndTime(String message, TextColor color) {
+        System.out.println(getCurrentTime() + "\n" + String.format(defaultCode, color.getCode()) +
                 message + String.format(defaultCode, RESET.getCode()));
     }
 
     private static synchronized void printMessageWithHexaColor(String message, TextColor color) {
         System.out.println(String.format(hexaCode, color.getCode()) +
                 message + String.format(hexaCode, RESET.getCode()));
+    }
+
+    //TODO put back synchronized
+    private static void printMessageWithHexaColorAndTime(String message, TextColor color) {
+        System.out.println(getCurrentTime() + "\n" + String.format(hexaCode, color.getCode()) +
+                message + String.format(hexaCode, RESET.getCode()));
+    }
+
+    private static String getCurrentTime() {
+        LocalTime currentTime = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+        return currentTime.format(formatter);
     }
 
 
