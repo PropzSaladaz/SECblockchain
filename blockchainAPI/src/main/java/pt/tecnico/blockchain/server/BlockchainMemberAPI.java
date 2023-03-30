@@ -14,11 +14,15 @@ public class BlockchainMemberAPI implements Application {
     private Blockchain chain;
     private SynchronizedTransactionPool pool;
     private DatagramSocket _socket;
+    private BlockChainState _blockChainState;
 
-    public BlockchainMemberAPI(DatagramSocket socket) {
+
+    public BlockchainMemberAPI(DatagramSocket socket, ContractI contract) {
         chain = new Blockchain();
         _socket = socket;
         pool = new SynchronizedTransactionPool();
+        _blockChainState = new BlockChainState();
+        _blockChainState.addContract(contract);
     }
 
     @Override
@@ -54,5 +58,20 @@ public class BlockchainMemberAPI implements Application {
             e.printStackTrace();
         }
 
+    }
+    public Blockchain getChain() {
+        return chain;
+    }
+
+    public SynchronizedTransactionPool getPool() {
+        return pool;
+    }
+
+    public DatagramSocket getSocket() {
+        return _socket;
+    }
+
+    public BlockChainState getBlockChainState() {
+        return _blockChainState;
     }
 }

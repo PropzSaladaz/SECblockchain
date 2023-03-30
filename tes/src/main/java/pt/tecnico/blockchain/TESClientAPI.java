@@ -29,7 +29,7 @@ public class TESClientAPI implements ContractAPI, DecentralizedAppClientAPI {
     @Override
     public void createAccount(int gasPrice, int gasLimit) {
         try {
-            CreateAccount txn = new CreateAccount(Crypto.getHashFromKey(publicKey), gasPrice, gasLimit);
+            CreateAccount txn = new CreateAccount(Crypto.getHashFromKey(publicKey));
             txn.sign(privateKey);
             submitTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {
@@ -40,8 +40,7 @@ public class TESClientAPI implements ContractAPI, DecentralizedAppClientAPI {
     @Override
     public void transfer(PublicKey destination, int amount, int gasPrice, int gasLimit) {
         try {
-            Transfer txn = new Transfer(Crypto.getHashFromKey(publicKey), Crypto.getHashFromKey(destination), amount,
-                    gasPrice, gasLimit);
+            Transfer txn = new Transfer(Crypto.getHashFromKey(publicKey), Crypto.getHashFromKey(destination), amount);
             txn.sign(privateKey);
             submitTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {
@@ -52,7 +51,7 @@ public class TESClientAPI implements ContractAPI, DecentralizedAppClientAPI {
     @Override
     public void checkBalance(int gasPrice, int gasLimit) {
         try {
-            CheckBalance txn = new CheckBalance(Crypto.getHashFromKey(publicKey), gasPrice, gasLimit);
+            CheckBalance txn = new CheckBalance(Crypto.getHashFromKey(publicKey));
             txn.sign(privateKey);
             submitTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {

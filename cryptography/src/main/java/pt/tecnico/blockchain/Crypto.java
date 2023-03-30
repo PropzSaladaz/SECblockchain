@@ -3,9 +3,10 @@ package pt.tecnico.blockchain;
 
 
 import javax.crypto.*;
-import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 
@@ -92,6 +93,10 @@ public class Crypto {
         return Base64.getEncoder().encodeToString(bytes);
     }
 
+    public static byte[] decodeBase64(String base64String) {
+        return Base64.getDecoder().decode(base64String);
+    }
+
     public static String base64(byte[] bytes, int length) {
         return base64(bytes).substring(0, length) + "...";
     }
@@ -106,12 +111,20 @@ public class Crypto {
         return signature.sign();
     }
 
-    public static Signature getSignatureInstance(PrivateKey privateKey)
+    public static Signature getPrivateSignatureInstance(PrivateKey privateKey)
             throws InvalidKeyException, NoSuchAlgorithmException {
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(privateKey);
         return signature;
     }
+
+    public static Signature getPublicSignatureInstance(PublicKey publicKey)
+            throws InvalidKeyException, NoSuchAlgorithmException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initVerify(publicKey);
+        return signature;
+    }
+
 
     public static byte[] getSignature(byte[] contentBytes, PrivateKey privateKey) 
             throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
@@ -131,5 +144,15 @@ public class Crypto {
 
     public static String getHashFromKey(PublicKey key) throws NoSuchAlgorithmException {
         return base64(digest(key.getEncoded()));
+    }
+
+    public static byte[] base64Decode(String input) {
+        return Base64.getDecoder().decode(input);
+    }
+    public static PublicKey getPublicKeyFromHash(String publicKeyString) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] publicKeyBytes = base64Decode(publicKeyString);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKeyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
     }
 }

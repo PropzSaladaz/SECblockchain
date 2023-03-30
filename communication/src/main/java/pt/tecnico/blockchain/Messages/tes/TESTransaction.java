@@ -5,25 +5,22 @@ import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.UuidGenerator;
 
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.UUID;
 
 public abstract class TESTransaction implements Content {
-    public static String CREATE_ACCOUNT = "C";
-    public static String TRANSFER = "T";
-    public static String CHECK_BALANCE = "B";
+    public static final String CREATE_ACCOUNT = "C";
+    public static final String TRANSFER = "T";
+    public static final String CHECK_BALANCE = "B";
 
     private String type;
     private String publicKeyHash;
-    private String signature;
-    private int gasPrice;
-    private int gasLimit;
+    private byte[] signature;
     private UUID id;
 
-    public TESTransaction(String type, String publicKeyHash, int gasPrice, int gasLimit) {
+    public TESTransaction(String type, String publicKeyHash) {
         this.type = type;
         this.publicKeyHash = publicKeyHash;
-        this.gasPrice = gasPrice;
-        this.gasLimit = gasLimit;
         id = UuidGenerator.generateUuid();
     }
 
@@ -43,7 +40,7 @@ public abstract class TESTransaction implements Content {
         this.publicKeyHash = publicKeyHash;
     }
 
-    public String getSignature() {
+    public byte[] getSignature() {
         return signature;
     }
 
@@ -51,34 +48,34 @@ public abstract class TESTransaction implements Content {
         return id;
     }
 
-    public int getGasPrice() {
-        return gasPrice;
-    }
-
-    public void setGasPrice(int gasPrice) {
-        this.gasPrice = gasPrice;
-    }
-
-    public int getGasLimit() {
-        return gasLimit;
-    }
-
-    public void setGasLimit(int gasLimit) {
-        this.gasLimit = gasLimit;
-    }
 
     public void sign(PrivateKey key)  {
         try {
-            Signature signature = Crypto.getSignatureInstance(key);
+            Signature signature = Crypto.getPrivateSignatureInstance(key);
             signature.update(Byte.parseByte(type));
             signature.update(Byte.parseByte(publicKeyHash));
             signature.update(Byte.parseByte(id.toString()));
             signConcreteAttributes(signature);
-            this.signature = Crypto.base64(signature.sign());
+            this.signature = signature.sign();
 
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean checkSign()  {
+        try {
+            Signature signaturePublic = Crypto.getPublicSignatureInstance(Crypto.getPublicKeyFromHash(publicKeyHash));
+            signaturePublic.update(Byte.parseByte(type));
+            signaturePublic.update(Byte.parseByte(publicKeyHash));
+            signaturePublic.update(Byte.parseByte(id.toString()));
+            signConcreteAttributes(signaturePublic);
+            return signaturePublic.verify(signature);
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override
