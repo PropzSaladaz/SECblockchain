@@ -18,12 +18,14 @@ import java.security.NoSuchAlgorithmException;
 
 public class BlockchainMemberAPI implements Application {
     private Blockchain chain;
+    private SynchronizedTransactionPool pool;
     private DatagramSocket _socket;
     private Map<Integer,Pair<String,Integer>> _clientsPidToInfo;
 
     public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients) {
         chain = new Blockchain();
         _socket = socket;
+        pool = new SynchronizedTransactionPool();
         _clientsPidToInfo = clients;
     }
 
@@ -47,6 +49,10 @@ public class BlockchainMemberAPI implements Application {
     @Override
     public void prepareValue(Content value) {
         chain.prepareValue(value);
+    }
+
+    public void addTransactionToPool(BlockchainTransaction transaction) {
+        pool.addTransactionIfNotInPool(transaction);
     }
 
     public void sendTransactionResultToClient(Content message) {
