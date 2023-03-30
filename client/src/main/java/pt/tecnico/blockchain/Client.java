@@ -45,13 +45,12 @@ public class Client
 
             initKeyStore();
             initializeLinks();
+            initializeBlockchainClientAPI();
 
-            BlockchainClientAPI.setMembers(config.getMemberHostnames());
-            ContractAPI clientAPI = new TESClientAPI(hostname, port);
             Thread.sleep(config.timeUntilStart());
 
-            clientAPI.waitForMessages();
-            RequestScheduler.startFromConfig(pid, config, clientAPI);
+            BlockchainClientAPI.waitForMessages();
+            RequestScheduler.startFromConfig(pid, config);
 
 
 
@@ -97,6 +96,12 @@ public class Client
                 .append(KeyFilename.getWithPrivExtension(TYPE, pid))
                 .getPath());
         RSAKeyStoreById.addPublics(MEMBER_KEYDIR_PATH.getPath());
+    }
+
+    private static void initializeBlockchainClientAPI() throws UnknownHostException, SocketException {
+        BlockchainClientAPI.setMembers(config.getMemberHostnames());
+        BlockchainClientAPI.setSocket(new DatagramSocket(port, InetAddress.getByName(hostname)));
+        BlockchainClientAPI.setCredentials(RSAKeyStoreById.getPublicKey(pid), RSAKeyStoreById.getPrivateKey(pid));
     }
 
     private static void parseArgs(String[] args) {

@@ -42,7 +42,7 @@ public class Member
             MemberSlotBehavior behavior = new MemberSlotBehavior(config, id);
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            BlockchainMemberAPI chain = new BlockchainMemberAPI(socket);
+            BlockchainMemberAPI chain = new BlockchainMemberAPI(socket, config.getClients());
             MemberServicesImpl.initClientandMembers(config.getClientHostnames());
             Ibft.init(socket, id, config.getMemberHostnames(), chain);
 

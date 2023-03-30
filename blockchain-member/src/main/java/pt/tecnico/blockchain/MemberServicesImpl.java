@@ -1,7 +1,8 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.*;
-import pt.tecnico.blockchain.Messages.blockchain.AppendTransactionReq;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
+import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
@@ -27,11 +28,13 @@ public class MemberServicesImpl {
             if (message != null) { // might be the case when getting out of omit state deliver returning null
                 ApplicationMessage appMsg = (ApplicationMessage) message;
                 switch (appMsg.getApplicationMessageType()) {
+                    case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
+                        BlockchainTransaction transaction = (BlockchainTransaction) message;
+                        // TODO: Do something with the transaction
+                        break;
                     case ApplicationMessage.APPEND_BLOCK_MESSAGE:
-                        AppendTransactionReq msg = (AppendTransactionReq) message;
-                        BlockchainBlock blockAppend = (BlockchainBlock) msg.getContent();
-                        if(!checkIfExistsClient(blockAppend.getAddress(), blockAppend.getPort())) throw new RuntimeException();
-                        Ibft.start(msg.getContent());
+                        AppendBlockMessage msg = (AppendBlockMessage) message;
+                        Ibft.start((BlockchainBlock) msg.getContent());
                         break;
                     case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
                         ConsensusInstanceMessage ibftMessage = (ConsensusInstanceMessage) message;
