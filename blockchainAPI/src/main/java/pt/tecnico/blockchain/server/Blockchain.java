@@ -72,4 +72,9 @@ public class Blockchain implements Application {
         }
 
     }
+
+    @Override
+    public Content validateTransactions(Content content) {
+        return null;
+    }
 }

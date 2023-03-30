@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
@@ -216,5 +217,9 @@ public class Ibft {
     private static synchronized void clearQuorums() {
         _prepared.clear();
         _commited.clear();
+    }
+    
+    public static Content validateTransactions(Content content){
+        return getApp().validateTransactions(content);
     }
 }

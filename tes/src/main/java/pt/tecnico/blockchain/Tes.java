@@ -1,7 +1,6 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
-import pt.tecnico.blockchain.Messages.blockchain.AppendTransactionReq;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;

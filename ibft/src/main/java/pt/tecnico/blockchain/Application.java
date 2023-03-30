@@ -7,4 +7,5 @@ public interface Application {
     boolean validateValue(Content value);
     int getNextInstanceNumber();
     void prepareValue(Content value);
+    Content validateTransactions(Content content);
 }

@@ -48,21 +48,6 @@ public abstract class TESTransaction implements Content {
         return id;
     }
 
-    public int getGasPrice() {
-        return gasPrice;
-    }
-
-    public void setGasPrice(int gasPrice) {
-        this.gasPrice = gasPrice;
-    }
-
-    public int getGasLimit() {
-        return gasLimit;
-    }
-
-    public void setGasLimit(int gasLimit) {
-        this.gasLimit = gasLimit;
-    }
 
     public void sign(PrivateKey key)  {
         try {

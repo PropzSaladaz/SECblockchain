@@ -11,6 +11,7 @@ import pt.tecnico.blockchain.Messages.tes.TESTransaction;
 import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 
+import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -61,10 +62,13 @@ public class BlockchainMemberAPI implements Application {
     public void sendTransactionResultToClient(Content message) {
         try {
 //            System.out.println("Sending transaction result to client");
-            BlockchainTransaction transaction = (BlockchainTransaction) message;
-            TESTransaction tx = (TESTransaction) transaction.getContent();
-            Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(tx.getFrom())));
-            AuthenticatedPerfectLink.send(_socket, message, senderInfo.getFirst(), senderInfo.getSecond());
+            BlockchainBlock block = (BlockchainBlock) message;
+            for(BlockchainTransaction transaction : block.getTransactions()){
+                TESTransaction tx = (TESTransaction) transaction.getContent();
+                Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(tx.getPublicKeyHash())));
+                AuthenticatedPerfectLink.send(_socket, message, senderInfo.getFirst(), senderInfo.getSecond());
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -85,5 +89,16 @@ public class BlockchainMemberAPI implements Application {
 
     public BlockChainState getBlockChainState() {
         return _blockChainState;
+    }
+
+    public Content validateTransactions(Content content){
+        BlockchainBlock block = (BlockchainBlock) content;
+        BlockchainBlock newBlock= new BlockchainBlock();
+        List<BlockchainTransaction> transactions = block.getTransactions();
+        for (BlockchainTransaction transaction : transactions){
+             if(_blockChainState.getContract(transactions.get(0).getContractID()).validateBlock(
+                     (TESTransaction) transaction.getContent())) newBlock.addTransaction(transaction);
+        }
+        return newBlock;
     }
 }

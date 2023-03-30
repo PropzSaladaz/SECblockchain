@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BlockChainState {
-    Map<Integer,ContractI> _contracts;
+    Map<String,ContractI> _contracts;
     static int _contractId;
     public BlockChainState(){
         _contracts = new HashMap<>();
@@ -12,15 +12,15 @@ public class BlockChainState {
     }
 
     public void addContract(ContractI contract){
-        _contracts.put(_contractId,contract);
+        _contracts.put(String.valueOf(_contractId),contract);
         _contractId+=1;
     }
 
-    public void removeContract(int id){
-        _contracts.remove(_contractId);
+    public void removeContract(String id){
+        _contracts.remove(id);
     }
 
-    public ContractI getContract(int id){
+    public ContractI getContract(String id){
         return _contracts.get(id);
     }
 

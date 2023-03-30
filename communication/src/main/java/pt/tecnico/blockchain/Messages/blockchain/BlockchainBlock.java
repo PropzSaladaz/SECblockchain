@@ -3,6 +3,7 @@ package pt.tecnico.blockchain.Messages.blockchain;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlockchainBlock implements Content {
@@ -10,13 +11,14 @@ public class BlockchainBlock implements Content {
     private List<BlockchainTransaction> _transactions;
     private String _hash;
 
+    public BlockchainBlock() {
+        _transactions = new ArrayList<>();
+    }
+
     public BlockchainBlock(List<BlockchainTransaction> transactions) {
         _transactions = transactions;
     }
 
-    public BlockchainBlock(List<BlockchainTransaction> transactions, String address, int port) {
-        _transactions = transactions;
-    }
     
     public List<BlockchainTransaction> getTransactions() {
         return _transactions;
@@ -29,6 +31,8 @@ public class BlockchainBlock implements Content {
     public void setHash(String hash) {
         _hash = hash;
     }
+
+    public void addTransaction(BlockchainTransaction transaction){ _transactions.add(transaction);}
 
     @Override
     public String toString (){

@@ -4,6 +4,7 @@ import pt.tecnico.blockchain.Ibft;
 import pt.tecnico.blockchain.IbftTimer;
 import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 
@@ -49,9 +50,10 @@ public class DefaultIbftBehavior {
                 IbftTimer.stop();
                 if (Ibft.getApp().validateValue(value)) {
                     Logger.logDebug("Value was validated, broadcasting... ");
-
+                    Content content = Ibft.validateTransactions(message.getContent());
+                    Ibft.getApp().prepareValue(content);
                     Ibft.getApp().decide(new DecideBlockMessage(
-                            Ibft.getConsensusInstance(), message.getContent(), Ibft.getCommitQuorum()
+                            Ibft.getConsensusInstance(), content, Ibft.getCommitQuorum()
                     ));
                     Ibft.endInstance();
                 }
