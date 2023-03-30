@@ -60,6 +60,11 @@ public class TESClientAPI implements ContractAPI, DecentralizedAppClientAPI {
         }
     }
 
+    @Override
+    public void waitForMessages() {
+        client.waitForMessages();
+    }
+
     private void submitTransactionToBlockchain(TESTransaction concreteTxn, int gasPrice, int gasLimit) {
         try {
             client.submitTransaction(concreteTxn.getId(), concreteTxn, gasPrice, gasLimit, contractID);

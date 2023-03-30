@@ -48,9 +48,9 @@ public class Client
 
             BlockchainClientAPI.setMembers(config.getMemberHostnames());
             ContractAPI clientAPI = new TESClientAPI(hostname, port);
-
             Thread.sleep(config.timeUntilStart());
 
+            clientAPI.waitForMessages();
             RequestScheduler.startFromConfig(pid, config, clientAPI);
 
 

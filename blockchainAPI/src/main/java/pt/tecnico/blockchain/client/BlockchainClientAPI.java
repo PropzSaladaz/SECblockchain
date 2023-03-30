@@ -35,15 +35,18 @@ public class BlockchainClientAPI {
     private String _clientHostname;
     private int _clientPort;
 
-    public BlockchainClientAPI(String clientHostname, int clientPort, DecentralizedAppClientAPI app) throws UnknownHostException, SocketException {
+    public BlockchainClientAPI(String clientHostname, int clientPort, DecentralizedAppClientAPI app)
+            throws UnknownHostException, SocketException {
         _clientHostname = clientHostname;
         _clientPort = clientPort;
         _app = app;
         _socket = new DatagramSocket(clientPort, InetAddress.getByName(clientHostname));
     }
 
-    public void submitTransaction(UUID id, Content concreteTxn, int gasPrice, int gasLimit, String contractID) throws IOException, NoSuchAlgorithmException {
-        Content txnRequest = new AppendTransactionReq(new BlockchainTransaction(id, concreteTxn, gasPrice, gasLimit, contractID));
+    public void submitTransaction(UUID id, Content concreteTxn, int gasPrice, int gasLimit, String contractID)
+            throws IOException, NoSuchAlgorithmException {
+        Content txnRequest = new AppendTransactionReq(new BlockchainTransaction(id, concreteTxn,
+                gasPrice, gasLimit, contractID));
         for (Pair<String, Integer> pair : _memberHostNames ) {
             AuthenticatedPerfectLink.send(_socket, txnRequest, pair.getFirst(), pair.getSecond());
         }
@@ -53,11 +56,11 @@ public class BlockchainClientAPI {
         _memberHostNames = memberHostNames;
     }
 
-    public void waitForMessages(DatagramSocket socket) {
+    public void waitForMessages() {
         Thread worker = new Thread(() -> {
             while (true) {
                 try {
-                    Content message = AuthenticatedPerfectLink.deliver(socket);
+                    Content message = AuthenticatedPerfectLink.deliver(_socket);
                     handleResponse(message);
                 } catch (ClassCastException | IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
                     System.out.println("Received a corrupted message, ignoring...");
