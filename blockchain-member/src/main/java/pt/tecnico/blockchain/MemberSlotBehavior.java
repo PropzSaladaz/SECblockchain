@@ -5,11 +5,11 @@ import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
 import pt.tecnico.blockchain.behavior.IbftBehaviorController;
 import pt.tecnico.blockchain.behavior.correct.IbftCorrect;
 import pt.tecnico.blockchain.behavior.corrupt.IbftCorrupt;
-import pt.tecnico.blockchain.behavior.member.LinkBehaviorController;
-import pt.tecnico.blockchain.behavior.member.states.correct.CorrectState;
-import pt.tecnico.blockchain.behavior.member.states.corrupt.ArbitraryState;
-import pt.tecnico.blockchain.behavior.member.states.ommit.OmissionState;
-import pt.tecnico.blockchain.behavior.member.states.signas.SignAsState;
+import pt.tecnico.blockchain.behavior.LinkBehaviorController;
+import pt.tecnico.blockchain.behavior.states.correct.CorrectState;
+import pt.tecnico.blockchain.behavior.states.corrupt.ArbitraryState;
+import pt.tecnico.blockchain.behavior.states.ommit.OmissionState;
+import pt.tecnico.blockchain.behavior.states.signas.SignAsState;
 
 import static pt.tecnico.blockchain.Config.BlockchainConfig.*;
 

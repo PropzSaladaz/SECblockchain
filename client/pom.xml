@@ -60,13 +60,19 @@
         </dependency>
         <dependency>
             <groupId>pt.tecnico.blockchain</groupId>
-            <artifactId>links</artifactId>
+            <artifactId>communication</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>pt.tecnico.blockchain</groupId>
             <artifactId>blockchain-member</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>pt.tecnico.blockchain</groupId>
+            <artifactId>tes</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

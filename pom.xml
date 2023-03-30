@@ -11,13 +11,14 @@
   <modules>
     <module>cryptography</module>
     <module>client</module>
-    <module>links</module>
+    <module>communication</module>
     <module>ibft</module>
     <module>blockchain-member</module>
     <module>blockchain-initiator</module>
     <module>exceptions</module>
     <module>utils</module>
     <module>blockchainAPI</module>
+    <module>tes</module>
   </modules>
 
   <name>blockchain</name>

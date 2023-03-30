@@ -3,6 +3,7 @@ package pt.tecnico.blockchain;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.behavior.IbftBehaviorController;
+import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
 import java.io.IOException;
 import java.net.DatagramSocket;

@@ -13,6 +13,8 @@ import static pt.tecnico.blockchain.Path.BlockchainPaths.MEMBER_KEYDIR_PATH;
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.client.BlockchainClientAPI;
+import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
 public class Client
 {
@@ -44,12 +46,12 @@ public class Client
             initKeyStore();
             initializeLinks();
 
-            DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            ClientFrontend.setFrontEnd(socket,config.getMemberHostnames());
+            BlockchainClientAPI.setMembers(config.getMemberHostnames());
+            ContractAPI clientAPI = new TESClientAPI(hostname, port);
 
             Thread.sleep(config.timeUntilStart());
 
-            RunClient.run(socket, pid, config);
+            RequestScheduler.startFromConfig(pid, config, clientAPI);
 
 
 

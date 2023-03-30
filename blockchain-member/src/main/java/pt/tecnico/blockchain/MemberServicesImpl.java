@@ -1,8 +1,8 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.*;
-import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainMessage;
+import pt.tecnico.blockchain.Messages.blockchain.AppendTransactionReq;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
 import java.util.ArrayList;
@@ -28,8 +28,8 @@ public class MemberServicesImpl {
                 ApplicationMessage appMsg = (ApplicationMessage) message;
                 switch (appMsg.getApplicationMessageType()) {
                     case ApplicationMessage.APPEND_BLOCK_MESSAGE:
-                        AppendBlockMessage msg = (AppendBlockMessage) message;
-                        BlockchainMessage blockAppend = (BlockchainMessage) msg.getContent();
+                        AppendTransactionReq msg = (AppendTransactionReq) message;
+                        BlockchainBlock blockAppend = (BlockchainBlock) msg.getContent();
                         if(!checkIfExistsClient(blockAppend.getAddress(), blockAppend.getPort())) throw new RuntimeException();
                         Ibft.start(msg.getContent());
                         break;

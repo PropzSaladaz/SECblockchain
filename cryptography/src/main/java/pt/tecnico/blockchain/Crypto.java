@@ -96,12 +96,6 @@ public class Crypto {
         return base64(bytes).substring(0, length) + "...";
     }
 
-    public static String computeHash(String message,String previousBlockHash) throws NoSuchAlgorithmException {
-        String concatenated = message+previousBlockHash;
-        byte[] hash = digest(concatenated.getBytes(StandardCharsets.UTF_8));
-        return DatatypeConverter.printHexBinary(hash);
-    }
-
     public static byte[] getSignature(byte[] contentBytes, PrivateKey privateKey, String source, String dest) 
             throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         Signature signature = Signature.getInstance("SHA256withRSA");
@@ -110,6 +104,13 @@ public class Crypto {
         signature.update(source.getBytes());
         signature.update(dest.getBytes());
         return signature.sign();
+    }
+
+    public static Signature getSignatureInstance(PrivateKey privateKey)
+            throws InvalidKeyException, NoSuchAlgorithmException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        return signature;
     }
 
     public static byte[] getSignature(byte[] contentBytes, PrivateKey privateKey) 
@@ -126,5 +127,9 @@ public class Crypto {
         signature.initVerify(publicKey);
         signature.update(contentBytes);
         return signature.verify(digitalSignature);
+    }
+
+    public static String getHashFromKey(PublicKey key) throws NoSuchAlgorithmException {
+        return base64(digest(key.getEncoded()));
     }
 }

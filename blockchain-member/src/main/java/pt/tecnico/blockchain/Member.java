@@ -11,6 +11,8 @@ import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Path.BlockchainPaths;
+import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
+import pt.tecnico.blockchain.server.BlockchainMemberAPI;
 
 public class Member
 {
@@ -40,7 +42,7 @@ public class Member
             MemberSlotBehavior behavior = new MemberSlotBehavior(config, id);
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            MemberBlockchainAPI chain = new MemberBlockchainAPI(socket);
+            BlockchainMemberAPI chain = new BlockchainMemberAPI(socket);
             MemberServicesImpl.initClientandMembers(config.getClientHostnames());
             Ibft.init(socket, id, config.getMemberHostnames(), chain);
 
