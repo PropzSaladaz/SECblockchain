@@ -12,6 +12,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pt.tecnico.blockchain.BlockChainException;
+import pt.tecnico.blockchain.Config.operations.CheckBalanceOperation;
+import pt.tecnico.blockchain.Config.operations.ClientOperation;
+import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
+import pt.tecnico.blockchain.Config.operations.TransferOperation;
 import pt.tecnico.blockchain.Pair;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
@@ -33,10 +37,11 @@ public class BlockchainConfig
             " (?<operator>[OCA])" +
             "(, (?<authenticateAs>\\d+))?\\)");
     private final Pattern CLIENT_REQUEST_PATTERN = Pattern.compile("^R\\s(?<slot>\\d+)" +
-            "(?<request>( \\(\\d+, \\\"[^\\\"]+\\\", \\d+\\))+)$");
-    private final Pattern CLIENT_REQUEST_INFO_PATTERN = Pattern.compile("( \\((?<clientId>\\d+)," +
-            " \\\"(?<message>[^\\\"]+)\\\"" +
-            ", (?<messageDelay>\\d+)\\))");
+            "(?<request>( \\(\\d+, [CBT](\\(\\d+, \\d+\\))?, \\d+\\))+)$");
+    private final Pattern CLIENT_REQUEST_INFO_PATTERN = Pattern.compile(" \\((?<clientId>\\d+), " +
+            "(?<operation>[CBT])(?<arguments>\\(\\d+, \\d+\\))?, " +
+            "(?<gasPrice>\\d+), " +
+            "(?<gasLimit>\\d+)\\)");
 
     // Commands
     private final String START_TIME = "S";
@@ -53,13 +58,19 @@ public class BlockchainConfig
     public static final String OMIT_MESSAGES = "O";
     public static final String CORRUPT_MESSAGES = "C";
     public static final String AUTHENTICATE_AS = "A";
+
+    // Client operations
+    public static final String CREATE_ACCOUNT = "C";
+    public static final String TRANSFER = "T";
+    public static final String CHECK_BALANCE = "B";
+
     private final Set<String> setOfBehaviorOperators = new HashSet<>(Arrays.asList(
             OMIT_MESSAGES, CORRUPT_MESSAGES, AUTHENTICATE_AS));
 
     private Map<Integer, Pair<String, Integer>> members = new HashMap<>();
     private Map<Integer, Pair<String, Integer>> clients = new HashMap<>();
     private Map<Integer, Map<Integer, Pair<String, Integer>>> behaviors = new HashMap<>();
-    private Map<Integer, Map<Integer, Pair<String, Integer>>> requests = new HashMap<>();
+    private Map<Integer, Map<Integer, ClientOperation>> requests = new HashMap<>();
     private int slotDuration;
     private long startTime;
     private String filePath;
@@ -99,7 +110,7 @@ public class BlockchainConfig
         return null;
     }
 
-    public Pair<String, Integer> getRequestInSlotForProcess(int slot, int processId) {
+    public ClientOperation getRequestInSlotForProcess(int slot, int processId) {
         if (requests.containsKey(slot)) return requests.get(slot).get(processId);
         return null;
     }
@@ -231,7 +242,7 @@ public class BlockchainConfig
             int slot = Integer.parseInt(matcher.group("slot"));
             String operationString = matcher.group("operation");
 
-            if (behaviors.get(slot) == null) behaviors.put(slot, new HashMap());
+            behaviors.computeIfAbsent(slot, k -> new HashMap());
 
             matcher = ARBITRARY_COMMAND_INFO_PATTERN.matcher(operationString);
             // store each individual operation
@@ -264,18 +275,33 @@ public class BlockchainConfig
             int slot = Integer.parseInt(matcher.group("slot"));
             String requestString = matcher.group("request");
 
-            if (requests.get(slot) == null) requests.put(slot, new HashMap());
+            requests.computeIfAbsent(slot, k -> new HashMap());
 
             matcher = CLIENT_REQUEST_INFO_PATTERN.matcher(requestString);
             // store each individual request
             while (matcher.find()) {
                 int clientId = Integer.parseInt(matcher.group("clientId"));
-                String message = matcher.group("message");
-                int messageDelay = Integer.parseInt(matcher.group("messageDelay"));
+                String operation = matcher.group("operation");
+                int gasPrice = Integer.parseInt(matcher.group("gasPrice"));
+                int gasLimit = Integer.parseInt(matcher.group("gasLimit"));
 
-                requests.get(slot).put(clientId, new Pair<>(message, messageDelay));
+                if (operation != null) {
+                    switch(operation) {
+                        case TRANSFER:
+                            int destination = Integer.parseInt(matcher.group("destination"));
+                            int amount = Integer.parseInt(matcher.group("amount"));
+                            requests.get(slot).put(clientId, new TransferOperation(destination, amount,
+                                    gasPrice, gasLimit));
+                            break;
+                        case CREATE_ACCOUNT:
+                            requests.get(slot).put(clientId, new CreateAccountOperation(gasPrice, gasLimit));
+                            break;
+                        case CHECK_BALANCE:
+                            requests.get(slot).put(clientId, new CheckBalanceOperation(gasPrice, gasLimit));
+                            break;
+                    }
+                }
             }
-
         }
         else {
             throw new BlockChainException(WRONG_FILE_FORMAT);

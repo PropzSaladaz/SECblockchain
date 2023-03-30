@@ -34,9 +34,7 @@ it must be run with -gen on).
 - **-debug** is necessary only if the config file includes the additional commands
 stated in **2**. Prints additional information about each process. Must be allways
 the last flag.
-- **IMPORTANT** - currently the systems runs only with all flags set. To avoid writing them
-all the time, you can simply run ```mvn exec:java``` since the default arguments in the pom.xml 
-already set the flags and the config.in file.
+- **IMPORTANT** - currently the system runs only with either `-gen` or both `-gen -debug` flags on
 
 ## 1.1 - Config file grammar 
 ### 1.1.1 -  Create Processes
@@ -86,10 +84,17 @@ A <slot> <operations>
 ```HTML
 R <slot> <requests>
        -> <requests> : <request> <requests>*
-       -> <request> : (<id>, "<string>", <delay>)
-               -> <id> : client id
-               -> <string> : Any combination of characters
-               -> <delay> : time of delay for the request since entering the slot in millis
+       -> <request> : (<senderId>, <operation><argumentWrapper>?, <gasPrice>, <gasLimit> )
+               -> <senderId> : client id
+               -> <operation> : 'C' - Create an account,
+                                'T' - Transfer coins to a destination,
+                                'B' - Check balance
+               -> <argumentWrapper> : (<destination>, <amount>) : Only the operation 'T' is allowed to have a <argumentWrapper>
+                                    <destination> : the destination client id
+                                    <amount> : any combination of positive integers
+               -> <gasPrice> : requests with higher gasPrices will be appended first
+               -> <gasLimit> : maximum amount of gas the user is willing to pay (not currently used)
+                
 ```
 ### 2.4 - Config File Example (for debug)
 ```
@@ -99,16 +104,13 @@ P 2 M 127.0.0.1:10002
 P 3 M 127.0.0.1:10003
 P 4 M 127.0.0.1:10004
 P 5 C 127.0.0.1:10005
+P 6 C 127.0.0.1:10006
 T 500
-A 2 (1, O) (2, C) (4, A, 3)
-R 2 (5, "balelas-string", 10) (6, "popota", 300)
+A 2 (1, O) (4, A, 3)
+R 2 (5, C, 1, 1)            # client 5 creates an account
+R 3 (5, T(6, 500), 1, 1)    # client 5 transfers 500 coins to client 6 in slot 3 with gasPrice of 1
 ```
-This file will set 5 processes (4 members, 1 client), a slot duration of 500ms, and an initial start time
-at 14pm. It also instructs in slot 2, for process 1 to omit messages, process 2 to corrupt messages, 
-and process 4 to set the message's source id to 3.
-In the same slot there will also be 2 client requests. Namely "balelas-string" from client 5, and "popota" from
-client 6.
-
+Do not run the test above with the comments (#) as the current file parser will throw an error.
 # 3. Run the provided set of tests
 To run the provided set of tests just run the command in 1. with all 3 arguments, and change the file name.
 All tests are under the **blockchain-initiator** directory.
