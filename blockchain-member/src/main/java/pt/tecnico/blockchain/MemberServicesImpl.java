@@ -5,13 +5,13 @@ import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.server.SynchronizedTransactionPool;
 
 import java.util.ArrayList;
 
 public class MemberServicesImpl {
 
     static ArrayList<Pair<String, Integer>> _clients;
-
 
     public static void initClientandMembers(ArrayList<Pair<String, Integer>> clients){
         _clients = clients;
@@ -30,7 +30,7 @@ public class MemberServicesImpl {
                 switch (appMsg.getApplicationMessageType()) {
                     case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
                         BlockchainTransaction transaction = (BlockchainTransaction) message;
-                        // TODO: Do something with the transaction
+                        SynchronizedTransactionPool.addTransactionIfNotInPool(transaction);
                         break;
                     case ApplicationMessage.APPEND_BLOCK_MESSAGE:
                         AppendBlockMessage msg = (AppendBlockMessage) message;

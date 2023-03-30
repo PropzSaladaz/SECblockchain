@@ -25,8 +25,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
 
     @Override
     public String getApplicationMessageType() {
-        return null;
-        /*TODO: READ / WRITE should be different types -> distinguish from content received */
+        return ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE;
     }
 
     public String getContractID() {

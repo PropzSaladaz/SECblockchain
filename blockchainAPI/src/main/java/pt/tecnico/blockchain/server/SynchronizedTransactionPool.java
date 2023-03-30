@@ -6,17 +6,13 @@ import java.util.*;
 
 public class SynchronizedTransactionPool {
 
-    private final int MINIMUM_TRANSACTIONS = 5;
-    private List<BlockchainTransaction> pool;
-    private final Set<String> transactionIDs;
+    private static final int MINIMUM_TRANSACTIONS = 5;
+    private static List<BlockchainTransaction> pool = new ArrayList<>();
+    private static final Set<String> transactionIDs = new HashSet<>();
+    private static final Object _poolLock = new Object();
 
-    public SynchronizedTransactionPool() {
-        pool = new ArrayList<>();
-        transactionIDs = new HashSet<>();
-    }
-
-    public void addTransactionIfNotInPool(BlockchainTransaction txn) {
-        synchronized (this) {
+    public static void addTransactionIfNotInPool(BlockchainTransaction txn) {
+        synchronized (_poolLock) {
             if (!transactionIDs.contains(txn.getTransactionID())) {
                 transactionIDs.add(txn.getTransactionID());
                 pool.add(txn);
@@ -24,8 +20,8 @@ public class SynchronizedTransactionPool {
         }
     }
 
-    public List<BlockchainTransaction> getTransactionsIfHasEnough() {
-        synchronized (this) {
+    public static List<BlockchainTransaction> getTransactionsIfHasEnough() {
+        synchronized (_poolLock) {
             if (transactionIDs.size() >= MINIMUM_TRANSACTIONS) {
                 return popHighestPaidTransactions();
             }
@@ -33,7 +29,7 @@ public class SynchronizedTransactionPool {
         }
     }
 
-    private List<BlockchainTransaction> popHighestPaidTransactions() {
+    private static List<BlockchainTransaction> popHighestPaidTransactions() {
         pool.sort(Comparator.comparingInt(BlockchainTransaction::getGasPrice));
         List<BlockchainTransaction> txns = new ArrayList<>();
         Iterator<BlockchainTransaction> iter = pool.listIterator();
