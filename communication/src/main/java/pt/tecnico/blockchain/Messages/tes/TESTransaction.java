@@ -5,25 +5,22 @@ import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.UuidGenerator;
 
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.UUID;
 
 public abstract class TESTransaction implements Content {
-    public static String CREATE_ACCOUNT = "C";
-    public static String TRANSFER = "T";
-    public static String CHECK_BALANCE = "B";
+    public static final String CREATE_ACCOUNT = "C";
+    public static final String TRANSFER = "T";
+    public static final String CHECK_BALANCE = "B";
 
     private String type;
-    private String from;
-    private String signature;
-    private int gasPrice;
-    private int gasLimit;
+    private String publicKeyHash;
+    private byte[] signature;
     private UUID id;
 
-    public TESTransaction(String type, String from, int gasPrice, int gasLimit) {
+    public TESTransaction(String type, String publicKeyHash) {
         this.type = type;
-        this.from = from;
-        this.gasPrice = gasPrice;
-        this.gasLimit = gasLimit;
+        this.publicKeyHash = publicKeyHash;
         id = UuidGenerator.generateUuid();
     }
 
@@ -35,15 +32,15 @@ public abstract class TESTransaction implements Content {
         this.type = type;
     }
 
-    public String getFrom() {
-        return from;
+    public String getPublicKeyHash() {
+        return publicKeyHash;
     }
 
-    public void setPublicKeyHash(String from) {
-        this.from = from;
+    public void setPublicKeyHash(String publicKeyHash) {
+        this.publicKeyHash = publicKeyHash;
     }
 
-    public String getSignature() {
+    public byte[] getSignature() {
         return signature;
     }
 
@@ -69,23 +66,38 @@ public abstract class TESTransaction implements Content {
 
     public void sign(PrivateKey key)  {
         try {
-            Signature signature = Crypto.getSignatureInstance(key);
+            Signature signature = Crypto.getPrivateSignatureInstance(key);
             signature.update(Byte.parseByte(type));
-            signature.update(Byte.parseByte(from));
+            signature.update(Byte.parseByte(publicKeyHash));
             signature.update(Byte.parseByte(id.toString()));
             signConcreteAttributes(signature);
-            this.signature = Crypto.base64(signature.sign());
+            this.signature = signature.sign();
 
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             e.printStackTrace();
         }
     }
 
+    public boolean checkSign()  {
+        try {
+            Signature signaturePublic = Crypto.getPublicSignatureInstance(Crypto.getPublicKeyFromHash(publicKeyHash));
+            signaturePublic.update(Byte.parseByte(type));
+            signaturePublic.update(Byte.parseByte(publicKeyHash));
+            signaturePublic.update(Byte.parseByte(id.toString()));
+            signConcreteAttributes(signaturePublic);
+            return signaturePublic.verify(signature);
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Content another) {
         TESTransaction txn = (TESTransaction) another;
         return type.equals(txn.getType()) &&
-                from.equals(txn.getFrom()) &&
+                publicKeyHash.equals(txn.getPublicKeyHash()) &&
                 signature.equals(txn.getSignature()) &&
                 concreteAttributesEquals(another);
     }
@@ -94,7 +106,7 @@ public abstract class TESTransaction implements Content {
     public String toString(int tabs) {
         return  toStringWithTabs("TESTransaction: {", tabs) +
                 toStringWithTabs("type: " + type, tabs + 1) +
-                toStringWithTabs("publicKey: " + from, tabs + 1) +
+                toStringWithTabs("publicKey: " + publicKeyHash, tabs + 1) +
                 toStringWithTabs("signature: " + signature, tabs + 1) +
                 toStringWithTabs("}", tabs);
     }

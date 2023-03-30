@@ -49,6 +49,7 @@ public class DefaultIbftBehavior {
                 IbftTimer.stop();
                 if (Ibft.getApp().validateValue(value)) {
                     Logger.logDebug("Value was validated, broadcasting... ");
+
                     Ibft.getApp().decide(new DecideBlockMessage(
                             Ibft.getConsensusInstance(), message.getContent(), Ibft.getCommitQuorum()
                     ));
