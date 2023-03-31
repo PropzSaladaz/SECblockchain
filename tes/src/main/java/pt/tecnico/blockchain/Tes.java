@@ -42,19 +42,19 @@ public class Tes implements ContractI {
     public boolean validateBlock(TESTransaction transaction) {
         switch (transaction.getType()) {
             case TESTransaction.CREATE_ACCOUNT:
-                if (validateSignature(transaction) && !hasClient(transaction.getPublicKeyHash())){
-                    _clientAccounts.put(transaction.getPublicKeyHash(), new ClientAccount());
+                if (validateSignature(transaction) && !hasClient(transaction.getSender())){
+                    _clientAccounts.put(transaction.getSender(), new ClientAccount());
                     return true;
                 }else return false;
             case TESTransaction.TRANSFER:
                 Transfer transfer = (Transfer) transaction;
-                if (validateSignature(transaction) && hasClient(transaction.getPublicKeyHash()) && validateTransfer(transfer)){
-                    _clientAccounts.get(transaction.getPublicKeyHash()).withdrawal(transfer.getAmount());
+                if (validateSignature(transaction) && hasClient(transaction.getSender()) && validateTransfer(transfer)){
+                    _clientAccounts.get(transaction.getSender()).withdrawal(transfer.getAmount());
                     _clientAccounts.get(transfer.getDestinationAddress()).deposit(transfer.getAmount());
                     return true;
                 }else return false;
             case TESTransaction.CHECK_BALANCE:
-                if (validateSignature(transaction) && hasClient(transaction.getPublicKeyHash())) return true;
+                if (validateSignature(transaction) && hasClient(transaction.getSender())) return true;
                 else return false;
             default:
                 System.out.println("ERROR: Could not handle request");

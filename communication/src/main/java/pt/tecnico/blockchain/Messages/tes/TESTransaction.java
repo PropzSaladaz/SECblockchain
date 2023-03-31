@@ -13,14 +13,14 @@ public abstract class TESTransaction implements Content {
     public static final String TRANSFER = "T";
     public static final String CHECK_BALANCE = "B";
 
+    private String from;
     private String type;
-    private String publicKeyHash;
     private byte[] signature;
     private UUID id;
 
-    public TESTransaction(String type, String publicKeyHash) {
+    public TESTransaction(String type, String sender) {
         this.type = type;
-        this.publicKeyHash = publicKeyHash;
+        this.from = sender;
         id = UuidGenerator.generateUuid();
     }
 
@@ -32,12 +32,12 @@ public abstract class TESTransaction implements Content {
         this.type = type;
     }
 
-    public String getPublicKeyHash() {
-        return publicKeyHash;
+    public String getSender() {
+        return from;
     }
 
-    public void setPublicKeyHash(String publicKeyHash) {
-        this.publicKeyHash = publicKeyHash;
+    public void setPublicKeyHash(String sender) {
+        this.from = sender;
     }
 
     public byte[] getSignature() {
@@ -52,9 +52,9 @@ public abstract class TESTransaction implements Content {
     public void sign(PrivateKey key)  {
         try {
             Signature signature = Crypto.getPrivateSignatureInstance(key);
-            signature.update(Byte.parseByte(type));
-            signature.update(Byte.parseByte(publicKeyHash));
-            signature.update(Byte.parseByte(id.toString()));
+            signature.update(type.getBytes());
+            signature.update(from.getBytes());
+            signature.update(id.toString().getBytes());
             signConcreteAttributes(signature);
             this.signature = signature.sign();
 
@@ -65,10 +65,10 @@ public abstract class TESTransaction implements Content {
 
     public boolean checkSign()  {
         try {
-            Signature signaturePublic = Crypto.getPublicSignatureInstance(Crypto.getPublicKeyFromHash(publicKeyHash));
-            signaturePublic.update(Byte.parseByte(type));
-            signaturePublic.update(Byte.parseByte(publicKeyHash));
-            signaturePublic.update(Byte.parseByte(id.toString()));
+            Signature signaturePublic = Crypto.getPublicSignatureInstance(Crypto.getPublicKeyFromHash(from));
+            signaturePublic.update(type.getBytes());
+            signaturePublic.update(from.getBytes());
+            signaturePublic.update(id.toString().getBytes());
             signConcreteAttributes(signaturePublic);
             return signaturePublic.verify(signature);
 
@@ -82,7 +82,7 @@ public abstract class TESTransaction implements Content {
     public boolean equals(Content another) {
         TESTransaction txn = (TESTransaction) another;
         return type.equals(txn.getType()) &&
-                publicKeyHash.equals(txn.getPublicKeyHash()) &&
+                from.equals(txn.getSender()) &&
                 signature.equals(txn.getSignature()) &&
                 concreteAttributesEquals(another);
     }
@@ -91,7 +91,7 @@ public abstract class TESTransaction implements Content {
     public String toString(int tabs) {
         return  toStringWithTabs("TESTransaction: {", tabs) +
                 toStringWithTabs("type: " + type, tabs + 1) +
-                toStringWithTabs("publicKey: " + publicKeyHash, tabs + 1) +
+                toStringWithTabs("from: " + from, tabs + 1) +
                 toStringWithTabs("signature: " + signature, tabs + 1) +
                 toStringWithTabs("}", tabs);
     }

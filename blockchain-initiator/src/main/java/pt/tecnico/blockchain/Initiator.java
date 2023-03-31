@@ -41,7 +41,6 @@ public class Initiator {
         if (GENERATE_NEW_KEYS) System.out.println("Generating new keys...");
         config.setFromRelativePath(configFile);
         initProcesses();
-
     }
 
     private static void initProcesses() throws BlockChainException {

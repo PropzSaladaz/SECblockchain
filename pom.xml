@@ -13,9 +13,9 @@
     <module>client</module>
     <module>communication</module>
     <module>ibft</module>
+    <module>exceptions</module>
     <module>blockchain-member</module>
     <module>blockchain-initiator</module>
-    <module>exceptions</module>
     <module>utils</module>
     <module>blockchainAPI</module>
     <module>tes</module>

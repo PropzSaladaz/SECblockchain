@@ -37,9 +37,9 @@ public class BlockchainConfig
             " (?<operator>[OCA])" +
             "(, (?<authenticateAs>\\d+))?\\)");
     private final Pattern CLIENT_REQUEST_PATTERN = Pattern.compile("^R\\s(?<slot>\\d+)" +
-            "(?<request>( \\(\\d+, [CBT](\\(\\d+, \\d+\\))?, \\d+\\))+)$");
+            "(?<request>( \\(\\d+, [CBT](\\(\\d+(, \\d+)?\\))?, \\d+, \\d+\\))+)$");
     private final Pattern CLIENT_REQUEST_INFO_PATTERN = Pattern.compile(" \\((?<clientId>\\d+), " +
-            "(?<operation>[CBT])(?<arguments>\\(\\d+, \\d+\\))?, " +
+            "(?<operation>[CBT])(\\((?<amount>\\d+),(?<destinationId>\\d+)\\))?, " +
             "(?<gasPrice>\\d+), " +
             "(?<gasLimit>\\d+)\\)");
 
@@ -292,7 +292,7 @@ public class BlockchainConfig
                 if (operation != null) {
                     switch(operation) {
                         case TRANSFER:
-                            int destination = Integer.parseInt(matcher.group("destination"));
+                            int destination = Integer.parseInt(matcher.group("destinationId"));
                             int amount = Integer.parseInt(matcher.group("amount"));
                             requests.get(slot).put(clientId, new TransferOperation(destination, amount,
                                     gasPrice, gasLimit));

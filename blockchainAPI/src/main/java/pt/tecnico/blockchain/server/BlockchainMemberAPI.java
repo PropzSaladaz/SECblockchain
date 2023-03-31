@@ -65,7 +65,7 @@ public class BlockchainMemberAPI implements Application {
             BlockchainBlock block = (BlockchainBlock) message;
             for(BlockchainTransaction transaction : block.getTransactions()){
                 TESTransaction tx = (TESTransaction) transaction.getContent();
-                Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(tx.getPublicKeyHash())));
+                Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(tx.getSender())));
                 AuthenticatedPerfectLink.send(_socket, message, senderInfo.getFirst(), senderInfo.getSecond());
             }
 
