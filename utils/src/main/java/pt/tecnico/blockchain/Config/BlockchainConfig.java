@@ -115,6 +115,10 @@ public class BlockchainConfig
         return null;
     }
 
+    public Map<Integer,Pair<String,Integer>> getClients() {
+        return clients;
+    }
+
     public ArrayList<Integer> getMemberIds() {
         return new ArrayList<>(members.keySet());
     }

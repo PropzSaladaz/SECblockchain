@@ -1,19 +1,23 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.*;
-import pt.tecnico.blockchain.Messages.blockchain.AppendTransactionReq;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
+import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.server.BlockchainMemberAPI;
+import pt.tecnico.blockchain.server.SynchronizedTransactionPool;
 
 import java.util.ArrayList;
 
 public class MemberServicesImpl {
 
-    static ArrayList<Pair<String, Integer>> _clients;
+    public static ArrayList<Pair<String, Integer>> _clients;
+    public static BlockchainMemberAPI _blockchainMemberAPI;
 
-
-    public static void initClientandMembers(ArrayList<Pair<String, Integer>> clients){
+    public static void init(ArrayList<Pair<String, Integer>> clients, BlockchainMemberAPI blockchainMemberAPI){
         _clients = clients;
+        _blockchainMemberAPI = blockchainMemberAPI;
     }
 
     public static boolean checkIfExistsClient(String address, int port){
@@ -27,11 +31,13 @@ public class MemberServicesImpl {
             if (message != null) { // might be the case when getting out of omit state deliver returning null
                 ApplicationMessage appMsg = (ApplicationMessage) message;
                 switch (appMsg.getApplicationMessageType()) {
+                    case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
+                        BlockchainTransaction transaction = (BlockchainTransaction) message;
+                        _blockchainMemberAPI.addTransactionToPool(transaction);
+                        break;
                     case ApplicationMessage.APPEND_BLOCK_MESSAGE:
-                        AppendTransactionReq msg = (AppendTransactionReq) message;
-                        BlockchainBlock blockAppend = (BlockchainBlock) msg.getContent();
-                        if(!checkIfExistsClient(blockAppend.getAddress(), blockAppend.getPort())) throw new RuntimeException();
-                        Ibft.start(msg.getContent());
+                        AppendBlockMessage msg = (AppendBlockMessage) message;
+                        Ibft.start((BlockchainBlock) msg.getContent());
                         break;
                     case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
                         ConsensusInstanceMessage ibftMessage = (ConsensusInstanceMessage) message;

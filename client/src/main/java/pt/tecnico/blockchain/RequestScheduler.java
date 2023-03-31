@@ -7,7 +7,6 @@ import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
 import pt.tecnico.blockchain.Config.operations.TransferOperation;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.blockchain.AppendTransactionReq;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
 import pt.tecnico.blockchain.client.BlockchainClientAPI;
@@ -20,7 +19,7 @@ import java.security.PublicKey;
 public class RequestScheduler {
     private static int slot = 0;
 
-    public static void startFromConfig(int pid, BlockchainConfig config, ContractAPI clientAPI){
+    public static void startFromConfig(int pid, BlockchainConfig config){
         int slotDuration = config.getSlotDuration();
         ScheduledTask sendertask = new ScheduledTask(() -> {
             ClientOperation request = config.getRequestInSlotForProcess(slot, pid);

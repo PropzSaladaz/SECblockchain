@@ -7,8 +7,8 @@ import java.security.SignatureException;
 
 public class CheckBalance extends TESTransaction {
 
-    public CheckBalance(String publicKeyHash, int gasPrice, int gasLimit) {
-        super(TESTransaction.CHECK_BALANCE, publicKeyHash, gasPrice, gasLimit);
+    public CheckBalance(String publicKeyHash) {
+        super(TESTransaction.CHECK_BALANCE, publicKeyHash);
     }
 
     @Override

@@ -1,14 +1,14 @@
 package pt.tecnico.blockchain.Messages.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.Message;
+import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
 import java.util.UUID;
 
 /**
  * Contains an arbitrary transaction for a specific contract identified by ID
  */
-public class BlockchainTransaction extends Message implements Content {
+public class BlockchainTransaction extends ApplicationMessage implements Content {
 
     private String contractID;
     private UUID id;
@@ -21,6 +21,11 @@ public class BlockchainTransaction extends Message implements Content {
         this.contractID = contractID;
         this.gasPrice = gasPrice;
         this.gasLimit = gasLimit;
+    }
+
+    @Override
+    public String getApplicationMessageType() {
+        return ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE;
     }
 
     public String getContractID() {

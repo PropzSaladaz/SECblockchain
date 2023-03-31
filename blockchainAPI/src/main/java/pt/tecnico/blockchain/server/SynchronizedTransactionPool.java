@@ -6,14 +6,9 @@ import java.util.*;
 
 public class SynchronizedTransactionPool {
 
-    private final int MINIMUM_TRANSACTIONS = 5;
-    private List<BlockchainTransaction> pool;
-    private final Set<String> transactionIDs;
-
-    public SynchronizedTransactionPool() {
-        pool = new ArrayList<>();
-        transactionIDs = new HashSet<>();
-    }
+    private static final int MINIMUM_TRANSACTIONS = 5;
+    private static List<BlockchainTransaction> pool = new ArrayList<>();
+    private static final Set<String> transactionIDs = new HashSet<>();
 
     public void addTransactionIfNotInPool(BlockchainTransaction txn) {
         synchronized (this) {

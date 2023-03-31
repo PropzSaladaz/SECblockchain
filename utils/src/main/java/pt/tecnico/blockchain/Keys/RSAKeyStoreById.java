@@ -64,4 +64,15 @@ public class RSAKeyStoreById {
     public static int getPublicCount() {
         return publicKeys.size();
     }
+
+    public static PublicKey getPublicFromPid(int pid) {
+        return publicKeys.get(pid);
+    }
+
+    public static Integer getPidFromPublic(PublicKey publicKey) {
+        for (Map.Entry<Integer, PublicKey> entry : publicKeys.entrySet()) {
+            if (entry.getValue() == publicKey) return entry.getKey();
+        }
+        return null;
+    }
 }

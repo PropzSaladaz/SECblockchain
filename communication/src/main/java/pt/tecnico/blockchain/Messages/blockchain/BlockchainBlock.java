@@ -3,26 +3,22 @@ package pt.tecnico.blockchain.Messages.blockchain;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlockchainBlock implements Content {
 
-    // TODO needed??
-    private int _port;
-    private String _address;
-
     private List<BlockchainTransaction> _transactions;
     private String _hash;
+
+    public BlockchainBlock() {
+        _transactions = new ArrayList<>();
+    }
 
     public BlockchainBlock(List<BlockchainTransaction> transactions) {
         _transactions = transactions;
     }
 
-    public BlockchainBlock(List<BlockchainTransaction> transactions, String address, int port) {
-        _transactions = transactions;
-        _address = address;
-        _port = port;
-    }
     
     public List<BlockchainTransaction> getTransactions() {
         return _transactions;
@@ -36,13 +32,7 @@ public class BlockchainBlock implements Content {
         _hash = hash;
     }
 
-    public int getPort() {return _port;}
-
-    public void setPort(int port) {this._port = port;}
-
-    public String getAddress() {return _address;}
-
-    public void setAddress(String address) {this._address = address;}
+    public void addTransaction(BlockchainTransaction transaction){ _transactions.add(transaction);}
 
     @Override
     public String toString (){
@@ -66,9 +56,7 @@ public class BlockchainBlock implements Content {
     public boolean equals(Content another) {
         try {
             BlockchainBlock m = (BlockchainBlock) another;
-            return _port == m.getPort() &&
-                    _address.equals(m.getAddress()) &&
-                    _hash.equals(m.getHash());
+            return _hash.equals(m.getHash());
         } catch(ClassCastException  e) {
             return false;
         }
