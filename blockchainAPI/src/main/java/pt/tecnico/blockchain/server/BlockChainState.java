@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BlockChainState {
-    Map<String,ContractI> _contracts;
-    static int _contractId;
+    private final Map<String,ContractI> _contracts;
+    private static int _contractId;
+
     public BlockChainState(){
         _contracts = new HashMap<>();
         _contractId = 1;
