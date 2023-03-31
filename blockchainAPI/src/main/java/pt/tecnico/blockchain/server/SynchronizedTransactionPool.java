@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.server;
 
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
+import pt.tecnico.blockchain.Pair;
 
 import java.util.*;
 
@@ -8,7 +9,7 @@ public class SynchronizedTransactionPool {
 
     private static final int MINIMUM_TRANSACTIONS = 5;
     private static List<BlockchainTransaction> pool = new ArrayList<>();
-    private static final Set<String> transactionIDs = new HashSet<>();
+    private static final Set<Pair<String, Integer>> transactionIDs = new HashSet<>();
 
     public void addTransactionIfNotInPool(BlockchainTransaction txn) {
         synchronized (this) {

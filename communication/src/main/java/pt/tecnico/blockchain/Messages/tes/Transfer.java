@@ -10,8 +10,8 @@ public class Transfer extends TESTransaction {
     private String destinationAddress;
     private int amount;
 
-    public Transfer(String sourceAddress, String destinationAddress, int amount) {
-        super(TESTransaction.TRANSFER, sourceAddress);
+    public Transfer(int nonce, String sourceAddress, String destinationAddress, int amount) {
+        super(nonce, TESTransaction.TRANSFER, sourceAddress);
         this.destinationAddress = destinationAddress;
         this.amount = amount;
     }

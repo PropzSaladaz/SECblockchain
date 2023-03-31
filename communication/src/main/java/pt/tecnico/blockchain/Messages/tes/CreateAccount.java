@@ -7,8 +7,8 @@ import java.security.Signature;
 public class CreateAccount extends TESTransaction {
 
 
-    public CreateAccount(String publicKeyHash) {
-        super(TESTransaction.CREATE_ACCOUNT, publicKeyHash);
+    public CreateAccount(int nonce, String publicKeyHash) {
+        super(nonce, TESTransaction.CREATE_ACCOUNT, publicKeyHash);
     }
 
     @Override

@@ -1,12 +1,11 @@
 package pt.tecnico.blockchain.Messages.tes;
 
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.UuidGenerator;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.UUID;
 
 public abstract class TESTransaction implements Content {
     public static final String CREATE_ACCOUNT = "C";
@@ -16,12 +15,12 @@ public abstract class TESTransaction implements Content {
     private String from;
     private String type;
     private byte[] signature;
-    private UUID id;
+    private int nonce;
 
-    public TESTransaction(String type, String sender) {
+    public TESTransaction(int nonce, String type, String sender) {
         this.type = type;
         this.from = sender;
-        id = UuidGenerator.generateUuid();
+        this.nonce = nonce;
     }
 
     public String getType() {
@@ -44,17 +43,20 @@ public abstract class TESTransaction implements Content {
         return signature;
     }
 
-    public UUID getId() {
-        return id;
+    public Integer getNonce() {
+        return nonce;
     }
 
+    public Pair<String,Integer> getTransactionID() {
+        return new Pair<>(from, nonce);
+    }
 
     public void sign(PrivateKey key)  {
         try {
             Signature signature = Crypto.getPrivateSignatureInstance(key);
             signature.update(type.getBytes());
             signature.update(from.getBytes());
-            signature.update(id.toString().getBytes());
+            signature.update(Integer.toString(nonce).getBytes());
             signConcreteAttributes(signature);
             this.signature = signature.sign();
 
@@ -68,7 +70,7 @@ public abstract class TESTransaction implements Content {
             Signature signaturePublic = Crypto.getPublicSignatureInstance(Crypto.getPublicKeyFromHash(from));
             signaturePublic.update(type.getBytes());
             signaturePublic.update(from.getBytes());
-            signaturePublic.update(id.toString().getBytes());
+            signaturePublic.update(Integer.toString(nonce).getBytes());
             signConcreteAttributes(signaturePublic);
             return signaturePublic.verify(signature);
 

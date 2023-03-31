@@ -39,9 +39,9 @@ public class BlockchainClientAPI {
         _clientKeys = new Pair<PublicKey, PrivateKey>(publicKey, privateKey);
     }
 
-    public static void submitTransaction(UUID id, Content concreteTxn, int gasPrice, int gasLimit, String contractID)
+    public static void submitTransaction(String from, int nonce, Content concreteTxn, int gasPrice, int gasLimit, String contractID)
             throws IOException, NoSuchAlgorithmException {
-        Content txnRequest = new BlockchainTransaction(id, concreteTxn, gasPrice, gasLimit, contractID);
+        Content txnRequest = new BlockchainTransaction(from, nonce, concreteTxn, gasPrice, gasLimit, contractID);
         for (Pair<String, Integer> pair : _memberHostNames ) {
             AuthenticatedPerfectLink.send(_socket, txnRequest, pair.getFirst(), pair.getSecond());
         }

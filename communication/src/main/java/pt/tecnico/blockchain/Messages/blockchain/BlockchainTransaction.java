@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.Messages.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
 import java.util.UUID;
@@ -11,13 +12,15 @@ import java.util.UUID;
 public class BlockchainTransaction extends ApplicationMessage implements Content {
 
     private String contractID;
-    private UUID id;
+    private String from;
+    private int nonce;
     private int gasPrice;
     private int gasLimit;
 
-    public BlockchainTransaction(UUID id, Content transaction, int gasPrice, int gasLimit, String contractID) {
+    public BlockchainTransaction(String from, int nonce, Content transaction, int gasPrice, int gasLimit, String contractID) {
         super(transaction);
-        this.id = id;
+        this.from = from;
+        this.nonce = nonce;
         this.contractID = contractID;
         this.gasPrice = gasPrice;
         this.gasLimit = gasLimit;
@@ -32,19 +35,27 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         return contractID;
     }
 
-    public String getTransactionID() {
-        return id.toString();
+    public String getNonce() {
+        return Integer.toString(nonce);
     }
 
     public int getGasPrice() {
         return gasPrice;
     }
 
+    public String getSender() {
+        return from;
+    }
+
+    public Pair<String, Integer> getTransactionID() {
+        return new Pair<>(from, nonce);
+    }
+
     @Override
     public String toString(int tabs) {
         return toStringWithTabs("BlockchainTransaction: {", tabs) +
                 toStringWithTabs("contractID: " + contractID, tabs+1) +
-                toStringWithTabs("UUID: " + id, tabs+1) +
+                toStringWithTabs("nonce: " + nonce, tabs+1) +
                 getContent().toString(tabs+1) +
                 toStringWithTabs("}", tabs);
     }
