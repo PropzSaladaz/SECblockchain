@@ -37,9 +37,9 @@ public class BlockchainConfig
             " (?<operator>[OCA])" +
             "(, (?<authenticateAs>\\d+))?\\)");
     private final Pattern CLIENT_REQUEST_PATTERN = Pattern.compile("^R\\s(?<slot>\\d+)" +
-            "(?<request>( \\(\\d+, [CBT](\\(\\d+(, \\d+)?\\))?, \\d+, \\d+\\))+)$");
+            "(?<request>( \\(\\d+, [CBT](\\(\\d+, \\d+\\))?, \\d+, \\d+\\))+)$");
     private final Pattern CLIENT_REQUEST_INFO_PATTERN = Pattern.compile(" \\((?<clientId>\\d+), " +
-            "(?<operation>[CBT])(\\((?<amount>\\d+),(?<destinationId>\\d+)\\))?, " +
+            "(?<operation>[CBT])(\\((?<destinationId>\\d+), (?<amount>\\d+)\\))?, " +
             "(?<gasPrice>\\d+), " +
             "(?<gasLimit>\\d+)\\)");
 

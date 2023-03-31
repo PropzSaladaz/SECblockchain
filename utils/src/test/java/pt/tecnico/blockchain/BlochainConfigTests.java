@@ -5,6 +5,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import pt.tecnico.blockchain.Config.BlockchainConfig;
+import pt.tecnico.blockchain.Config.operations.ClientOperation;
+import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
+import pt.tecnico.blockchain.Config.operations.TransferOperation;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,7 +20,7 @@ import static org.junit.Assert.assertNull;
 /**
  * Unit test for simple App.
  */
-@Ignore
+
 public class BlochainConfigTests
 {
     private static String filename = "example.txt";
@@ -39,7 +42,8 @@ public class BlochainConfigTests
                     "P 5 C 127.0.0.1:10005\n" +
                     "T 500\n" +
                     "A 2 (1, O) (2, C) (4, A, 3)\n" +
-                    "R 2 (5, \"balelas-string\", 10) (6, \"popota\", 300)\n"
+                    "R 2 (5, C, 1, 1)\n" +
+                    "R 3 (5, T(2, 400), 1, 1)\n"
             );
             writer.close();
             config = new BlockchainConfig();
@@ -119,17 +123,24 @@ public class BlochainConfigTests
         assertNull(c6);
     }
 
-    @Ignore
+
     @Test
     public void getRequestInSlotForProcess() {
-        /*Pair<String, Integer> request1 = config.getRequestInSlotForProcess(2, 5);
-        Pair<String, Integer> request2 = config.getRequestInSlotForProcess(2, 6);
+        ClientOperation request1 = config.getRequestInSlotForProcess(2, 5);
+        ClientOperation request2 = config.getRequestInSlotForProcess(3, 5);
 
-        assertEquals(request1.getFirst(), "balelas-string");
-        assertEquals((int)request1.getSecond(), 10);
+        assertEquals(request1.getType(), "C");
+        CreateAccountOperation c = (CreateAccountOperation) request1;
+        assertEquals(c.getGasPrice(), 1);
+        assertEquals(c.getGasLimit(), 1);
 
-        assertEquals(request2.getFirst(), "popota");
-        assertEquals((int)request2.getSecond(), 300);*/
+        assertEquals(request2.getType(), "T");
+        TransferOperation t = (TransferOperation) request2;
+        assertEquals(t.getDestinationID(), 2);
+        assertEquals(t.getAmount(), 400);
+        assertEquals(t.getGasPrice(), 1);
+        assertEquals(t.getGasLimit(), 1);
+
     }
 
     @Test
