@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.client;
 
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
@@ -14,6 +15,7 @@ import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
@@ -28,49 +30,58 @@ import java.security.PrivateKey;
 
 public class BlockchainClientAPI {
     private static List<Pair<String, Integer>> _memberHostNames;
-    private static DatagramSocket _socket;
-    private static Pair<PublicKey,PrivateKey> _clientKeys;
+    private Pair<PublicKey,PrivateKey> _clientKeys;
+    private DatagramSocket _socket;
+    private DecentralizedAppClientAPI _app;
+    private Integer nonce = 0;
 
-    public static void setSocket(DatagramSocket socket) {
+    public BlockchainClientAPI(DatagramSocket socket, DecentralizedAppClientAPI app) {
+        _app = app;
         _socket = socket;
     }
 
-    public static void setCredentials(PublicKey publicKey, PrivateKey privateKey) {
-        _clientKeys = new Pair<PublicKey, PrivateKey>(publicKey, privateKey);
-    }
-
-    public static void submitTransaction(String from, int nonce, Content concreteTxn, int gasPrice, int gasLimit, String contractID)
-            throws IOException, NoSuchAlgorithmException {
-        Content txnRequest = new BlockchainTransaction(from, nonce, concreteTxn, gasPrice, gasLimit, contractID);
-        for (Pair<String, Integer> pair : _memberHostNames ) {
-            AuthenticatedPerfectLink.send(_socket, txnRequest, pair.getFirst(), pair.getSecond());
-        }
-    }
-
-    public static PublicKey getPublicKey() {
-        return _clientKeys.getFirst();
-    }
-
-    public static PrivateKey getPrivateKey() {
-        return _clientKeys.getSecond();
-    }
-
-    public static Pair<PublicKey,PrivateKey> getClientKeys() {
-        return _clientKeys;
+    public void setCredentials(PublicKey publicKey, PrivateKey privateKey) {
+        _clientKeys = new Pair<>(publicKey, privateKey);
     }
 
     public static void setMembers(ArrayList<Pair<String, Integer>> memberHostNames) {
         _memberHostNames = memberHostNames;
     }
 
-    public static void waitForMessages() {
+    public Integer getNonce() {
+        return nonce;
+    }
+
+    synchronized public void submitTransaction(Content concreteTxn, int gasPrice, int gasLimit, String contractID)
+            throws IOException, NoSuchAlgorithmException {
+        Content txnRequest = new BlockchainTransaction(
+            KeyConverter.keyToString(_clientKeys.getFirst()), nonce, concreteTxn, gasPrice, gasLimit, contractID);
+        nonce += 1;
+        for (Pair<String, Integer> pair : _memberHostNames ) {
+            AuthenticatedPerfectLink.send(_socket, txnRequest, pair.getFirst(), pair.getSecond());
+        }
+    }
+
+    public PublicKey getPublicKey() {
+        return _clientKeys.getFirst();
+    }
+
+    public PrivateKey getPrivateKey() {
+        return _clientKeys.getSecond();
+    }
+
+    public Pair<PublicKey,PrivateKey> getClientKeys() {
+        return _clientKeys;
+    }
+
+    public void waitForMessages() {
         Thread worker = new Thread(() -> {
             while (true) {
                 try {
                     Content message = AuthenticatedPerfectLink.deliver(_socket);
                     handleResponse(message);
                 } catch (ClassCastException | IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
-                    System.out.println("Received a corrupted message, ignoring...");
+                    Logger.logWarning("Received a corrupted message, ignoring...");
                 }
             }
         });
@@ -93,10 +104,11 @@ public class BlockchainClientAPI {
     }
      */
 
-    private static void handleResponse(Content message) {
+    private void handleResponse(Content message) {
         ApplicationMessage msg = (ApplicationMessage) message;
         switch (msg.getApplicationMessageType()) {
             case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
+                // _app.deliver()
                 break;
             default:
                 System.out.println("ERROR: Could not handle request");

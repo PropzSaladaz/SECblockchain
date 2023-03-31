@@ -1,57 +1,75 @@
 package pt.tecnico.blockchain;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+
+import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.CheckBalance;
 import pt.tecnico.blockchain.Messages.tes.CreateAccount;
 import pt.tecnico.blockchain.Messages.tes.TESTransaction;
 import pt.tecnico.blockchain.Messages.tes.Transfer;
 import pt.tecnico.blockchain.client.BlockchainClientAPI;
+import pt.tecnico.blockchain.client.DecentralizedAppClientAPI;
 
-public class TESClientAPI {
+public class TESClientAPI implements DecentralizedAppClientAPI {
 
     private static String contractID = "0"; // TODO define a hash in the server TES class
-    private static PublicKey publicKey = BlockchainClientAPI.getPublicKey();
-    private static PrivateKey privateKey = BlockchainClientAPI.getPrivateKey();
-    private static int nonce = 0;
+    private final BlockchainClientAPI client;
 
-    synchronized public static void createAccount(int gasPrice, int gasLimit) {
+    public TESClientAPI(DatagramSocket socket, PublicKey pubKey, PrivateKey privKey) {
+        // TODO check if client has key. If not, generate a new pair
+        client = new BlockchainClientAPI(socket,  this);
+        client.setCredentials(pubKey, privKey);
+    }
+
+    public void createAccount(int gasPrice, int gasLimit) {
         try {
-            CreateAccount txn = new CreateAccount((nonce += 1), Crypto.getHashFromKey(publicKey));
-            txn.sign(privateKey);
+            CreateAccount txn = new CreateAccount(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
+            txn.sign(client.getPrivateKey());
             submitTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
 
-    synchronized public static void transfer(PublicKey destination, int amount, int gasPrice, int gasLimit) {
+    public void transfer(PublicKey destination, int amount, int gasPrice, int gasLimit) {
         try {
-            Transfer txn = new Transfer((nonce += 1), Crypto.getHashFromKey(publicKey), Crypto.getHashFromKey(destination), amount);
-            txn.sign(privateKey);
+            Transfer txn = new Transfer(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()),
+                    Crypto.getHashFromKey(destination), amount);
+            txn.sign(client.getPrivateKey());
             submitTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
 
-    synchronized public static void checkBalance(int gasPrice, int gasLimit) {
+    public void checkBalance(int gasPrice, int gasLimit) {
         try {
-            CheckBalance txn = new CheckBalance((nonce += 1), Crypto.getHashFromKey(publicKey));
-            txn.sign(privateKey);
+            CheckBalance txn = new CheckBalance(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
+            txn.sign(client.getPrivateKey());
             submitTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
 
-    private static void submitTransactionToBlockchain(TESTransaction concreteTxn, int gasPrice, int gasLimit) {
+    public void waitForMessages() {
+        client.waitForMessages();
+    }
+
+    private void submitTransactionToBlockchain(TESTransaction concreteTxn, int gasPrice, int gasLimit) {
         try {
-            BlockchainClientAPI.submitTransaction(KeyConverter.keyToString(publicKey), concreteTxn.getNonce(), concreteTxn, gasPrice, gasLimit, contractID);
+            client.submitTransaction(concreteTxn, gasPrice, gasLimit, contractID);
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void deliver(Content message) {
+        // Deliver msg
     }
 }

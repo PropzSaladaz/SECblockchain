@@ -24,8 +24,7 @@ public class Tes implements ContractI {
     }
 
     public boolean hasClient(String publicKey){
-        if (_clientAccounts.get(publicKey)==null) return false;
-        else return true;
+        return _clientAccounts.get(publicKey) != null;
     }
 
     public boolean validateSignature(TESTransaction transaction) {
@@ -33,8 +32,7 @@ public class Tes implements ContractI {
     }
 
     public boolean validateTransfer(Transfer transfer){
-        if (transfer.getAmount() <= 0 || !hasClient(transfer.getDestinationAddress())) return false;
-        else return true;
+        return transfer.getAmount() > 0 && hasClient(transfer.getDestinationAddress());
     }
 
 
@@ -54,8 +52,7 @@ public class Tes implements ContractI {
                     return true;
                 }else return false;
             case TESTransaction.CHECK_BALANCE:
-                if (validateSignature(transaction) && hasClient(transaction.getSender())) return true;
-                else return false;
+                return validateSignature(transaction) && hasClient(transaction.getSender());
             default:
                 System.out.println("ERROR: Could not handle request");
                 return false;
