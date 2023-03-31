@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.behavior.states.corrupt;
 
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
@@ -50,14 +51,14 @@ public class CorruptAPLBehavior {
 
 
     }
-    public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
+    public static APLReturnMessage deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
             NoSuchAlgorithmException {
         while(true){
             try {
                 System.out.println("CORRUPTED: Waiting for APL messages...");
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                 System.out.println("CORRUPTED: returning message (without checking signature)");
-                return message.getContent();
+                return new APLReturnMessage(message.getContent(), message.getSenderPID());
             }catch(RuntimeException e){
                 System.out.println(e.getMessage());
             }

@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.server;
 
 import pt.tecnico.blockchain.Application;
+import pt.tecnico.blockchain.Ibft;
 import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
@@ -55,8 +56,13 @@ public class BlockchainMemberAPI implements Application {
         chain.prepareValue(value);
     }
 
-    public void addTransactionToPool(BlockchainTransaction transaction) {
+    public Content addTransactionAndGetBlockIfReady(BlockchainTransaction transaction) {
+        List<BlockchainTransaction> transactions;
         pool.addTransactionIfNotInPool(transaction);
+        if ((transactions = pool.getTransactionsIfHasEnough()).size() > 0) {
+            return new BlockchainBlock(transactions);
+        }
+        return null;
     }
 
     public void sendTransactionResultToClient(Content message) {

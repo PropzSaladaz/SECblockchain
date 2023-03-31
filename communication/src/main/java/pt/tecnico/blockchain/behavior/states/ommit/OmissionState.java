@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.behavior.states.ommit;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.behavior.states.correct.LinkBehavior;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class OmissionState extends LinkBehavior {
     }
 
     @Override
-    public Content APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
+    public APLReturnMessage APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
         return OmissionAPLBehavior.deliver(socket);
     }
 

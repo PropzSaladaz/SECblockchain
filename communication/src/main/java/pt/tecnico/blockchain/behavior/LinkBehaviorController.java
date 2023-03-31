@@ -2,6 +2,7 @@ package pt.tecnico.blockchain.behavior;
 
 import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.behavior.states.correct.LinkBehavior;
 import pt.tecnico.blockchain.behavior.states.correct.CorrectState;
 
@@ -26,7 +27,7 @@ public class LinkBehaviorController {
         behavior.APLsend(socket, content, hostname, port);
     }
 
-    public static Content APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
+    public static APLReturnMessage APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
         return behavior.APLdeliver(socket);
     }
 
