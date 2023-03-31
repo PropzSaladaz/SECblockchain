@@ -2,6 +2,7 @@ package pt.tecnico.blockchain.behavior.states.ommit;
 
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.behavior.LinkBehaviorController;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class OmissionAPLBehavior {
         System.out.println("Omitting send message in APL (message requested to be sent but was omitted");
     }
 
-    public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
+    public static APLReturnMessage deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
             NoSuchAlgorithmException {
         while(LinkBehaviorController.getBehaviorType().equals(OmissionState.TYPE)){
             // Do nothing while on omission state

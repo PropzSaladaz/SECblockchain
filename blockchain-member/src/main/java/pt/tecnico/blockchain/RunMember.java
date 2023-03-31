@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
 import java.io.IOException;
@@ -12,14 +13,11 @@ public class RunMember {
 
         try {
             while (true) {
-                Content message =  AuthenticatedPerfectLink.deliver(socket);
-                if (message != null) {
-                    Thread worker = new Thread(() -> {
-                        Content workerMessage = message;
-                        MemberServicesImpl.handleRequest(workerMessage);
-                    });
-                    worker.start();
-                }
+                APLReturnMessage message =  AuthenticatedPerfectLink.deliver(socket);
+                Thread worker = new Thread(() -> {
+                    MemberServicesImpl.handleRequest(message);
+                });
+                worker.start();
             }
         } catch (Exception e) {
             e.printStackTrace();

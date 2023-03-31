@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.behavior.states.correct;
 
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
@@ -30,14 +31,14 @@ public class DefaultAPLBehavior {
      * Only returns if received a valid APL message.
      * If the message is invalid simply ignore it and wait for a valid one.
      */
-    public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
+    public static APLReturnMessage deliver(DatagramSocket socket) throws IOException, ClassNotFoundException,
             NoSuchAlgorithmException {
         while(true){
             try{
                 APLMessage message = (APLMessage) PerfectLink.deliver(socket);
                 PublicKey pk = RSAKeyStoreById.getPublicKey(message.getSenderPID());
                 if (pk != null && AuthenticatedPerfectLink.validateMessage(message, pk)) {
-                    return message.getContent();
+                    return new APLReturnMessage(message.getContent(), message.getSenderPID());
                 }
                 System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
             } catch(Exception e){

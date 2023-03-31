@@ -15,21 +15,24 @@ public class IbftMessagehandler {
     static DatagramSocket _socket;
     static int _pid;
 
-    public static void handleMessage(ConsensusInstanceMessage message) {
-        switch (message.getMessageType()) {
-            case ConsensusInstanceMessage.PRE_PREPARE:
-                handlePrePrepareRequest(message);
-                break;
-            case ConsensusInstanceMessage.PREPARE:
-                handlePrepareRequest(message);
-                break;
-            case ConsensusInstanceMessage.COMMIT:
-                handleCommitRequest(message);
-                break;
-            default:
-                System.out.println("ERROR: Could not handle request");
-                break;
-        }
+    public static void handleMessage(ConsensusInstanceMessage message, int actualSenderID) {
+        if (message.getSenderPID() == actualSenderID) {
+            switch (message.getMessageType()) {
+                case ConsensusInstanceMessage.PRE_PREPARE:
+                    handlePrePrepareRequest(message);
+                    break;
+                case ConsensusInstanceMessage.PREPARE:
+                    handlePrepareRequest(message);
+                    break;
+                case ConsensusInstanceMessage.COMMIT:
+                    handleCommitRequest(message);
+                    break;
+                default:
+                    System.out.println("ERROR: Could not handle request");
+                    break;
+            }
+        } else Logger.logWarning("Received a tampered IBFT message with wrong senderID");
+
     }
 
     public static synchronized void handlePrePrepareRequest(ConsensusInstanceMessage message) {

@@ -17,6 +17,7 @@ import java.util.Arrays;
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.behavior.LinkBehaviorController;
 
 
@@ -51,7 +52,7 @@ public class AuthenticatedPerfectLink {
         LinkBehaviorController.APLsend(socket, content, hostname, port);
     }
 
-    public static Content deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
+    public static APLReturnMessage deliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
         return LinkBehaviorController.APLdeliver(socket);
     }
 

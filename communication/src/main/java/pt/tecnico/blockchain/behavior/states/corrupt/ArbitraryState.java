@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.behavior.states.corrupt;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.behavior.states.correct.LinkBehavior;
 import pt.tecnico.blockchain.behavior.states.correct.DefaultAPLBehavior;
 import pt.tecnico.blockchain.behavior.states.correct.DefaultFLLBehavior;
@@ -28,7 +29,7 @@ public class ArbitraryState extends LinkBehavior {
     }
 
     @Override
-    public Content APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
+    public APLReturnMessage APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
         System.out.println("Corrupted APLdeliver");
         if (actArbitrary()) return CorruptAPLBehavior.deliver(socket);
         else return DefaultAPLBehavior.deliver(socket);
