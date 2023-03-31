@@ -28,17 +28,17 @@ public class RequestScheduler {
                     switch(request.getType()) {
                         case BlockchainConfig.CREATE_ACCOUNT:
                             CreateAccountOperation createAcc = (CreateAccountOperation) request;
-                            clientAPI.createAccount(createAcc.getGasPrice(), createAcc.getGasLimit());
+                            TESClientAPI.createAccount(createAcc.getGasPrice(), createAcc.getGasLimit());
                             break;
                         case BlockchainConfig.CHECK_BALANCE:
                             CheckBalanceOperation checkBalance = (CheckBalanceOperation) request;
-                            clientAPI.checkBalance(checkBalance.getGasPrice(), checkBalance.getGasLimit());
+                            TESClientAPI.checkBalance(checkBalance.getGasPrice(), checkBalance.getGasLimit());
                             break;
                         case BlockchainConfig.TRANSFER:
                             TransferOperation transfer = (TransferOperation) request;
                             PublicKey destination = RSAKeyStoreById.getPublicKey(transfer.getDestinationID());
                             if (destination != null) {
-                                clientAPI.transfer(destination, transfer.getAmount(),
+                                TESClientAPI.transfer(destination, transfer.getAmount(),
                                         transfer.getGasPrice(), transfer.getGasLimit());
                             } else {
                                 Logger.logWarning("Client with ID=" + transfer.getDestinationID() +
