@@ -1,15 +1,20 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Config.BlockchainConfig;
+import pt.tecnico.blockchain.Config.operations.CheckBalanceOperation;
+import pt.tecnico.blockchain.Config.operations.ClientOperation;
+import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
+import pt.tecnico.blockchain.Config.operations.TransferOperation;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
-import pt.tecnico.blockchain.Keys.logger.Logger;
 import pt.tecnico.blockchain.client.BlockchainClientAPI;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 
 public class RequestScheduler {
     private static int slot = 0;
@@ -17,10 +22,33 @@ public class RequestScheduler {
     public static void startFromConfig(int pid, BlockchainConfig config){
         int slotDuration = config.getSlotDuration();
         ScheduledTask sendertask = new ScheduledTask(() -> {
-            Pair<String, Integer> request = config.getRequestInSlotForProcess(slot, pid);
+            ClientOperation request = config.getRequestInSlotForProcess(slot, pid);
             if(request != null){
-                // TODO get type of transaction (CreateAcc, Transfer, Balance)
-                TESClientAPI.createAccount(1, 1);
+                try {
+                    switch(request.getType()) {
+                        case BlockchainConfig.CREATE_ACCOUNT:
+                            CreateAccountOperation createAcc = (CreateAccountOperation) request;
+                            clientAPI.createAccount(createAcc.getGasPrice(), createAcc.getGasLimit());
+                            break;
+                        case BlockchainConfig.CHECK_BALANCE:
+                            CheckBalanceOperation checkBalance = (CheckBalanceOperation) request;
+                            clientAPI.checkBalance(checkBalance.getGasPrice(), checkBalance.getGasLimit());
+                            break;
+                        case BlockchainConfig.TRANSFER:
+                            TransferOperation transfer = (TransferOperation) request;
+                            PublicKey destination = RSAKeyStoreById.getPublicKey(transfer.getDestinationID());
+                            if (destination != null) {
+                                clientAPI.transfer(destination, transfer.getAmount(),
+                                        transfer.getGasPrice(), transfer.getGasLimit());
+                            } else {
+                                Logger.logWarning("Client with ID=" + transfer.getDestinationID() +
+                                        " does not have a valid key");
+                            }
+                            break;
+                    }
+                } catch( ClassCastException e) {
+                    Logger.logWarning("Invalid client operation");
+                }
             }
             slot++;
         }, slotDuration);
