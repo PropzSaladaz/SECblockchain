@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
 
@@ -44,7 +45,7 @@ public class Member
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             ContractI tes = new Tes();
-            BlockchainMemberAPI blockchainMemberAPI = new BlockchainMemberAPI(socket, config.getClients(),tes);
+            BlockchainMemberAPI blockchainMemberAPI = new BlockchainMemberAPI(socket, config.getClients(),tes, RSAKeyStoreById.getPublicFromPid(id));
             MemberServicesImpl.init(config.getClientHostnames(), blockchainMemberAPI);
             Ibft.init(socket, id, config.getMemberHostnames(), blockchainMemberAPI);
 

@@ -7,37 +7,26 @@ import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import java.util.List;
 
 public class DecideBlockMessage extends ApplicationMessage implements Content {
+    public static final String SUCCESSFUL_TRANSACTION = "SUCCESSFUL TRANSACTION";
+    public static final String REJECTED_TRANSACTION = "REJECTED TRANSACTION";
 
-    private int _consensusInstance;
-    private List<ConsensusInstanceMessage> _quorum;
+    private String _status;
 
-    public DecideBlockMessage(int consensusInstance, Content message, List<ConsensusInstanceMessage> quorum){
-        super(message);
-        _consensusInstance = consensusInstance;
-        _quorum = quorum;
-    }
+    public DecideBlockMessage(){}
+
+    public void setContent(Content transaction){ setContent(transaction);}
     
     @Override
-    public String getApplicationMessageType() {
-        return DECIDE_BLOCK_MESSAGE;
-    }
+    public String getApplicationMessageType() {return DECIDE_BLOCK_MESSAGE;}
 
-    public int getConsensusInstance() {
-        return _consensusInstance;
-    }
 
-    public List<ConsensusInstanceMessage> getQuorum() {
-        return _quorum;
-    }
+    public void setStatus(String status) {_status = status;}
+
+    public String getStatus() {return _status;}
 
     @Override
     public String toString(int level) {
-        StringBuilder quorums = new StringBuilder();
-        for (ConsensusInstanceMessage m : _quorum) {
-            quorums.append(m.toString(level+2));
-        }
         return toStringWithTabs("DecideBlockMessage: {", level) +
-                toStringWithTabs("Quorum:\n" + quorums ,level+1) +
                 getContent().toString(level+1) +
                 toStringWithTabs("}", level);
     }
@@ -46,13 +35,7 @@ public class DecideBlockMessage extends ApplicationMessage implements Content {
     public boolean equals(Content another) {
         try {
             DecideBlockMessage m = (DecideBlockMessage) another;
-            if (_quorum.size() == m.getQuorum().size()) {
-                for (int i = 0 ; i < _quorum.size() ; i++) {
-                    if (!_quorum.get(i).equals(m.getQuorum().get(i))) return false;
-                }
-                return _consensusInstance == m.getConsensusInstance();
-            }
-            return false;
+            return this.getContent() == m.getContent();
         } catch( ClassCastException e) {
             return false;
         }

@@ -4,6 +4,7 @@ import pt.tecnico.blockchain.Application;
 import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
+import pt.tecnico.blockchain.Pair;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +38,7 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public void decide(Content value) {
+    public void decide(Pair<BlockchainBlock,BlockchainBlock> pair, Content value) {
         BlockchainBlock blockValue = (BlockchainBlock) value;
         _lastBlock = new Block(_lastBlock, blockValue.getTransactions());
         printBlockchain();

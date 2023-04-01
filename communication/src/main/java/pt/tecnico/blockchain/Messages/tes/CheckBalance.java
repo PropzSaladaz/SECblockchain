@@ -7,9 +7,15 @@ import java.security.SignatureException;
 
 public class CheckBalance extends TESTransaction {
 
+    public int _amount;
+
     public CheckBalance(int nonce, String publicKeyHash) {
         super(nonce, TESTransaction.CHECK_BALANCE, publicKeyHash);
     }
+
+    public int getAmount(){return _amount;}
+
+    public void setAmount(int amount) {_amount = amount;}
 
     @Override
     protected void signConcreteAttributes(Signature signature) throws SignatureException {

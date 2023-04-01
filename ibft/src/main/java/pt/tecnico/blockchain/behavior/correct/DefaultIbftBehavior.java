@@ -9,6 +9,7 @@ import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.Pair;
 
 import static pt.tecnico.blockchain.IbftMessagehandler.broadcastMessage;
 
@@ -52,9 +53,8 @@ public class DefaultIbftBehavior {
                     Logger.logDebug("Value was validated, broadcasting... ");
                     Content content = Ibft.validateTransactions(message.getContent());
                     Ibft.getApp().prepareValue(content);
-                    Ibft.getApp().decide(new DecideBlockMessage(
-                            Ibft.getConsensusInstance(), content, Ibft.getCommitQuorum()
-                    ));
+                    Pair blockPairs = new Pair(message.getContent(),content);
+                    Ibft.getApp().decide(blockPairs,new DecideBlockMessage());
                     Ibft.endInstance();
                 }
             }

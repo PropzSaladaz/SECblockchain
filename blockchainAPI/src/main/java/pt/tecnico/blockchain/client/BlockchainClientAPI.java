@@ -66,6 +66,10 @@ public class BlockchainClientAPI {
         return _clientKeys.getFirst();
     }
 
+    public int getNumberProcesses() {
+        return _memberHostNames.size();
+    }
+
     public PrivateKey getPrivateKey() {
         return _clientKeys.getSecond();
     }
@@ -88,31 +92,14 @@ public class BlockchainClientAPI {
         worker.start();
     }
 
-    /*
-    private boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum)
-            throws IOException, SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-
-        for (ConsensusInstanceMessage consensusMessage: quorum){
-            if (!Crypto.verifySignature(
-                    MessageManager.getContentBytes(consensusMessage.getContent()),
-                    consensusMessage.getSignatureBytes(),
-                    RSAKeyStoreById.getPublicKey(consensusMessage.getSenderPID()))){
-                return false;
-            }
-        }        
-        return true;
-    }
-     */
-
     private void handleResponse(Content message) {
         ApplicationMessage msg = (ApplicationMessage) message;
-        switch (msg.getApplicationMessageType()) {
-            case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
-                // _app.deliver()
-                break;
-            default:
-                System.out.println("ERROR: Could not handle request");
-                break;
+        if (ApplicationMessage.DECIDE_BLOCK_MESSAGE.equals(msg.getApplicationMessageType())) {
+            DecideBlockMessage decideMessage = (DecideBlockMessage) msg;
+            BlockchainTransaction transaction = (BlockchainTransaction) decideMessage.getContent();
+            _app.deliver(transaction.getContent(), decideMessage.getStatus());
+        } else {
+            System.out.println("ERROR: Could not handle request");
         }
     }
 }

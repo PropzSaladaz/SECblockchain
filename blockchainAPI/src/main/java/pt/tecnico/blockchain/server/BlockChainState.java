@@ -12,9 +12,10 @@ public class BlockChainState {
         _contractId = 1;
     }
 
-    public void addContract(ContractI contract){
+    public void addContract(ContractI contract,String minerKey){
         _contracts.put(String.valueOf(_contractId),contract);
         _contractId+=1;
+        contract.createMinerAccount(minerKey);
     }
 
     public void removeContract(String id){
