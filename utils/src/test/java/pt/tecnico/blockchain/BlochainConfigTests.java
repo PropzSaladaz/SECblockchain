@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import pt.tecnico.blockchain.Config.BlockchainConfig;
+import pt.tecnico.blockchain.Config.operations.CheckBalanceOperation;
 import pt.tecnico.blockchain.Config.operations.ClientOperation;
 import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
 import pt.tecnico.blockchain.Config.operations.TransferOperation;
@@ -42,7 +43,7 @@ public class BlochainConfigTests
                     "P 5 C 127.0.0.1:10005\n" +
                     "T 500\n" +
                     "A 2 (1, O) (2, C) (4, A, 3)\n" +
-                    "R 2 (5, C, 1, 1)\n" +
+                    "R 2 (5, B(S), 1, 1)\n" +
                     "R 3 (5, T(2, 400), 1, 1)\n"
             );
             writer.close();
@@ -129,22 +130,23 @@ public class BlochainConfigTests
         ClientOperation request1 = config.getRequestInSlotForProcess(2, 5);
         ClientOperation request2 = config.getRequestInSlotForProcess(3, 5);
 
-        assertEquals(request1.getType(), "C");
-        CreateAccountOperation c = (CreateAccountOperation) request1;
-        assertEquals(c.getGasPrice(), 1);
-        assertEquals(c.getGasLimit(), 1);
+        assertEquals("B", request1.getType());
+        CheckBalanceOperation c = (CheckBalanceOperation) request1;
+        assertEquals(1, c.getGasPrice());
+        assertEquals(1, c.getGasLimit());
+        assertEquals("S", c.getReadType());
 
-        assertEquals(request2.getType(), "T");
+        assertEquals("T", request2.getType());
         TransferOperation t = (TransferOperation) request2;
-        assertEquals(t.getDestinationID(), 2);
-        assertEquals(t.getAmount(), 400);
-        assertEquals(t.getGasPrice(), 1);
-        assertEquals(t.getGasLimit(), 1);
+        assertEquals(2, t.getDestinationID());
+        assertEquals(400, t.getAmount());
+        assertEquals(1,t.getGasPrice());
+        assertEquals(1, t.getGasLimit());
 
     }
 
     @Test
-    public void getOperationInSlotForProcess() {
+    public void getBehaviorInSlotForProcess() {
         Pair<String, Integer> op1 = config.getBehaviorInSlotForProcess(2, 1);
         Pair<String, Integer> op2 = config.getBehaviorInSlotForProcess(2, 2);
         Pair<String, Integer> op3 = config.getBehaviorInSlotForProcess(2, 4);
