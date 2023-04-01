@@ -39,6 +39,8 @@ public enum ErrorMessage {
             "               -> <delay> : time of delay for the request since entering the slot in millis"),
 
     COULD_NOT_INIT_PROCESS("Error initiating a blockchain process: %s"),
+    INVALID_CLIENT_TRANSFER_ARGS("Could not parse config file: Client 'Transfer' request expects two integer arguments!"),
+    INVALID_CLIENT_CHECK_BALANCE_ARGS("Could not parse config file: Client 'Check_balance' request expects 'W' or 'S' as argument"),
     COULD_NOT_LOAD_CONFIG_FILE("Could not load config file: %s"),
     MEMBER_DOES_NOT_EXIST("No member with id %s exist in the configuration file"),
     CLIENT_DOES_NOT_EXIST("No client with id %s exist in the configuration file"),

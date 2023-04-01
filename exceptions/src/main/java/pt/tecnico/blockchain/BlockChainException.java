@@ -15,19 +15,7 @@ public class BlockChainException extends RuntimeException {
         this.errorMessage = errorMessage;
     }
 
-    public BlockChainException(ErrorMessage errorMessage, String value) {
-        super(String.format(errorMessage.label, value));
-        logger.error(String.format(errorMessage.label, value));
-        this.errorMessage = errorMessage;
-    }
-
-    public BlockChainException(ErrorMessage errorMessage, int value) {
-        super(String.format(errorMessage.label, value));
-        logger.error(String.format(errorMessage.label, value));
-        this.errorMessage = errorMessage;
-    }
-
-    public BlockChainException(ErrorMessage errorMessage, float value) {
+    public BlockChainException(ErrorMessage errorMessage, Object... value) {
         super(String.format(errorMessage.label, value));
         logger.error(String.format(errorMessage.label, value));
         this.errorMessage = errorMessage;

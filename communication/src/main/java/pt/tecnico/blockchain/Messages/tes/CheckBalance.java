@@ -6,14 +6,16 @@ import java.security.Signature;
 import java.security.SignatureException;
 
 public class CheckBalance extends TESTransaction {
+    private final String readType;
 
-    public CheckBalance(String publicKeyHash) {
+    public CheckBalance(String publicKeyHash, String readType) {
         super(TESTransaction.CHECK_BALANCE, publicKeyHash);
+        this.readType = readType;
     }
 
     @Override
     protected void signConcreteAttributes(Signature signature) throws SignatureException {
-        // no additional attributes to sign
+        signature.update(Byte.parseByte(readType));
     }
 
     @Override
