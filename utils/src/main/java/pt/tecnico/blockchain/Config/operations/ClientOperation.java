@@ -5,9 +5,21 @@ public abstract class ClientOperation {
     private int gasLimit;
     private String type;
 
+    public ClientOperation(String type) {
+        this.type = type;
+    }
+
     public ClientOperation(String type, int gasPrice, int gasLimit) {
         this.type = type;
         this.gasPrice = gasPrice;
+        this.gasLimit = gasLimit;
+    }
+
+    public void setGasPrice(int gasPrice) {
+        this.gasPrice = gasPrice;
+    }
+
+    public void setGasLimit(int gasLimit) {
         this.gasLimit = gasLimit;
     }
 

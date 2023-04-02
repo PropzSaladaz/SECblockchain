@@ -1,13 +1,13 @@
 package pt.tecnico.blockchain.server;
-
-import pt.tecnico.blockchain.Application;
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Application;
 import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
+import pt.tecnico.blockchain.Messages.tes.TESTransaction;
 import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 
@@ -15,7 +15,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Map;
+import java.io.IOException;
 import java.net.DatagramSocket;
+import java.security.NoSuchAlgorithmException;
 
 public class BlockchainMemberAPI implements Application {
     private Blockchain chain;
@@ -57,8 +59,13 @@ public class BlockchainMemberAPI implements Application {
         chain.prepareValue(value);
     }
 
-    public void addTransactionToPool(BlockchainTransaction transaction) {
+    public Content addTransactionAndGetBlockIfReady(BlockchainTransaction transaction) {
+        List<BlockchainTransaction> transactions;
         pool.addTransactionIfNotInPool(transaction);
+        if ((transactions = pool.getTransactionsIfHasEnough()).size() > 0) {
+            return new BlockchainBlock(transactions);
+        }
+        return null;
     }
 
     public void sendTransactionResultToClient(Pair<BlockchainBlock,BlockchainBlock> pair,Content content) {

@@ -46,6 +46,10 @@ public class Logger {
         printMessageWithColor("[BEHAVIOR]: " + message, GREEN);
     }
 
+    public static void logError(String message) {
+        printMessageWithColor("[ERROR]: " + message, RED);
+    }
+
     public static void logInfo(String message) {
         printMessageWithColor("[INFO]: " + message, CYAN);
     }

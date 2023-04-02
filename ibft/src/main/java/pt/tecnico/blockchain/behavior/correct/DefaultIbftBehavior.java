@@ -16,15 +16,19 @@ import static pt.tecnico.blockchain.IbftMessagehandler.broadcastMessage;
 public class DefaultIbftBehavior {
 
     public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
-        if (Ibft.leader(message.getConsensusInstance(), message.getRound()) == message.getSenderPID() &&
-                message.getConsensusInstance() == Ibft.getConsensusInstance()) {
+        if (isValidMessageFromLeader(message) && Ibft.getApp().validateValue(message.getContent())) {
             ConsensusInstanceMessage msg = new ConsensusInstanceMessage(message.getConsensusInstance(),
             message.getRound(), Ibft.getPid(), message.getContent());
             msg.setMessageType(ConsensusInstanceMessage.PREPARE);
             msg.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
             broadcastMessage(msg);
         }
-        IbftTimer.start(message.getRound());
+        //IbftTimer.start(message.getRound()); Not needed anymore
+    }
+
+    private static boolean isValidMessageFromLeader(ConsensusInstanceMessage message) {
+        return Ibft.leader(message.getConsensusInstance(), message.getRound()) == message.getSenderPID() &&
+                message.getConsensusInstance() == Ibft.getConsensusInstance();
     }
 
     public static void handlePrepareRequest(ConsensusInstanceMessage message) {

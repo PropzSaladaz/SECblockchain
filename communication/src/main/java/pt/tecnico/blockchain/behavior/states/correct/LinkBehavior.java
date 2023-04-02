@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.behavior.states.correct;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -13,7 +14,7 @@ public abstract class LinkBehavior {
         DefaultAPLBehavior.send(socket, content, hostname, port);
     }
 
-    public Content APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
+    public APLReturnMessage APLdeliver(DatagramSocket socket) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {
         return DefaultAPLBehavior.deliver(socket);
     }
 

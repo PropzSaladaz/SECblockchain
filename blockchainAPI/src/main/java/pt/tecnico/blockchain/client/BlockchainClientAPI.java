@@ -10,6 +10,7 @@ import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
@@ -82,8 +83,8 @@ public class BlockchainClientAPI {
         Thread worker = new Thread(() -> {
             while (true) {
                 try {
-                    Content message = AuthenticatedPerfectLink.deliver(_socket);
-                    handleResponse(message);
+                    APLReturnMessage message = AuthenticatedPerfectLink.deliver(_socket);
+                    handleResponse(message.getContent());
                 } catch (ClassCastException | IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
                     Logger.logWarning("Received a corrupted message, ignoring...");
                 }

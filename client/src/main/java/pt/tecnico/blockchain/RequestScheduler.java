@@ -34,28 +34,33 @@ public class RequestScheduler {
         try {
             switch(request.getType()) {
                 case BlockchainConfig.CREATE_ACCOUNT:
-                    CreateAccountOperation createAcc = (CreateAccountOperation) request;
-                    client.createAccount(createAcc.getGasPrice(), createAcc.getGasLimit());
+                    issueCreateAccRequest((CreateAccountOperation) request);
                     break;
                 case BlockchainConfig.CHECK_BALANCE:
-                    CheckBalanceOperation checkBalance = (CheckBalanceOperation) request;
-                    client.checkBalance(checkBalance.getGasPrice(), checkBalance.getGasLimit());
+                    issueCheckBalanceRequest((CheckBalanceOperation) request);
                     break;
                 case BlockchainConfig.TRANSFER:
-                    TransferOperation transfer = (TransferOperation) request;
-                    PublicKey destination = RSAKeyStoreById.getPublicKey(transfer.getDestinationID());
-                    if (destination != null) {
-                        client.transfer(destination, transfer.getAmount(),
-                                transfer.getGasPrice(), transfer.getGasLimit());
-                    } else {
-                        Logger.logWarning("Client with ID=" + transfer.getDestinationID() +
-                                " does not have a valid key");
-                    }
+                    issueTransferRequest((TransferOperation) request);
                     break;
             }
         } catch( ClassCastException e) {
             Logger.logWarning("Invalid client operation");
         }
+    }
+
+    private static void issueCreateAccRequest(CreateAccountOperation request) {
+        client.createAccount(request.getGasPrice(), request.getGasLimit());
+    }
+
+    private static void issueCheckBalanceRequest(CheckBalanceOperation request) {
+        client.checkBalance(request.getReadType(), request.getGasPrice(), request.getGasLimit());
+    }
+
+    private static void issueTransferRequest(TransferOperation request) {
+        PublicKey destination = RSAKeyStoreById.getPublicKey(request.getDestinationID());
+        if (destination != null) client.transfer(destination, request.getAmount(),
+                request.getGasPrice(), request.getGasLimit());
+        else Logger.logError("Client with ID=" + request.getDestinationID() + " does not have a valid key");
     }
 
 }

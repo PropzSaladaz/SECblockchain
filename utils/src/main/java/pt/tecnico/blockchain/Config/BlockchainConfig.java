@@ -16,6 +16,7 @@ import pt.tecnico.blockchain.Config.operations.CheckBalanceOperation;
 import pt.tecnico.blockchain.Config.operations.ClientOperation;
 import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
 import pt.tecnico.blockchain.Config.operations.TransferOperation;
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Pair;
 
 import static pt.tecnico.blockchain.ErrorMessage.*;
@@ -37,11 +38,13 @@ public class BlockchainConfig
             " (?<operator>[OCA])" +
             "(, (?<authenticateAs>\\d+))?\\)");
     private final Pattern CLIENT_REQUEST_PATTERN = Pattern.compile("^R\\s(?<slot>\\d+)" +
-            "(?<request>( \\(\\d+, [CBT](\\(\\d+, \\d+\\))?, \\d+, \\d+\\))+)$");
+            "(?<request>( \\(\\d+, [CBT](\\([^.]*\\))?, \\d+, \\d+\\))+)$");
     private final Pattern CLIENT_REQUEST_INFO_PATTERN = Pattern.compile(" \\((?<clientId>\\d+), " +
-            "(?<operation>[CBT])(\\((?<destinationId>\\d+), (?<amount>\\d+)\\))?, " +
+            "(?<operation>[TCB]*)(?<arguments>\\([^.]*\\))?, " +
             "(?<gasPrice>\\d+), " +
             "(?<gasLimit>\\d+)\\)");
+    private final Pattern CLIENT_CHECK_BALANCE_ARGS = Pattern.compile("\\((?<readType>[WS])\\)");
+    private final Pattern CLIENT_TRANSFER_ARGS = Pattern.compile("\\((?<destinationId>\\d+), (?<amount>\\d+)\\)");
 
     // Commands
     private final String START_TIME = "S";
@@ -63,6 +66,8 @@ public class BlockchainConfig
     public static final String CREATE_ACCOUNT = "C";
     public static final String TRANSFER = "T";
     public static final String CHECK_BALANCE = "B";
+    public static final String STRONGLY_CONSISTENT_READ = "S";
+    public static final String WEAKLY_CONSISTENT_READ = "W";
 
     private final Set<String> setOfBehaviorOperators = new HashSet<>(Arrays.asList(
             OMIT_MESSAGES, CORRUPT_MESSAGES, AUTHENTICATE_AS));
@@ -282,33 +287,79 @@ public class BlockchainConfig
             requests.computeIfAbsent(slot, k -> new HashMap());
 
             matcher = CLIENT_REQUEST_INFO_PATTERN.matcher(requestString);
-            // store each individual request
             while (matcher.find()) {
-                int clientId = Integer.parseInt(matcher.group("clientId"));
-                String operation = matcher.group("operation");
-                int gasPrice = Integer.parseInt(matcher.group("gasPrice"));
-                int gasLimit = Integer.parseInt(matcher.group("gasLimit"));
-
-                if (operation != null) {
-                    switch(operation) {
-                        case TRANSFER:
-                            int destination = Integer.parseInt(matcher.group("destinationId"));
-                            int amount = Integer.parseInt(matcher.group("amount"));
-                            requests.get(slot).put(clientId, new TransferOperation(destination, amount,
-                                    gasPrice, gasLimit));
-                            break;
-                        case CREATE_ACCOUNT:
-                            requests.get(slot).put(clientId, new CreateAccountOperation(gasPrice, gasLimit));
-                            break;
-                        case CHECK_BALANCE:
-                            requests.get(slot).put(clientId, new CheckBalanceOperation(gasPrice, gasLimit));
-                            break;
-                    }
-                }
+                parseClientOperationForSlot(matcher, slot);
             }
         }
         else {
             throw new BlockChainException(WRONG_FILE_FORMAT);
+        }
+    }
+
+    private void parseClientOperationForSlot(Matcher operation, int slot) {
+        int clientId = Integer.parseInt(operation.group("clientId"));
+        String operationType = operation.group("operation");
+        int gasPrice = Integer.parseInt(operation.group("gasPrice"));
+        int gasLimit = Integer.parseInt(operation.group("gasLimit"));
+
+        if (operationType != null) {
+            ClientOperation op;
+            switch(operationType) {
+                case TRANSFER:
+                    op = parseClientTransfer(operation);
+                    break;
+                case CREATE_ACCOUNT:
+                    op = parseClientCreateAcc();
+                    break;
+                case CHECK_BALANCE:
+                    op = parseClientCheckBalance(operation);
+                    break;
+                default:
+                    op = null;
+                    Logger.logError("Unknown client operation type");
+                    break;
+            }
+            if (op != null) {
+                op.setGasPrice(gasPrice);
+                op.setGasLimit(gasLimit);
+                requests.get(slot).put(clientId, op);
+            }
+        }
+    }
+
+    private ClientOperation parseClientTransfer(Matcher operation) {
+        String argumentsString = operation.group("arguments");
+        Matcher arguments = CLIENT_TRANSFER_ARGS.matcher(argumentsString);
+        if (arguments.find()) {
+            int destination = Integer.parseInt(arguments.group("destinationId"));
+            int amount = Integer.parseInt(arguments.group("amount"));
+            return new TransferOperation(destination, amount);
+        } else {
+            throw new BlockChainException(INVALID_CLIENT_TRANSFER_ARGS);
+        }
+    }
+
+    private ClientOperation parseClientCreateAcc() {
+        return new CreateAccountOperation();
+    }
+
+    private ClientOperation parseClientCheckBalance(Matcher operation) {
+        String argumentsString = operation.group("arguments");
+        Matcher arguments = CLIENT_CHECK_BALANCE_ARGS.matcher(argumentsString);
+        if (arguments.find()) {
+            String readType = arguments.group("readType");
+            switch (readType) {
+                case STRONGLY_CONSISTENT_READ:
+                    return new CheckBalanceOperation(STRONGLY_CONSISTENT_READ);
+                case WEAKLY_CONSISTENT_READ:
+                    return new CheckBalanceOperation(WEAKLY_CONSISTENT_READ);
+                default:
+                    Logger.logError("Invalid client read type");
+                    return null;
+            }
+        }
+        else {
+            throw new BlockChainException(INVALID_CLIENT_CHECK_BALANCE_ARGS);
         }
     }
 }

@@ -5,6 +5,7 @@ import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.server.BlockchainMemberAPI;
 import pt.tecnico.blockchain.server.SynchronizedTransactionPool;
 
@@ -26,27 +27,23 @@ public class MemberServicesImpl {
 
     }
 
-    public static void handleRequest(Content message) {
+    public static void handleRequest(APLReturnMessage message) {
         try {
-            if (message != null) { // might be the case when getting out of omit state deliver returning null
-                ApplicationMessage appMsg = (ApplicationMessage) message;
-                switch (appMsg.getApplicationMessageType()) {
-                    case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
-                        BlockchainTransaction transaction = (BlockchainTransaction) message;
-                        _blockchainMemberAPI.addTransactionToPool(transaction);
-                        break;
-                    case ApplicationMessage.APPEND_BLOCK_MESSAGE:
-                        AppendBlockMessage msg = (AppendBlockMessage) message;
-                        Ibft.start((BlockchainBlock) msg.getContent());
-                        break;
-                    case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
-                        ConsensusInstanceMessage ibftMessage = (ConsensusInstanceMessage) message;
-                        Ibft.handleMessage(ibftMessage);
-                        break;
-                    default:
-                        System.out.println("ERROR: Could not handle request");
-                        break;
-                }
+            Content content = message.getContent();
+            ApplicationMessage appMsg = (ApplicationMessage) content;
+            switch (appMsg.getApplicationMessageType()) {
+                case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
+                    BlockchainTransaction transaction = (BlockchainTransaction) content;
+                    Content block = _blockchainMemberAPI.addTransactionAndGetBlockIfReady(transaction);
+                    if (block != null) Ibft.start(block);
+                    break;
+                case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
+                    ConsensusInstanceMessage ibftMessage = (ConsensusInstanceMessage) content;
+                    Ibft.handleMessage(ibftMessage, message.getSenderPid());
+                    break;
+                default:
+                    Logger.logWarning("ERROR: Could not handle request");
+                    break;
             }
         } catch (ClassCastException e) {
             System.out.println("Corrupted message\n");

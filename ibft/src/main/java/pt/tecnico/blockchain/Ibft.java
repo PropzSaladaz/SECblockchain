@@ -107,8 +107,8 @@ public class Ibft {
         _preparedValue = value;
     }
 
-    public static void handleMessage(ConsensusInstanceMessage ibftMessage) {
-        IbftMessagehandler.handleMessage(ibftMessage);
+    public static void handleMessage(ConsensusInstanceMessage ibftMessage, int actualSenderID) {
+        IbftMessagehandler.handleMessage(ibftMessage, actualSenderID);
     }
 
     public static int getQuorumMinimumSize() {

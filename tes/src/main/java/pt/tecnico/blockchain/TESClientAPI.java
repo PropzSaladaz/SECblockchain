@@ -49,9 +49,9 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         }
     }
 
-    public void checkBalance(int gasPrice, int gasLimit) {
+    public void checkBalance(String readType, int gasPrice, int gasLimit) {
         try {
-            CheckBalance txn = new CheckBalance(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
+            CheckBalance txn = new CheckBalance(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()), readType);
             txn.sign(client.getPrivateKey());
             submitTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {
