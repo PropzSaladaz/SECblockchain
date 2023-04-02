@@ -15,7 +15,7 @@ public class IbftMessagehandler {
     static DatagramSocket _socket;
     static int _pid;
 
-    public static void handleMessage(ConsensusInstanceMessage message, int actualSenderID) {
+    public static void handleMessage(ConsensusInstanceMessage message, int actualSenderID) throws NoSuchAlgorithmException {
         if (message.getSenderPID() == actualSenderID) {
             switch (message.getMessageType()) {
                 case ConsensusInstanceMessage.PRE_PREPARE:

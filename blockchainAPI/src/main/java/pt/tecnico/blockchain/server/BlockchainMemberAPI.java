@@ -1,14 +1,11 @@
 package pt.tecnico.blockchain.server;
-import pt.tecnico.blockchain.Crypto;
-import pt.tecnico.blockchain.Application;
-import pt.tecnico.blockchain.KeyConverter;
+import pt.tecnico.blockchain.*;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 import pt.tecnico.blockchain.Messages.tes.TESTransaction;
-import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +23,7 @@ public class BlockchainMemberAPI implements Application {
     private Map<Integer,Pair<String,Integer>> _clientsPidToInfo;
     private BlockChainState _blockChainState;
     private PublicKey _publicKey;
+    private Boolean _isMiner;
 
     public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients, ContractI contract, PublicKey publicKey) throws NoSuchAlgorithmException {
         chain = new Blockchain();
@@ -43,6 +41,9 @@ public class BlockchainMemberAPI implements Application {
         chain.decide(pair,decideMsg.getContent());
         sendTransactionResultToClient(pair,message);
     }
+
+    @Override
+    public void setMiner(Boolean isMiner){_isMiner = isMiner;}
 
     @Override
     public boolean validateValue(Content value) {
@@ -102,13 +103,13 @@ public class BlockchainMemberAPI implements Application {
         return _blockChainState;
     }
 
-    public Content validateTransactions(Content content){
+    public Content validateTransactions(Content content) throws NoSuchAlgorithmException {
         BlockchainBlock block = (BlockchainBlock) content;
         BlockchainBlock newBlock= new BlockchainBlock();
         List<BlockchainTransaction> transactions = block.getTransactions();
         for (BlockchainTransaction transaction : transactions){
              if(_blockChainState.getContract(transactions.get(0).getContractID()).validateBlock(
-                     transaction.getContent())){
+                     transaction.getContent(), _isMiner, Crypto.getHashFromKey(_publicKey))){
                  _blockChainState.getContract(transactions.get(0).getContractID()).checkBalance(transaction.getContent());
                  newBlock.addTransaction(transaction);
              }

@@ -3,6 +3,8 @@ package pt.tecnico.blockchain.behavior.correct;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.behavior.correct.DefaultIbftBehavior;
 
+import java.security.NoSuchAlgorithmException;
+
 public abstract class IbftBehavior {
 
     public abstract String TYPE();
@@ -15,7 +17,7 @@ public abstract class IbftBehavior {
        DefaultIbftBehavior.handlePrepareRequest(message);
     }
 
-    public void handleCommitRequest(ConsensusInstanceMessage message) {
+    public void handleCommitRequest(ConsensusInstanceMessage message){
         DefaultIbftBehavior.handleCommitRequest(message);
     }
 }

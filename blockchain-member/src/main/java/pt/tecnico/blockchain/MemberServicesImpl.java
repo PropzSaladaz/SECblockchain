@@ -9,6 +9,7 @@ import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.server.BlockchainMemberAPI;
 import pt.tecnico.blockchain.server.SynchronizedTransactionPool;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 public class MemberServicesImpl {
@@ -50,6 +51,8 @@ public class MemberServicesImpl {
         } catch (RuntimeException e){
             System.out.println("Non Authorization To Perform Operation\n");
 
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
     }
 }

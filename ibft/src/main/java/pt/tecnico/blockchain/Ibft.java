@@ -34,6 +34,7 @@ public class Ibft {
         _numProcesses = members.size();
         _app = app;
         IbftMessagehandler.init(socket, members, _pid);
+
     }
 
     public static Application getApp() {
@@ -60,8 +61,10 @@ public class Ibft {
         _preparedRound = -1;
         if (leader(_consensusInstance, _round) == _pid) {
             _app.prepareValue(value);
+            _app.setMiner(true);
             IbftMessagehandler.broadcastPrePrepare(value);
         }
+        _app.setMiner(false);
         IbftTimer.start(_round);
     }
 
@@ -107,7 +110,7 @@ public class Ibft {
         _preparedValue = value;
     }
 
-    public static void handleMessage(ConsensusInstanceMessage ibftMessage, int actualSenderID) {
+    public static void handleMessage(ConsensusInstanceMessage ibftMessage, int actualSenderID) throws NoSuchAlgorithmException {
         IbftMessagehandler.handleMessage(ibftMessage, actualSenderID);
     }
 
@@ -219,7 +222,7 @@ public class Ibft {
         _commited.clear();
     }
     
-    public static Content validateTransactions(Content content){
+    public static Content validateTransactions(Content content) throws NoSuchAlgorithmException {
         return getApp().validateTransactions(content);
     }
 }

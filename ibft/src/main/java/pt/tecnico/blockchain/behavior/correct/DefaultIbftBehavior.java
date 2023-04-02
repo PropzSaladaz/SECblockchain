@@ -11,6 +11,8 @@ import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Pair;
 
+import java.security.NoSuchAlgorithmException;
+
 import static pt.tecnico.blockchain.IbftMessagehandler.broadcastMessage;
 
 public class DefaultIbftBehavior {
@@ -45,23 +47,27 @@ public class DefaultIbftBehavior {
         }
     }
 
-    public static void handleCommitRequest(ConsensusInstanceMessage message) {
-        if (Ibft.hasSamePreparedValue(message)) {
-            Logger.logDebug("COMMIT has same Prepared value");
-            Ibft.addToCommitQuorum(message);
-            if (Ibft.hasValidCommitQuorum()) {
-                Logger.logDebug("Has valid COMMIT quorum");
-                Content value = message.getContent();
-                IbftTimer.stop();
-                if (Ibft.getApp().validateValue(value)) {
-                    Logger.logDebug("Value was validated, broadcasting... ");
-                    Content content = Ibft.validateTransactions(message.getContent());
-                    Ibft.getApp().prepareValue(content);
-                    Pair blockPairs = new Pair(message.getContent(),content);
-                    Ibft.getApp().decide(blockPairs,new DecideBlockMessage());
-                    Ibft.endInstance();
-                }
-            }
-        }
+    public static void handleCommitRequest(ConsensusInstanceMessage message){
+       try{
+           if (Ibft.hasSamePreparedValue(message)) {
+               Logger.logDebug("COMMIT has same Prepared value");
+               Ibft.addToCommitQuorum(message);
+               if (Ibft.hasValidCommitQuorum()) {
+                   Logger.logDebug("Has valid COMMIT quorum");
+                   Content value = message.getContent();
+                   IbftTimer.stop();
+                   if (Ibft.getApp().validateValue(value)) {
+                       Logger.logDebug("Value was validated, broadcasting... ");
+                       Content content = Ibft.validateTransactions(message.getContent());
+                       Ibft.getApp().prepareValue(content);
+                       Pair blockPairs = new Pair(message.getContent(),content);
+                       Ibft.getApp().decide(blockPairs,new DecideBlockMessage());
+                       Ibft.endInstance();
+                   }
+               }
+           }
+       }catch( NoSuchAlgorithmException e){
+           System.out.println("ERROR\n");
+       }
     }
 }

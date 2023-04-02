@@ -51,13 +51,16 @@ public class Tes implements ContractI {
     public void createMinerAccount(String minerKey){
         _clientAccounts.put(minerKey, new ClientAccount());
     }
+
+
     @Override
-    public boolean validateBlock(Content content) {
+    public boolean validateBlock(Content content, Boolean isMiner,String memberKey) {
         TESTransaction transaction = (TESTransaction) content;
         switch (transaction.getType()) {
             case TESTransaction.CREATE_ACCOUNT:
                 if (validateSignature(transaction) && !hasClient(transaction.getSender())){
                     _clientAccounts.put(transaction.getSender(), new ClientAccount());
+                    if(isMiner) _clientAccounts.get(memberKey).deposit(1000);
                     return true;
                 }else return false;
             case TESTransaction.TRANSFER:
@@ -65,10 +68,15 @@ public class Tes implements ContractI {
                 if (validateSignature(transaction) && hasClient(transaction.getSender()) && validateTransfer(transfer)){
                     _clientAccounts.get(transaction.getSender()).withdrawal(transfer.getAmount());
                     _clientAccounts.get(transfer.getDestinationAddress()).deposit(transfer.getAmount());
+                    if(isMiner) _clientAccounts.get(memberKey).deposit(5000);
                     return true;
                 }else return false;
             case TESTransaction.CHECK_BALANCE:
-                return validateSignature(transaction) && hasClient(transaction.getSender());
+                if(validateSignature(transaction) && hasClient(transaction.getSender())){
+                    if(isMiner) _clientAccounts.get(memberKey).deposit(3000);
+                    return true;
+                }
+                return false;
             default:
                 System.out.println("ERROR: Could not handle request");
                 return false;

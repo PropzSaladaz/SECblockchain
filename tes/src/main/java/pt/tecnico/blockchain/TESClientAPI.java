@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.*;
 import pt.tecnico.blockchain.client.BlockchainClientAPI;
@@ -20,12 +21,15 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     private static String contractID = "0"; // TODO define a hash in the server TES class
     private final BlockchainClientAPI client;
     private final Map<Integer, List<TESTransaction>> tesMessagesQuorum;
+    private final Map<Integer, Boolean> deliveredMap;
 
     public TESClientAPI(DatagramSocket socket, PublicKey pubKey, PrivateKey privKey) {
         // TODO check if client has key. If not, generate a new pair
         client = new BlockchainClientAPI(socket,  this);
         client.setCredentials(pubKey, privKey);
         tesMessagesQuorum = new HashMap<>();
+        deliveredMap = new HashMap<>();
+
     }
 
     public void createAccount(int gasPrice, int gasLimit) {
@@ -76,20 +80,25 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     public boolean hasValidPreparedQuorum(int nonce) {
-        return (tesMessagesQuorum.get(nonce).size() == getMaxNumberOfFaultyProcesses() + 1 ) ;
+        if (tesMessagesQuorum.get(nonce).size() == getMaxNumberOfFaultyProcesses() + 1){
+            deliveredMap.put(nonce,true);
+            return true;
+        }
+        return false;
     }
-
 
     @Override
     public void deliver(Content message, String status) {
         TESTransaction transaction = (TESTransaction) message;
         if(transaction.checkSign()){
-            if (tesMessagesQuorum.containsKey(transaction.getNonce()) && transaction.equals(tesMessagesQuorum.get(transaction.getNonce()).get(0))) tesMessagesQuorum.get(transaction.getNonce()).add(transaction);
+            if (tesMessagesQuorum.containsKey(transaction.getNonce()) && transaction.equals(tesMessagesQuorum.get(transaction.getNonce()).get(0))){
+                tesMessagesQuorum.get(transaction.getNonce()).add(transaction);
+            }
             else{
                 tesMessagesQuorum.put(transaction.getNonce(),new ArrayList<>());
                 tesMessagesQuorum.get(transaction.getNonce()).add(transaction);
             }
-        }if(hasValidPreparedQuorum(transaction.getNonce())){
+        }if(deliveredMap.get(transaction.getNonce()) == null && hasValidPreparedQuorum(transaction.getNonce())){
             switch (transaction.getType()) {
                 case TESTransaction.CREATE_ACCOUNT:
                     if(status.equals("SUCCESSFUL TRANSACTION")){

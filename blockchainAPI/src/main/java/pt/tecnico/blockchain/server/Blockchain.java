@@ -78,4 +78,8 @@ public class Blockchain implements Application {
     public Content validateTransactions(Content content) {
         return null;
     }
+
+    @Override
+    public void setMiner(Boolean isMiner) {
+    }
 }
