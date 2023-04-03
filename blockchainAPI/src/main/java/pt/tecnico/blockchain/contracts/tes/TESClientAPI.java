@@ -36,7 +36,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         try {
             CreateAccount txn = new CreateAccount(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
             txn.sign(client.getPrivateKey());
-            submitTransactionToBlockchain(txn, gasPrice, gasLimit);
+            submitTransactionToBlockchain(txn, gasPrice, gasLimit,"UPDATE");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -47,7 +47,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
             Transfer txn = new Transfer(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()),
                     Crypto.getHashFromKey(destination), amount);
             txn.sign(client.getPrivateKey());
-            submitTransactionToBlockchain(txn, gasPrice, gasLimit);
+            submitTransactionToBlockchain(txn, gasPrice, gasLimit,"UPDATE");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -57,7 +57,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         try {
             CheckBalance txn = new CheckBalance(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()), readType);
             txn.sign(client.getPrivateKey());
-            submitTransactionToBlockchain(txn, gasPrice, gasLimit);
+            submitTransactionToBlockchain(txn, gasPrice, gasLimit,"STRONG READ");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -67,9 +67,9 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         client.waitForMessages();
     }
 
-    private void submitTransactionToBlockchain(TESTransaction concreteTxn, int gasPrice, int gasLimit) {
+    private void submitTransactionToBlockchain(TESTransaction concreteTxn, int gasPrice, int gasLimit, String type) {
         try {
-            client.submitTransaction(concreteTxn, gasPrice, gasLimit, contractID);
+            client.submitTransaction(concreteTxn, gasPrice, gasLimit, contractID,type);
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

@@ -8,7 +8,6 @@ import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
-import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.TransactionResultMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
@@ -54,11 +53,14 @@ public class BlockchainClientAPI {
         return nonce;
     }
 
-    synchronized public void submitTransaction(Content concreteTxn, int gasPrice, int gasLimit, String contractID)
+    synchronized public void submitTransaction(Content concreteTxn, int gasPrice, int gasLimit, String contractID, String type)
             throws IOException, NoSuchAlgorithmException {
-        Content txnRequest = new BlockchainTransaction(
+        BlockchainTransaction txnRequest = new BlockchainTransaction(
             KeyConverter.keyToString(_clientKeys.getFirst()), nonce, concreteTxn, gasPrice, gasLimit, contractID);
         nonce += 1;
+        if(type.equals(BlockchainTransaction.UPDATE)) txnRequest.setOperationType(BlockchainTransaction.UPDATE);
+        if(type.equals(BlockchainTransaction.STRONG_READ)) txnRequest.setOperationType(BlockchainTransaction.STRONG_READ);
+        if(type.equals(BlockchainTransaction.WEAK_READ)) txnRequest.setOperationType(BlockchainTransaction.WEAK_READ);
         for (Pair<String, Integer> pair : _memberHostNames ) {
             AuthenticatedPerfectLink.send(_socket, txnRequest, pair.getFirst(), pair.getSecond());
         }

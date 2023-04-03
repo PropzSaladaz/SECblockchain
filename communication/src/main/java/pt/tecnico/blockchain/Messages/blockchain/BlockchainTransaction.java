@@ -10,16 +10,21 @@ import java.util.UUID;
  * Contains an arbitrary transaction for a specific contract identified by ID
  */
 public class BlockchainTransaction extends ApplicationMessage implements Content {
-    public static final String SUCCESSFUL_TRANSACTION = "SUCCESSFUL TRANSACTION";
-    public static final String REJECTED_TRANSACTION = "REJECTED TRANSACTION";
-    public static final String NOT_EXECUTED = "REJECTED TRANSACTION";
+    public static final String APPENDED = "APPENDED";
+    public static final String STRONG_READ = "STRONG READ";
+    public static final String WEAK_READ = "WEAK READ";
+    public static final String UPDATE = "UPDATE";
+
+
 
     private String contractID;
     private String from;
     private int nonce;
     private int gasPrice;
     private int gasLimit;
-    private String status = NOT_EXECUTED;
+    private String _status;
+    private String _operationType;
+
 
     public BlockchainTransaction(String from, int nonce, Content transaction, int gasPrice, int gasLimit, String contractID) {
         super(transaction);
@@ -28,6 +33,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         this.contractID = contractID;
         this.gasPrice = gasPrice;
         this.gasLimit = gasLimit;
+        _status = "NOT APPENDED";
     }
 
     @Override
@@ -41,6 +47,22 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
 
     public String getNonce() {
         return Integer.toString(nonce);
+    }
+
+    public String getStatus() {
+        return _status;
+    }
+
+    public void setOperationType(String operationType) {
+        _operationType = operationType;
+    }
+
+    public String getOperationType() {
+        return _operationType;
+    }
+
+    public void setStatus(String status) {
+        _status = status;
     }
 
     public int getGasPrice() {

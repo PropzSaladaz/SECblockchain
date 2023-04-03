@@ -38,8 +38,8 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public void decide(Content value) {
-        BlockchainBlock blockValue = (BlockchainBlock) value;
+    public void decide(Content msg) {
+        BlockchainBlock blockValue = (BlockchainBlock) msg;
         _lastBlock = new Block(_lastBlock, blockValue.getTransactions());
         printBlockchain();
     }
@@ -74,8 +74,8 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public Pair<Content,Content> validateBlockTransactions(Content content) {
-        return null;
+    public void validateBlockTransactions(Content content) {
+
     }
 
     @Override

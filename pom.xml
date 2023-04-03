@@ -14,7 +14,6 @@
     <module>communication</module>
     <module>ibft</module>
     <module>exceptions</module>
-    <module>contracts</module>
     <module>blockchain-member</module>
     <module>blockchain-initiator</module>
     <module>utils</module>

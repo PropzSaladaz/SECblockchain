@@ -37,9 +37,8 @@ public class BlockchainMemberAPI implements Application {
     }
 
     @Override
-    public void decide(Pair<Content,Content> msg) {
-        BlockchainBlock decidedBlock = (BlockchainBlock) msg.getSecond();
-        chain.decide(decidedBlock);
+    public void decide(Content msg) {
+        chain.decide(msg);
         sendTransactionResultToClient(msg);
     }
 
@@ -70,14 +69,29 @@ public class BlockchainMemberAPI implements Application {
         return null;
     }
 
-    public void sendTransactionResultToClient(Pair<Content, Content> content) {
+    public void executeStrongRead(BlockchainTransaction transaction) throws Exception {
+        TransactionResultMessage finalMessage = new TransactionResultMessage(transaction);
+        if(_blockChainState.existContract(transaction.getContractID())){
+            if(_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent())){
+                finalMessage.setStatus(TransactionResultMessage.SUCCESSFUL_TRANSACTION);
+            }else{
+                finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
+            }
+        }else{
+            finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
+        }
+
+        Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(transaction.getSender())));
+        AuthenticatedPerfectLink.send(_socket, finalMessage, senderInfo.getFirst(), senderInfo.getSecond());
+    }
+
+    public void sendTransactionResultToClient(Content content) {
         try {
-            List<BlockchainTransaction> completeTransactions = ((BlockchainBlock) content.getFirst()).getTransactions();
-            List<BlockchainTransaction> validTransactions = ((BlockchainBlock) content.getSecond()).getTransactions();
-            for (BlockchainTransaction transaction : completeTransactions ) {
+            BlockchainBlock block = (BlockchainBlock) content;
+            List<BlockchainTransaction> transactions = block.getTransactions();
+            for (BlockchainTransaction transaction : transactions ) {
                 TransactionResultMessage finalMessage = new TransactionResultMessage(transaction);
-                finalMessage.setContent(transaction);
-                if (validTransactions.contains(transaction)){
+                if (transaction.getStatus().equals(BlockchainTransaction.APPENDED)){
                     finalMessage.setStatus(TransactionResultMessage.SUCCESSFUL_TRANSACTION);
                 } else{
                     finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
@@ -110,15 +124,15 @@ public class BlockchainMemberAPI implements Application {
         _blockChainState.addContract(_contract);
     }
 
-    public Pair<Content, Content> validateBlockTransactions(Content content) throws NoSuchAlgorithmException {
+    public void validateBlockTransactions(Content content){
         BlockchainBlock block = (BlockchainBlock) content;
-        BlockchainBlock newBlock = new BlockchainBlock();
         List<BlockchainTransaction> transactions = block.getTransactions();
         for (BlockchainTransaction transaction : transactions) {
-            if (_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent())){
-               newBlock.addTransaction(transaction);
+            if(_blockChainState.existContract(transaction.getContractID())){
+                if (_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent())){
+                    transaction.setStatus(BlockchainTransaction.APPENDED);
+                }
             }
         }
-        return new Pair<Content, Content>(block, newBlock);
     }
 }

@@ -56,9 +56,9 @@ public class DefaultIbftBehavior {
                    IbftTimer.stop();
                    if (Ibft.getApp().validateValue(value)) {
                        Logger.logDebug("Value was validated, broadcasting... ");
-                       Pair<Content, Content> contents = Ibft.validateTransactions(message.getContent());
-                       Ibft.getApp().prepareValue(contents.getSecond());
-                       Ibft.getApp().decide(contents);
+                       Ibft.validateTransactions(message.getContent());
+                       Ibft.getApp().prepareValue(message.getContent());
+                       Ibft.getApp().decide(message.getContent());
                        Ibft.endInstance();
                    }
                }
