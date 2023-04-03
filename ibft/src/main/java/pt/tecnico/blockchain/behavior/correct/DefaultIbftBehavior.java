@@ -27,7 +27,7 @@ public class DefaultIbftBehavior {
     }
 
     private static boolean isValidMessageFromLeader(ConsensusInstanceMessage message) {
-        return Ibft.leader(message.getConsensusInstance(), message.getRound()) == message.getSenderPID() &&
+        return Ibft.leader() == message.getSenderPID() &&
                 message.getConsensusInstance() == Ibft.getConsensusInstance();
     }
 

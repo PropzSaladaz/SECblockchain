@@ -78,7 +78,4 @@ public class Blockchain implements Application {
 
     }
 
-    @Override
-    public void setMiner(Boolean isMiner) {
-    }
 }

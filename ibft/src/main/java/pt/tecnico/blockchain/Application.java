@@ -11,5 +11,4 @@ public interface Application {
     int getNextInstanceNumber();
     void prepareValue(Content value);
     void validateBlockTransactions(Content content) throws NoSuchAlgorithmException;
-    void setMiner(Boolean isMiner);
 }

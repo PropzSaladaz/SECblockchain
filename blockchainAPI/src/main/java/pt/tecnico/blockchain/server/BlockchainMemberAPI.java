@@ -24,8 +24,7 @@ public class BlockchainMemberAPI implements Application {
     private DatagramSocket _socket;
     private Map<Integer,Pair<String,Integer>> _clientsPidToInfo;
     private BlockChainState _blockChainState;
-    private PublicKey _publicKey;
-    private Boolean _isMiner;
+    private String _publicKey;
 
     public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients, PublicKey publicKey) throws NoSuchAlgorithmException {
         chain = new Blockchain();
@@ -33,7 +32,7 @@ public class BlockchainMemberAPI implements Application {
         pool = new SynchronizedTransactionPool();
         _clientsPidToInfo = clients;
         _blockChainState = new BlockChainState();
-        _publicKey = publicKey;
+        _publicKey = Crypto.getHashFromKey(publicKey);
     }
 
     @Override
@@ -41,9 +40,6 @@ public class BlockchainMemberAPI implements Application {
         chain.decide(msg);
         sendTransactionResultToClient(msg);
     }
-
-    @Override
-    public void setMiner(Boolean isMiner){_isMiner = isMiner;}
 
     @Override
     public boolean validateValue(Content value) {
@@ -72,7 +68,7 @@ public class BlockchainMemberAPI implements Application {
     public void executeStrongRead(BlockchainTransaction transaction) throws Exception {
         TransactionResultMessage finalMessage = new TransactionResultMessage(transaction);
         if(_blockChainState.existContract(transaction.getContractID())){
-            if(_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent())){
+            if(_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent(),_publicKey)){
                 finalMessage.setStatus(TransactionResultMessage.SUCCESSFUL_TRANSACTION);
             }else{
                 finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
@@ -129,7 +125,7 @@ public class BlockchainMemberAPI implements Application {
         List<BlockchainTransaction> transactions = block.getTransactions();
         for (BlockchainTransaction transaction : transactions) {
             if(_blockChainState.existContract(transaction.getContractID())){
-                if (_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent())){
+                if (_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent(),_publicKey)){
                     transaction.setStatus(BlockchainTransaction.APPENDED);
                 }
             }

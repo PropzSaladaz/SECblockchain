@@ -21,7 +21,7 @@ public class BlockChainState {
         _contracts.remove(id);
     }
 
-    public Boolean existContract(String id) {
+    public boolean existContract(String id) {
         return _contracts.get(id) != null;
     }
 

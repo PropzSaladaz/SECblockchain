@@ -12,12 +12,14 @@ import pt.tecnico.blockchain.contracts.SmartContract;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TESContract implements SmartContract {
 
     public Map<String, ClientAccount> _clientAccounts;
     public String _contractID;
+    public List<String> _minerList;
 
     public TESContract() throws NoSuchAlgorithmException {
         _clientAccounts = new HashMap<>();
@@ -31,6 +33,11 @@ public class TESContract implements SmartContract {
 
     public boolean hasClient(String publicKey){
         return _clientAccounts.get(publicKey) != null;
+    }
+
+    public void setMiners(List<String> minerList){
+        _minerList = minerList;
+        for(String miner : _minerList){ createMinerAccount(miner);}
     }
 
     public boolean validateSignature(TESTransaction transaction) {
@@ -50,13 +57,13 @@ public class TESContract implements SmartContract {
     }
 
     @Override
-    public boolean assertTransaction(Content tx) {
+    public boolean assertTransaction(Content tx,String minerKey) {
         TESTransaction transaction = (TESTransaction) tx;
         switch (transaction.getType()) {
             case TESTransaction.CREATE_ACCOUNT:
                 if (validateSignature(transaction) && !hasClient(transaction.getSender())){
                     _clientAccounts.put(transaction.getSender(), new ClientAccount());
-                    //if(isMiner) _clientAccounts.get(memberKey).deposit(1000);
+                    if(_minerList.contains(minerKey)) _clientAccounts.get(minerKey).deposit(1000);
                     return true;
                 }else return false;
             case TESTransaction.TRANSFER:
@@ -64,7 +71,7 @@ public class TESContract implements SmartContract {
                 if (validateSignature(transaction) && hasClient(transaction.getSender()) && validateTransfer(transfer)){
                     _clientAccounts.get(transaction.getSender()).withdrawal(transfer.getAmount());
                     _clientAccounts.get(transfer.getDestinationAddress()).deposit(transfer.getAmount());
-                    //if(isMiner) _clientAccounts.get(memberKey).deposit(5000);
+                    if(_minerList.contains(minerKey)) _clientAccounts.get(minerKey).deposit(5000);
                     return true;
                 }else return false;
             case TESTransaction.CHECK_BALANCE:
