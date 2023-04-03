@@ -9,6 +9,7 @@ import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
+import pt.tecnico.blockchain.Messages.blockchain.TransactionResultMessage;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.Pair;
@@ -95,8 +96,8 @@ public class BlockchainClientAPI {
 
     private void handleResponse(Content message) {
         ApplicationMessage msg = (ApplicationMessage) message;
-        if (ApplicationMessage.DECIDE_BLOCK_MESSAGE.equals(msg.getApplicationMessageType())) {
-            DecideBlockMessage decideMessage = (DecideBlockMessage) msg;
+        if (ApplicationMessage.TRANSACTION_RESULT_MESSAGE.equals(msg.getApplicationMessageType())) {
+            TransactionResultMessage decideMessage = (TransactionResultMessage) msg;
             BlockchainTransaction transaction = (BlockchainTransaction) decideMessage.getContent();
             _app.deliver(transaction.getContent(), decideMessage.getStatus());
         } else {

@@ -15,6 +15,7 @@ import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.client.BlockchainClientAPI;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
+import pt.tecnico.blockchain.contracts.tes.TESClientAPI;
 
 public class Client
 {

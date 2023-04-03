@@ -7,6 +7,7 @@ import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
 import pt.tecnico.blockchain.Config.operations.TransferOperation;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
+import pt.tecnico.blockchain.contracts.tes.TESClientAPI;
 
 import java.security.PublicKey;
 

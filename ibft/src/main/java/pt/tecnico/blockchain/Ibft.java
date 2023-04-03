@@ -222,7 +222,7 @@ public class Ibft {
         _commited.clear();
     }
     
-    public static Content validateTransactions(Content content) throws NoSuchAlgorithmException {
-        return getApp().validateTransactions(content);
+    public static Pair<Content, Content> validateTransactions(Content content) throws NoSuchAlgorithmException {
+        return getApp().validateBlockTransactions(content);
     }
 }

@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain;
+package pt.tecnico.blockchain.contracts.tes;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.*;
 import pt.tecnico.blockchain.client.BlockchainClientAPI;
@@ -18,7 +18,7 @@ import pt.tecnico.blockchain.client.DecentralizedAppClientAPI;
 
 public class TESClientAPI implements DecentralizedAppClientAPI {
 
-    private static String contractID = "0"; // TODO define a hash in the server TES class
+    private static String contractID = "HARDCODEDCONTRACID"; // TODO define a hash in the server TES class
     private final BlockchainClientAPI client;
     private final Map<Integer, List<TESTransaction>> tesMessagesQuorum;
     private final Map<Integer, Boolean> deliveredMap;

@@ -1,28 +1,32 @@
-package pt.tecnico.blockchain;
+package pt.tecnico.blockchain.contracts.tes;
 
-import pt.tecnico.blockchain.Messages.ApplicationMessage;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
-import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.tes.CheckBalance;
 import pt.tecnico.blockchain.Messages.tes.ClientAccount;
 import pt.tecnico.blockchain.Messages.tes.TESTransaction;
 import pt.tecnico.blockchain.Messages.tes.Transfer;
-import pt.tecnico.blockchain.server.ContractI;
+import pt.tecnico.blockchain.KeyGenerate;
+import pt.tecnico.blockchain.KeyConverter;
+import pt.tecnico.blockchain.contracts.SmartContract;
+
 
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Tes implements ContractI {
+public class TESContract implements SmartContract {
 
-    Map<String, ClientAccount> _clientAccounts;
+    public Map<String, ClientAccount> _clientAccounts;
+    public String _contractID;
 
-    public Tes(){
+    public TESContract() throws NoSuchAlgorithmException {
         _clientAccounts = new HashMap<>();
+        _contractID = "HARDCODEDCONTRACID";
+    }
+
+    @Override
+    public String getContractID(){
+        return _contractID;
     }
 
     public boolean hasClient(String publicKey){
@@ -36,31 +40,23 @@ public class Tes implements ContractI {
     public boolean validateTransfer(Transfer transfer){
         return transfer.getAmount() > 0 && hasClient(transfer.getDestinationAddress());
     }
+    
     public int getBalance(String sender){
         return _clientAccounts.get(sender).checkBalance();
-    }
-
-    public void checkBalance(Content content){
-        TESTransaction transaction = (TESTransaction) content;
-        if (transaction.getType().equals(TESTransaction.CHECK_BALANCE)){
-            CheckBalance checkBalance = (CheckBalance) transaction;
-            checkBalance.setAmount(getBalance(transaction.getSender()));
-        }
     }
 
     public void createMinerAccount(String minerKey){
         _clientAccounts.put(minerKey, new ClientAccount());
     }
 
-
     @Override
-    public boolean validateBlock(Content content, Boolean isMiner,String memberKey) {
-        TESTransaction transaction = (TESTransaction) content;
+    public boolean assertTransaction(Content tx) {
+        TESTransaction transaction = (TESTransaction) tx;
         switch (transaction.getType()) {
             case TESTransaction.CREATE_ACCOUNT:
                 if (validateSignature(transaction) && !hasClient(transaction.getSender())){
                     _clientAccounts.put(transaction.getSender(), new ClientAccount());
-                    if(isMiner) _clientAccounts.get(memberKey).deposit(1000);
+                    //if(isMiner) _clientAccounts.get(memberKey).deposit(1000);
                     return true;
                 }else return false;
             case TESTransaction.TRANSFER:
@@ -68,12 +64,14 @@ public class Tes implements ContractI {
                 if (validateSignature(transaction) && hasClient(transaction.getSender()) && validateTransfer(transfer)){
                     _clientAccounts.get(transaction.getSender()).withdrawal(transfer.getAmount());
                     _clientAccounts.get(transfer.getDestinationAddress()).deposit(transfer.getAmount());
-                    if(isMiner) _clientAccounts.get(memberKey).deposit(5000);
+                    //if(isMiner) _clientAccounts.get(memberKey).deposit(5000);
                     return true;
                 }else return false;
             case TESTransaction.CHECK_BALANCE:
-                if(validateSignature(transaction) && hasClient(transaction.getSender())){
-                    if(isMiner) _clientAccounts.get(memberKey).deposit(3000);
+                if (validateSignature(transaction) && hasClient(transaction.getSender())){
+                    //if(isMiner) _clientAccounts.get(memberKey).deposit(3000);
+                    CheckBalance checkBalance = (CheckBalance) transaction;
+                    checkBalance.setAmount(getBalance(transaction.getSender()));
                     return true;
                 }
                 return false;

@@ -38,7 +38,7 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public void decide(Pair<BlockchainBlock,BlockchainBlock> pair, Content value) {
+    public void decide(Content value) {
         BlockchainBlock blockValue = (BlockchainBlock) value;
         _lastBlock = new Block(_lastBlock, blockValue.getTransactions());
         printBlockchain();
@@ -71,11 +71,10 @@ public class Blockchain implements Application {
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
-    public Content validateTransactions(Content content) {
+    public Pair<Content,Content> validateBlockTransactions(Content content) {
         return null;
     }
 

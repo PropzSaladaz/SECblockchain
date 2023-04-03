@@ -10,12 +10,16 @@ import java.util.UUID;
  * Contains an arbitrary transaction for a specific contract identified by ID
  */
 public class BlockchainTransaction extends ApplicationMessage implements Content {
+    public static final String SUCCESSFUL_TRANSACTION = "SUCCESSFUL TRANSACTION";
+    public static final String REJECTED_TRANSACTION = "REJECTED TRANSACTION";
+    public static final String NOT_EXECUTED = "REJECTED TRANSACTION";
 
     private String contractID;
     private String from;
     private int nonce;
     private int gasPrice;
     private int gasLimit;
+    private String status = NOT_EXECUTED;
 
     public BlockchainTransaction(String from, int nonce, Content transaction, int gasPrice, int gasLimit, String contractID) {
         super(transaction);

@@ -4,9 +4,10 @@ import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
-import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
+import pt.tecnico.blockchain.Messages.blockchain.TransactionResultMessage;
 import pt.tecnico.blockchain.Messages.tes.TESTransaction;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.contracts.SmartContract;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -14,7 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.security.NoSuchAlgorithmException;
+
+import pt.tecnico.blockchain.Pair;
 
 public class BlockchainMemberAPI implements Application {
     private Blockchain chain;
@@ -25,21 +27,20 @@ public class BlockchainMemberAPI implements Application {
     private PublicKey _publicKey;
     private Boolean _isMiner;
 
-    public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients, ContractI contract, PublicKey publicKey) throws NoSuchAlgorithmException {
+    public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients, PublicKey publicKey) throws NoSuchAlgorithmException {
         chain = new Blockchain();
         _socket = socket;
         pool = new SynchronizedTransactionPool();
         _clientsPidToInfo = clients;
         _blockChainState = new BlockChainState();
         _publicKey = publicKey;
-        _blockChainState.addContract(contract, Crypto.getHashFromKey(_publicKey));
     }
 
     @Override
-    public void decide(Pair<BlockchainBlock,BlockchainBlock> pair, Content message) {
-        DecideBlockMessage decideMsg = (DecideBlockMessage) message;
-        chain.decide(pair,decideMsg.getContent());
-        sendTransactionResultToClient(pair,message);
+    public void decide(Pair<Content,Content> msg) {
+        BlockchainBlock decidedBlock = (BlockchainBlock) msg.getSecond();
+        chain.decide(decidedBlock);
+        sendTransactionResultToClient(msg);
     }
 
     @Override
@@ -69,19 +70,21 @@ public class BlockchainMemberAPI implements Application {
         return null;
     }
 
-    public void sendTransactionResultToClient(Pair<BlockchainBlock,BlockchainBlock> pair,Content content) {
+    public void sendTransactionResultToClient(Pair<Content, Content> content) {
         try {
-            List<BlockchainTransaction> completeTransactions = pair.getFirst().getTransactions();
-            List<BlockchainTransaction> validTransactions = pair.getSecond().getTransactions();
-           for (BlockchainTransaction transaction : completeTransactions ){
-               DecideBlockMessage finalMessage = (DecideBlockMessage) content;
-               finalMessage.setContent(transaction);
-               if (validTransactions.contains(transaction)){
-                 finalMessage.setStatus(DecideBlockMessage.SUCCESSFUL_TRANSACTION);
-               }else{finalMessage.setStatus(DecideBlockMessage.REJECTED_TRANSACTION);}
-               Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(transaction.getSender())));
-               AuthenticatedPerfectLink.send(_socket, finalMessage, senderInfo.getFirst(), senderInfo.getSecond());
-           }
+            List<BlockchainTransaction> completeTransactions = ((BlockchainBlock) content.getFirst()).getTransactions();
+            List<BlockchainTransaction> validTransactions = ((BlockchainBlock) content.getSecond()).getTransactions();
+            for (BlockchainTransaction transaction : completeTransactions ) {
+                TransactionResultMessage finalMessage = new TransactionResultMessage(transaction);
+                finalMessage.setContent(transaction);
+                if (validTransactions.contains(transaction)){
+                    finalMessage.setStatus(TransactionResultMessage.SUCCESSFUL_TRANSACTION);
+                } else{
+                    finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
+                }
+                Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(transaction.getSender())));
+                AuthenticatedPerfectLink.send(_socket, finalMessage, senderInfo.getFirst(), senderInfo.getSecond());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -103,17 +106,19 @@ public class BlockchainMemberAPI implements Application {
         return _blockChainState;
     }
 
-    public Content validateTransactions(Content content) throws NoSuchAlgorithmException {
+    public void addContractToBlockchain(SmartContract _contract) {
+        _blockChainState.addContract(_contract);
+    }
+
+    public Pair<Content, Content> validateBlockTransactions(Content content) throws NoSuchAlgorithmException {
         BlockchainBlock block = (BlockchainBlock) content;
-        BlockchainBlock newBlock= new BlockchainBlock();
+        BlockchainBlock newBlock = new BlockchainBlock();
         List<BlockchainTransaction> transactions = block.getTransactions();
-        for (BlockchainTransaction transaction : transactions){
-             if(_blockChainState.getContract(transactions.get(0).getContractID()).validateBlock(
-                     transaction.getContent(), _isMiner, Crypto.getHashFromKey(_publicKey))){
-                 _blockChainState.getContract(transactions.get(0).getContractID()).checkBalance(transaction.getContent());
-                 newBlock.addTransaction(transaction);
-             }
+        for (BlockchainTransaction transaction : transactions) {
+            if (_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent())){
+               newBlock.addTransaction(transaction);
+            }
         }
-        return newBlock;
+        return new Pair<Content, Content>(block, newBlock);
     }
 }

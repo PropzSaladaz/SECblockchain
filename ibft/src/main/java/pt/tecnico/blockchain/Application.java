@@ -6,10 +6,10 @@ import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import java.security.NoSuchAlgorithmException;
 
 public interface Application {
-    void decide(Pair<BlockchainBlock,BlockchainBlock> pair, Content message);
+    void decide(Pair<Content,Content> msg);
     boolean validateValue(Content value);
     int getNextInstanceNumber();
     void prepareValue(Content value);
-    Content validateTransactions(Content content) throws NoSuchAlgorithmException;
+    Pair<Content, Content> validateBlockTransactions(Content content) throws NoSuchAlgorithmException;
     void setMiner(Boolean isMiner);
 }

@@ -4,9 +4,7 @@ import pt.tecnico.blockchain.Ibft;
 import pt.tecnico.blockchain.IbftTimer;
 import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
-import pt.tecnico.blockchain.Messages.blockchain.DecideBlockMessage;
 
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Pair;
@@ -58,16 +56,15 @@ public class DefaultIbftBehavior {
                    IbftTimer.stop();
                    if (Ibft.getApp().validateValue(value)) {
                        Logger.logDebug("Value was validated, broadcasting... ");
-                       Content content = Ibft.validateTransactions(message.getContent());
-                       Ibft.getApp().prepareValue(content);
-                       Pair blockPairs = new Pair(message.getContent(),content);
-                       Ibft.getApp().decide(blockPairs,new DecideBlockMessage());
+                       Pair<Content, Content> contents = Ibft.validateTransactions(message.getContent());
+                       Ibft.getApp().prepareValue(contents.getSecond());
+                       Ibft.getApp().decide(contents);
                        Ibft.endInstance();
                    }
                }
            }
-       }catch( NoSuchAlgorithmException e){
-           System.out.println("ERROR\n");
-       }
+        } catch( NoSuchAlgorithmException e){
+            System.out.println("ERROR\n");
+        }
     }
 }
