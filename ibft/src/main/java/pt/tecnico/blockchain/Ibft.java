@@ -192,11 +192,11 @@ public class Ibft {
         return quorum.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
     }
 
-    public synchronized static List<ConsensusInstanceMessage> getCommitQuorum() {
-        return new ArrayList<>(_commited);
+    public synchronized static List<Content> getCommitQuorum() {
+        return new ArrayList<Content>(_commited);
     }
-    public synchronized static List<ConsensusInstanceMessage> getPreparedQuorum() {
-        return new ArrayList<>(_prepared);
+    public synchronized static List<Content> getPreparedQuorum() {
+        return new ArrayList<Content>(_prepared);
     }
 
     public static synchronized void endInstance() {
@@ -214,9 +214,5 @@ public class Ibft {
     private static synchronized void clearQuorums() {
         _prepared.clear();
         _commited.clear();
-    }
-    
-    public static void validateTransactions(Content content) throws NoSuchAlgorithmException {
-        getApp().validateBlockTransactions(content);
     }
 }

@@ -81,7 +81,7 @@ public class BlockchainClientAPI {
         }
     }
 
-    private int getNonceAndIncrease() {
+    private synchronized int getNonceAndIncrease() {
         return nonce++;
     }
 
@@ -113,9 +113,9 @@ public class BlockchainClientAPI {
 
     private void handleResponse(Content message) {
         if (responseIsTransactionResult(message)) {
-            TransactionResultMessage decideMessage = (TransactionResultMessage) message;
-            BlockchainTransaction transaction = (BlockchainTransaction) decideMessage.getContent();
-            _app.deliver(transaction.getContent(), transaction.getOperationType(), decideMessage.getStatus());
+            TransactionResultMessage transactionResult = (TransactionResultMessage) message;
+            BlockchainTransaction transaction = (BlockchainTransaction) transactionResult.getContent();
+            _app.deliver(transaction.getContent(), transaction.getOperationType(), transactionResult.getStatus());
         } else {
             Logger.logWarning("Expected to receive a TransactionResultMessage but received something else.");
         }

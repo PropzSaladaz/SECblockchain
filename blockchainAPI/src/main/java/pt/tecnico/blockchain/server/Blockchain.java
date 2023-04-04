@@ -9,6 +9,7 @@ import pt.tecnico.blockchain.Pair;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Blockchain implements Application {
 
@@ -38,7 +39,7 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public void decide(Content msg) {
+    public void decide(Content msg, List<Content> quorum) {
         BlockchainBlock blockValue = (BlockchainBlock) msg;
         _lastBlock = new Block(_lastBlock, blockValue.getTransactions());
         printBlockchain();
@@ -72,10 +73,4 @@ public class Blockchain implements Application {
             e.printStackTrace();
         }
     }
-
-    @Override
-    public void validateBlockTransactions(Content content) {
-
-    }
-
 }

@@ -8,9 +8,11 @@ public class TransactionResultMessage extends ApplicationMessage implements Cont
 
     private BlockchainTransactionStatus _status;
     private String message;
+    private Integer _nonce;
 
-    public TransactionResultMessage(Content message) {
+    public TransactionResultMessage(int nonce, Content message) {
         super(message);
+        _nonce = nonce;
     }
 
     @Override
@@ -32,6 +34,9 @@ public class TransactionResultMessage extends ApplicationMessage implements Cont
     public BlockchainTransactionStatus getStatus() {
         return _status;
     }
+
+    public Integer getNonce() {return _nonce;}
+    public void setNonce(int value) {_nonce = value;}
 
     @Override
     public String toString(int level) {

@@ -3,7 +3,14 @@ package pt.tecnico.blockchain.Messages.ibft;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Crypto;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
@@ -55,12 +62,8 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
         _senderPID = value;
     }
 
-    public void signMessage(PrivateKey key, Content content) {
-        try {
-            _signature = Crypto.getSignature(MessageManager.getContentBytes(content), key);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setSignature(byte[] signature) {
+        _signature = signature;
     }
 
     public byte[] getSignatureBytes() {
@@ -95,8 +98,31 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
         } catch(ClassCastException e) {
             return false;
         }
-
     }
 
+    @Override
+    public byte[] digestMessageFields() {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(MessageManager.getContentBytes(getContent()));
+            digest.update(_messageType.getBytes());
+            digest.update(Integer.toString(_consensusInstance).getBytes());
+            digest.update(Integer.toString(_roundNumber).getBytes());
+            digest.update(Integer.toString(_senderPID).getBytes());
+            return digest.digest();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
+    @Override
+    public void sign(PrivateKey privKey) {
+        try {
+            getContent().sign(privKey);
+            _signature = Crypto.getSignature(digestMessageFields(), privKey);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

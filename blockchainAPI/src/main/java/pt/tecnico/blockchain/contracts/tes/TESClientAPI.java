@@ -41,7 +41,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void createAccount(int gasPrice, int gasLimit) {
         try {
-            CreateAccount txn = new CreateAccount(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
+            CreateAccountTransaction txn = new CreateAccountTransaction(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
             txn.sign(client.getPrivateKey());
             submitUpdateTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (NoSuchAlgorithmException e) {
@@ -51,7 +51,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void transfer(PublicKey destination, int amount, int gasPrice, int gasLimit) {
         try {
-            Transfer txn = new Transfer(client.getNonce(),
+            TransferTransaction txn = new TransferTransaction(client.getNonce(),
                     Crypto.getHashFromKey(client.getPublicKey()),
                     Crypto.getHashFromKey(destination), amount);
             txn.sign(client.getPrivateKey());
@@ -63,7 +63,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void checkBalance(TESReadType readType, int gasPrice, int gasLimit) {
         try {
-            CheckBalance txn = new CheckBalance(client.getNonce(),
+            CheckBalanceTransaction txn = new CheckBalanceTransaction(client.getNonce(),
                     Crypto.getHashFromKey(client.getPublicKey()), readType);
             txn.sign(client.getPrivateKey());
             submitReadTransactionToBlockchain(txn, gasPrice, gasLimit);
@@ -118,8 +118,9 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void parseRead(TESTransaction txn, BlockchainTransactionStatus status) {
+        // TODO change to response type
         try {
-            CheckBalance balance = (CheckBalance) txn;
+            CheckBalanceTransaction balance = (CheckBalanceTransaction) txn;
             switch (balance.getReadType()) {
                 case WEAK:
                     parseWeakRead(balance, status);
@@ -136,18 +137,19 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         }
     }
 
-    private void parseWeakRead(CheckBalance txn, BlockchainTransactionStatus status) {
+    private void parseWeakRead(CheckBalanceTransaction txn, BlockchainTransactionStatus status) {
         // TODO validate the received signature quorum, etc...
     }
 
-    private void parseStrongRead(CheckBalance txn, BlockchainTransactionStatus status) { // wait for f+1 responses
+    private void parseStrongRead(CheckBalanceTransaction txn, BlockchainTransactionStatus status) { // wait for f+1 responses
+        // TODO receive a checkbalance response message instead
         addTransactionToReceivedMap(txn);
         if (responseReadyToDeliver(txn)) {
             deliveredSet.add(txn.getNonce());
             printStatus(status,
-                    "THE BALANCE IS: " + txn.getAmount(),
+                    "THE BALANCE IS: " /*txn.get()*/,
                     "IMPOSSIBLE TO CHECK BALANCE"
-                    );
+            );
         }
     }
 
@@ -157,10 +159,10 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
             deliveredSet.add(txn.getNonce());
             switch (txn.getType()) {
                 case TRANSFER:
-                    parseTransfer((Transfer) txn, status);
+                    parseTransfer((TransferTransaction) txn, status);
                     break;
                 case CREATE_ACCOUNT:
-                    parseCreateAccount((CreateAccount) txn, status);
+                    parseCreateAccount((CreateAccountTransaction) txn, status);
                     break;
                 default:
                     Logger.logWarning("Expected Transfer or Create Balance, but got something else.");
@@ -192,14 +194,14 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         return (int)Math.floor((client.getNumberProcesses()-1) / 3.0);
     }
 
-    private void parseTransfer(Transfer txn, BlockchainTransactionStatus status) {
+    private void parseTransfer(TransferTransaction txn, BlockchainTransactionStatus status) {
         printStatus(status,
                 "TRANSFERRED " + txn.getAmount()+ "$" + " TO  " + txn.getSender() +"\n",
                 "IMPOSSIBLE TO TRANSFER " + txn.getAmount()+ "$" + " TO  " + txn.getSender() +"\n"
         );
     }
 
-    private void parseCreateAccount(CreateAccount txn, BlockchainTransactionStatus status) {
+    private void parseCreateAccount(CreateAccountTransaction txn, BlockchainTransactionStatus status) {
         printStatus(status,
                 "ACCOUNT CREATED WITH KEY: " + txn.getSender(),
                 "IMPOSSIBLE TO CREATE ACCOUNT WITH KEY: " + txn.getSender()

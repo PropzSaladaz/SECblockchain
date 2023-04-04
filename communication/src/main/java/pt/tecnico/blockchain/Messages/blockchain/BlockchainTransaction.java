@@ -27,7 +27,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         this.contractID = contractID;
         this.gasPrice = gasPrice;
         this.gasLimit = gasLimit;
-        _status = BlockchainTransactionStatus.FAILURE;
+        _status = BlockchainTransactionStatus.FAILURE; // TODO change to unspecified
     }
 
     @Override
@@ -39,8 +39,8 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         return contractID;
     }
 
-    public String getNonce() {
-        return Integer.toString(nonce);
+    public Integer getNonce() {
+        return nonce;
     }
 
     public BlockchainTransactionStatus getStatus() {
