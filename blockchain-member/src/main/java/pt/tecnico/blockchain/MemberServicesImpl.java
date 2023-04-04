@@ -4,11 +4,13 @@ import pt.tecnico.blockchain.Messages.*;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionType;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.server.BlockchainMemberAPI;
 import pt.tecnico.blockchain.server.SynchronizedTransactionPool;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
@@ -34,24 +36,21 @@ public class MemberServicesImpl {
             ApplicationMessage appMsg = (ApplicationMessage) content;
             switch (appMsg.getApplicationMessageType()) {
                 case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
-                    BlockchainTransaction transaction = (BlockchainTransaction) content;
-                    Content block = _blockchainMemberAPI.addTransactionAndGetBlockIfReady(transaction);
-                    if (block != null) Ibft.start(block);
+                    _blockchainMemberAPI.parseTransaction((BlockchainTransaction) content);
                     break;
                 case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
-                    ConsensusInstanceMessage ibftMessage = (ConsensusInstanceMessage) content;
-                    Ibft.handleMessage(ibftMessage, message.getSenderPid());
+                    Ibft.handleMessage((ConsensusInstanceMessage) content, message.getSenderPid());
                     break;
                 default:
-                    Logger.logWarning("ERROR: Could not handle request");
+                    Logger.logWarning("ERROR: Could not handle request. Expected either " +
+                            "BLOCKCHAIN_TRANSACTION or CONSENSUS_INSTANCE_MESSAGE");
                     break;
             }
         } catch (ClassCastException e) {
             System.out.println("Corrupted message\n");
         } catch (RuntimeException e){
             System.out.println("Non Authorization To Perform Operation\n");
-
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

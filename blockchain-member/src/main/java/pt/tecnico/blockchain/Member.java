@@ -1,20 +1,20 @@
 package pt.tecnico.blockchain;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.DatagramSocket;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
-
-import static pt.tecnico.blockchain.ErrorMessage.*;
-
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Path.BlockchainPaths;
+import pt.tecnico.blockchain.contracts.tes.TESContract;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.server.BlockchainMemberAPI;
-import pt.tecnico.blockchain.server.ContractI;
+
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+
+import static pt.tecnico.blockchain.ErrorMessage.*;
 
 public class Member
 {
@@ -44,15 +44,18 @@ public class Member
             MemberSlotBehavior behavior = new MemberSlotBehavior(config, id);
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
-            ContractI tes = new Tes();
-            BlockchainMemberAPI blockchainMemberAPI = new BlockchainMemberAPI(socket, config.getClients(),tes, RSAKeyStoreById.getPublicFromPid(id));
+            BlockchainMemberAPI blockchainMemberAPI = new BlockchainMemberAPI(socket, config.getClients(), RSAKeyStoreById.getPublicFromPid(id));
+            TESContract contract = new TESContract();
+            contract.setMiners(Collections.singletonList(Crypto.getHashFromKey(RSAKeyStoreById.getPublicKey(1))));
+            blockchainMemberAPI.addContractToBlockchain(contract);
+
             MemberServicesImpl.init(config.getClientHostnames(), blockchainMemberAPI);
             Ibft.init(socket, id, config.getMemberHostnames(), blockchainMemberAPI);
 
             Thread.sleep(config.timeUntilStart());
 
             behavior.track();
-            RunMember.run(socket, config.getSlotDuration());
+            RunMember.run(socket);
 
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());

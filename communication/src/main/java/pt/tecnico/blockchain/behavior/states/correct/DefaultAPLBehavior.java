@@ -22,7 +22,7 @@ public class DefaultAPLBehavior {
                     AuthenticatedPerfectLink.getId());
             message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
-        } catch (NoSuchAlgorithmException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

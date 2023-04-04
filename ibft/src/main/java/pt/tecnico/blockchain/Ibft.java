@@ -41,11 +41,7 @@ public class Ibft {
         return _app;
     }
 
-    public static int leader(int consensusInstance, int round) {
-        // any deterministic mapping from consensusInstance and round to the identifier of
-        //   a process as long as it allows f+1 processes to eventually assume the leader role.
-        return 1;
-    }
+    public static int leader() {return 1;}
      
     public synchronized static void start(Content value) {
         if (tryDecideNewInstance()) {
@@ -59,12 +55,10 @@ public class Ibft {
     private synchronized static void startNewInstance(Content value) {
         _round = 1;
         _preparedRound = -1;
-        if (leader(_consensusInstance, _round) == _pid) {
+        if (leader() == _pid) {
             _app.prepareValue(value);
-            _app.setMiner(true);
             IbftMessagehandler.broadcastPrePrepare(value);
         }
-        _app.setMiner(false);
         IbftTimer.start(_round);
     }
 
@@ -198,11 +192,11 @@ public class Ibft {
         return quorum.stream().map(ConsensusInstanceMessage::getSenderPID).collect(Collectors.toList());
     }
 
-    public synchronized static List<ConsensusInstanceMessage> getCommitQuorum() {
-        return new ArrayList<>(_commited);
+    public synchronized static List<Content> getCommitQuorum() {
+        return new ArrayList<Content>(_commited);
     }
-    public synchronized static List<ConsensusInstanceMessage> getPreparedQuorum() {
-        return new ArrayList<>(_prepared);
+    public synchronized static List<Content> getPreparedQuorum() {
+        return new ArrayList<Content>(_prepared);
     }
 
     public static synchronized void endInstance() {
@@ -220,9 +214,5 @@ public class Ibft {
     private static synchronized void clearQuorums() {
         _prepared.clear();
         _commited.clear();
-    }
-    
-    public static Content validateTransactions(Content content) throws NoSuchAlgorithmException {
-        return getApp().validateTransactions(content);
     }
 }

@@ -5,29 +5,27 @@ import pt.tecnico.blockchain.Messages.Content;
 import java.security.Signature;
 import java.security.SignatureException;
 
-public class CheckBalance extends TESTransaction {
-    private final String readType;
+public class CheckBalanceTransaction extends TESTransaction {
+    private final TESReadType readType;
 
-    public int _amount;
-
-    public CheckBalance(int nonce, String publicKeyHash,String readType) {
+    public CheckBalanceTransaction(int nonce, String publicKeyHash, TESReadType readType) {
         super(nonce, TESTransaction.CHECK_BALANCE, publicKeyHash);
         this.readType = readType;
     }
 
-    public int getAmount(){return _amount;}
-
-    public void setAmount(int amount) {_amount = amount;}
+    public TESReadType getReadType() {
+        return readType;
+    }
 
     @Override
     protected void signConcreteAttributes(Signature signature) throws SignatureException {
-        signature.update(Byte.parseByte(readType));
+        signature.update((byte) readType.getCode());
     }
 
     @Override
     protected boolean concreteAttributesEquals(Content another) {
         try {
-            CheckBalance txn = (CheckBalance) another;
+            CheckBalanceTransaction txn = (CheckBalanceTransaction) another;
             return true;
         } catch (ClassCastException e) {
             return false;

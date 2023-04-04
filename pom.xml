@@ -18,7 +18,6 @@
     <module>blockchain-initiator</module>
     <module>utils</module>
     <module>blockchainAPI</module>
-    <module>tes</module>
   </modules>
 
   <name>blockchain</name>

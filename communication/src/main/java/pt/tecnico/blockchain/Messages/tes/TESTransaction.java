@@ -6,6 +6,7 @@ import pt.tecnico.blockchain.Messages.Content;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 
 public abstract class TESTransaction implements Content {
     public static final String CREATE_ACCOUNT = "C";
@@ -65,7 +66,7 @@ public abstract class TESTransaction implements Content {
         }
     }
 
-    public boolean checkSign()  {
+    public boolean checkSignature()  {
         try {
             Signature signaturePublic = Crypto.getPublicSignatureInstance(Crypto.getPublicKeyFromHash(from));
             signaturePublic.update(type.getBytes());
@@ -85,7 +86,7 @@ public abstract class TESTransaction implements Content {
         TESTransaction txn = (TESTransaction) another;
         return type.equals(txn.getType()) &&
                 from.equals(txn.getSender()) &&
-                signature.equals(txn.getSignature()) &&
+                Arrays.equals(signature, txn.getSignature()) &&
                 concreteAttributesEquals(another);
     }
 
@@ -94,7 +95,7 @@ public abstract class TESTransaction implements Content {
         return  toStringWithTabs("TESTransaction: {", tabs) +
                 toStringWithTabs("type: " + type, tabs + 1) +
                 toStringWithTabs("from: " + from, tabs + 1) +
-                toStringWithTabs("signature: " + signature, tabs + 1) +
+                toStringWithTabs("signature: " + Arrays.toString(signature), tabs + 1) +
                 toStringWithTabs("}", tabs);
     }
 

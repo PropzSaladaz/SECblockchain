@@ -20,7 +20,7 @@ public class SignAsAPLBehavior {
             message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
             System.out.println("SIGNAS: Sending APL with sender id = " + signAs);
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
-        } catch (NoSuchAlgorithmException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

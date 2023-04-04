@@ -16,6 +16,9 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
     private int nonce;
     private int gasPrice;
     private int gasLimit;
+    private BlockchainTransactionStatus _status;
+    private BlockchainTransactionType _operationType;
+
 
     public BlockchainTransaction(String from, int nonce, Content transaction, int gasPrice, int gasLimit, String contractID) {
         super(transaction);
@@ -24,6 +27,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         this.contractID = contractID;
         this.gasPrice = gasPrice;
         this.gasLimit = gasLimit;
+        _status = BlockchainTransactionStatus.FAILURE; // TODO change to unspecified
     }
 
     @Override
@@ -35,8 +39,24 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         return contractID;
     }
 
-    public String getNonce() {
-        return Integer.toString(nonce);
+    public Integer getNonce() {
+        return nonce;
+    }
+
+    public BlockchainTransactionStatus getStatus() {
+        return _status;
+    }
+
+    public void setOperationType(BlockchainTransactionType operationType) {
+        _operationType = operationType;
+    }
+
+    public BlockchainTransactionType getOperationType() {
+        return _operationType;
+    }
+
+    public void setStatus(BlockchainTransactionStatus status) {
+        _status = status;
     }
 
     public int getGasPrice() {

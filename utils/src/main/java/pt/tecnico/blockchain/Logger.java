@@ -63,7 +63,7 @@ public class Logger {
     }
 
     //TODO put back synchronized
-    private static void printMessageWithColor(String message, TextColor color) {
+    private static synchronized void printMessageWithColor(String message, TextColor color) {
         System.out.println(String.format(defaultCode, color.getCode()) +
                 message + String.format(defaultCode, RESET.getCode()));
     }
@@ -79,7 +79,7 @@ public class Logger {
     }
 
     //TODO put back synchronized
-    private static void printMessageWithHexaColorAndTime(String message, TextColor color) {
+    private static synchronized void printMessageWithHexaColorAndTime(String message, TextColor color) {
         System.out.println(getCurrentTime() + "\n" + String.format(hexaCode, color.getCode()) +
                 message + String.format(hexaCode, RESET.getCode()));
     }

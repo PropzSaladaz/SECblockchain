@@ -1,15 +1,12 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 
-import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 public interface Application {
-    void decide(Pair<BlockchainBlock,BlockchainBlock> pair, Content message);
+    void decide(Content msg, List<Content> quorum);
     boolean validateValue(Content value);
     int getNextInstanceNumber();
     void prepareValue(Content value);
-    Content validateTransactions(Content content) throws NoSuchAlgorithmException;
-    void setMiner(Boolean isMiner);
 }

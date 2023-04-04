@@ -5,12 +5,12 @@ import pt.tecnico.blockchain.Messages.Content;
 import java.security.Signature;
 import java.security.SignatureException;
 
-public class Transfer extends TESTransaction {
+public class TransferTransaction extends TESTransaction {
 
     private String destinationAddress;
     private int amount;
 
-    public Transfer(int nonce, String sourceAddress, String destinationAddress, int amount) {
+    public TransferTransaction(int nonce, String sourceAddress, String destinationAddress, int amount) {
         super(nonce, TESTransaction.TRANSFER, sourceAddress);
         this.destinationAddress = destinationAddress;
         this.amount = amount;
@@ -46,7 +46,7 @@ public class Transfer extends TESTransaction {
     @Override
     protected boolean concreteAttributesEquals(Content another) {
         try {
-            Transfer txn = (Transfer) another;
+            TransferTransaction txn = (TransferTransaction) another;
             return destinationAddress.equals(txn.getDestinationAddress()) &&
                     amount == txn.getAmount();
         } catch(ClassCastException e) {
