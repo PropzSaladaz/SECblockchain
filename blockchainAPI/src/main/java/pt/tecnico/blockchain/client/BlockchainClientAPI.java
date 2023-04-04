@@ -61,6 +61,7 @@ public class BlockchainClientAPI {
         if(type.equals(BlockchainTransaction.UPDATE)) txnRequest.setOperationType(BlockchainTransaction.UPDATE);
         if(type.equals(BlockchainTransaction.STRONG_READ)) txnRequest.setOperationType(BlockchainTransaction.STRONG_READ);
         if(type.equals(BlockchainTransaction.WEAK_READ)) txnRequest.setOperationType(BlockchainTransaction.WEAK_READ);
+        /*TODO: Why not just txnRequest.setOperationType(type)? */
         for (Pair<String, Integer> pair : _memberHostNames ) {
             AuthenticatedPerfectLink.send(_socket, txnRequest, pair.getFirst(), pair.getSecond());
         }
@@ -99,9 +100,9 @@ public class BlockchainClientAPI {
     private void handleResponse(Content message) {
         ApplicationMessage msg = (ApplicationMessage) message;
         if (ApplicationMessage.TRANSACTION_RESULT_MESSAGE.equals(msg.getApplicationMessageType())) {
-            TransactionResultMessage decideMessage = (TransactionResultMessage) msg;
-            BlockchainTransaction transaction = (BlockchainTransaction) decideMessage.getContent();
-            _app.deliver(transaction.getContent(), decideMessage.getStatus());
+            TransactionResultMessage transactionResult = (TransactionResultMessage) msg;
+            BlockchainTransaction transaction = (BlockchainTransaction) transactionResult.getContent();
+            _app.deliver(transaction.getContent(), transactionResult.getStatus());
         } else {
             System.out.println("ERROR: Could not handle request");
         }

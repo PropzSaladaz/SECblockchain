@@ -4,10 +4,10 @@ import pt.tecnico.blockchain.Messages.Content;
 
 import java.security.Signature;
 
-public class CreateAccount extends TESTransaction {
+public class CreateAccountTransaction extends TESTransaction {
 
 
-    public CreateAccount(int nonce, String publicKeyHash) {
+    public CreateAccountTransaction(int nonce, String publicKeyHash) {
         super(nonce, TESTransaction.CREATE_ACCOUNT, publicKeyHash);
     }
 
@@ -19,7 +19,7 @@ public class CreateAccount extends TESTransaction {
     @Override
     protected boolean concreteAttributesEquals(Content another) {
         try {
-            CheckBalance txn = (CheckBalance) another;
+            CheckBalanceTransaction txn = (CheckBalanceTransaction) another;
             return true;
         } catch (ClassCastException e) {
             return false;

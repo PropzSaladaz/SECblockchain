@@ -7,7 +7,6 @@ import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
-import pt.tecnico.blockchain.Pair;
 
 import java.security.NoSuchAlgorithmException;
 
@@ -17,10 +16,14 @@ public class DefaultIbftBehavior {
 
     public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
         if (isValidMessageFromLeader(message) && Ibft.getApp().validateValue(message.getContent())) {
-            ConsensusInstanceMessage msg = new ConsensusInstanceMessage(message.getConsensusInstance(),
-            message.getRound(), Ibft.getPid(), message.getContent());
+            ConsensusInstanceMessage msg = new ConsensusInstanceMessage(
+                message.getConsensusInstance(),
+                message.getRound(), 
+                Ibft.getPid(), 
+                message.getContent()
+            );
             msg.setMessageType(ConsensusInstanceMessage.PREPARE);
-            msg.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
+            msg.sign(RSAKeyStoreById.getPrivateKey(Ibft.getPid()));
             broadcastMessage(msg);
         }
         //IbftTimer.start(message.getRound()); Not needed anymore
@@ -37,10 +40,14 @@ public class DefaultIbftBehavior {
             Logger.logDebug("PREPARE has same value of quorum");
             Ibft.setPreparedRound(message.getRound());
             Ibft.setPreparedValue(message.getContent());
-            ConsensusInstanceMessage msg = new ConsensusInstanceMessage(message.getConsensusInstance(),
-                    message.getRound(), Ibft.getPid(), message.getContent());
+            ConsensusInstanceMessage msg = new ConsensusInstanceMessage(
+                message.getConsensusInstance(),    
+                message.getRound(),
+                Ibft.getPid(), 
+                message.getContent()
+            );
             msg.setMessageType(ConsensusInstanceMessage.COMMIT);
-            msg.signMessage(RSAKeyStoreById.getPrivateKey(Ibft.getPid()), message.getContent());
+            msg.sign(RSAKeyStoreById.getPrivateKey(Ibft.getPid()));
             broadcastMessage(msg);
         }
     }
@@ -52,18 +59,16 @@ public class DefaultIbftBehavior {
                Ibft.addToCommitQuorum(message);
                if (Ibft.hasValidCommitQuorum()) {
                    Logger.logDebug("Has valid COMMIT quorum");
-                   Content value = message.getContent();
                    IbftTimer.stop();
-                   if (Ibft.getApp().validateValue(value)) {
+                   if (Ibft.getApp().validateValue(message.getContent())) {
                        Logger.logDebug("Value was validated, broadcasting... ");
-                       Ibft.validateTransactions(message.getContent());
                        Ibft.getApp().prepareValue(message.getContent());
-                       Ibft.getApp().decide(message.getContent());
+                       Ibft.getApp().decide(message.getContent(), Ibft.getCommitQuorum());
                        Ibft.endInstance();
                    }
                }
            }
-        } catch( NoSuchAlgorithmException e){
+        } catch(Exception e){
             System.out.println("ERROR\n");
         }
     }

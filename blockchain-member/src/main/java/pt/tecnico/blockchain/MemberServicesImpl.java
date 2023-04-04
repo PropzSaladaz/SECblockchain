@@ -29,19 +29,32 @@ public class MemberServicesImpl {
 
     }
 
+    public static void handleBlockchainTransactionMessage(Content content) {
+        BlockchainTransaction transaction = (BlockchainTransaction) content;
+        if (transaction.getOperationType().equals(BlockchainTransaction.UPDATE)){
+            Content block = _blockchainMemberAPI.addTransactionAndGetBlockIfReady(transaction);
+            if (block != null) Ibft.start(block);
+        }
+        
+        else if (transaction.getOperationType().equals(BlockchainTransaction.READ)) {
+            Thread worker = new Thread(() -> {
+                try {
+                    _blockchainMemberAPI.executeRead(transaction);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            worker.start();
+        }
+    }
+
     public static void handleRequest(APLReturnMessage message) {
         try {
             Content content = message.getContent();
             ApplicationMessage appMsg = (ApplicationMessage) content;
             switch (appMsg.getApplicationMessageType()) {
                 case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
-                    BlockchainTransaction transaction = (BlockchainTransaction) content;
-                    if(transaction.getOperationType().equals(BlockchainTransaction.UPDATE)){
-                        Content block = _blockchainMemberAPI.addTransactionAndGetBlockIfReady(transaction);
-                        if (block != null) Ibft.start(block);
-                    }else if(transaction.getOperationType().equals(BlockchainTransaction.STRONG_READ)){
-                        _blockchainMemberAPI.executeStrongRead(transaction);
-                    }
+                    handleBlockchainTransactionMessage(content);
                     break;
                 case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
                     ConsensusInstanceMessage ibftMessage = (ConsensusInstanceMessage) content;

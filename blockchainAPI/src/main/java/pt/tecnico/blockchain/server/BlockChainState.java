@@ -26,6 +26,9 @@ public class BlockChainState {
     }
 
     public SmartContract getContract(String id) {
-        return _contracts.get(id);
+        if (_contracts.containsKey(id)) {
+            return _contracts.get(id);
+        }
+        return null;
     }
 }

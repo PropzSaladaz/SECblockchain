@@ -34,7 +34,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void createAccount(int gasPrice, int gasLimit) {
         try {
-            CreateAccount txn = new CreateAccount(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
+            CreateAccountTransaction txn = new CreateAccountTransaction(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
             txn.sign(client.getPrivateKey());
             submitTransactionToBlockchain(txn, gasPrice, gasLimit,"UPDATE");
         } catch (NoSuchAlgorithmException e) {
@@ -44,7 +44,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void transfer(PublicKey destination, int amount, int gasPrice, int gasLimit) {
         try {
-            Transfer txn = new Transfer(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()),
+            TransferTransaction txn = new TransferTransaction(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()),
                     Crypto.getHashFromKey(destination), amount);
             txn.sign(client.getPrivateKey());
             submitTransactionToBlockchain(txn, gasPrice, gasLimit,"UPDATE");
@@ -55,9 +55,9 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void checkBalance(String readType, int gasPrice, int gasLimit) {
         try {
-            CheckBalance txn = new CheckBalance(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()), readType);
+            CheckBalanceTransaction txn = new CheckBalanceTransaction(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()), readType);
             txn.sign(client.getPrivateKey());
-            submitTransactionToBlockchain(txn, gasPrice, gasLimit,"STRONG READ");
+            submitTransactionToBlockchain(txn, gasPrice, gasLimit,readType);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -69,7 +69,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     private void submitTransactionToBlockchain(TESTransaction concreteTxn, int gasPrice, int gasLimit, String type) {
         try {
-            client.submitTransaction(concreteTxn, gasPrice, gasLimit, contractID,type);
+            client.submitTransaction(concreteTxn, gasPrice, gasLimit, contractID, type);
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -90,7 +90,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     @Override
     public void deliver(Content message, String status) {
         TESTransaction transaction = (TESTransaction) message;
-        if(transaction.checkSign()){
+        if (transaction.checkSign()) {
             if (tesMessagesQuorum.containsKey(transaction.getNonce()) && transaction.equals(tesMessagesQuorum.get(transaction.getNonce()).get(0))){
                 tesMessagesQuorum.get(transaction.getNonce()).add(transaction);
             }
@@ -98,7 +98,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
                 tesMessagesQuorum.put(transaction.getNonce(),new ArrayList<>());
                 tesMessagesQuorum.get(transaction.getNonce()).add(transaction);
             }
-        }if(deliveredMap.get(transaction.getNonce()) == null && hasValidPreparedQuorum(transaction.getNonce())){
+        } if (deliveredMap.get(transaction.getNonce()) == null && hasValidPreparedQuorum(transaction.getNonce())) {
             switch (transaction.getType()) {
                 case TESTransaction.CREATE_ACCOUNT:
                     if(status.equals("SUCCESSFUL TRANSACTION")){
@@ -107,14 +107,14 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
                         System.out.println("IMPOSSIBLE TO CREATE ACCOUNT WITH KEY: " + transaction.getSender() +"\n");
                     }
                 case TESTransaction.TRANSFER:
-                    Transfer transfer = (Transfer) transaction;
+                    TransferTransaction transfer = (TransferTransaction) transaction;
                     if(status.equals("SUCCESSFUL TRANSACTION")){
                         System.out.println("TRANSFERED " + transfer.getAmount()+ "$" + " TO  " + transaction.getSender() +"\n");
                     }else if(status.equals("REJECTED TRANSACTION")){
                         System.out.println("IMPOSSIBLE TO TRANSFER " + transfer.getAmount()+ "$" + " TO  " + transaction.getSender() +"\n");
                     }
                 case TESTransaction.CHECK_BALANCE:
-                    CheckBalance checkTransaction = (CheckBalance) transaction;
+                    CheckBalanceTransaction checkTransaction = (CheckBalanceTransaction) transaction;
                     if(status.equals("SUCCESSFUL TRANSACTION")){
                         System.out.println("THE BALANCE IS: " + checkTransaction.getAmount() + "$\n");
                     }else if(status.equals("REJECTED TRANSACTION")){

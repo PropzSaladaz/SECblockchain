@@ -14,7 +14,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
     public static final String STRONG_READ = "STRONG READ";
     public static final String WEAK_READ = "WEAK READ";
     public static final String UPDATE = "UPDATE";
-
+    public static final String READ = "READ";
 
 
     private String contractID;
@@ -45,8 +45,8 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         return contractID;
     }
 
-    public String getNonce() {
-        return Integer.toString(nonce);
+    public Integer getNonce() {
+        return nonce;
     }
 
     public String getStatus() {

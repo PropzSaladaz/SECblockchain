@@ -5,4 +5,5 @@ import pt.tecnico.blockchain.Messages.Content;
 public interface SmartContract {
     public String getContractID();
     public boolean assertTransaction(Content transaction,String minerKey);
+    public Content executeReadTransaction(Content transaction);
 }

@@ -4,8 +4,10 @@ import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
+import pt.tecnico.blockchain.Messages.MessageManager;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.time.Instant;
@@ -37,8 +39,27 @@ public class APLMessage extends Message implements Content {
         return _signature;
     }
 
-    public void sign(PrivateKey key) throws NoSuchAlgorithmException, IOException {
-        _signature = AuthenticatedPerfectLink.authenticate(getContent(), _dest, key);
+    @Override
+    public byte[] digestMessageFields() {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(MessageManager.getContentBytes(this.getContent()));
+            digest.update(_dest.getBytes());
+            digest.update(_source.getBytes());
+            return digest.digest();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public void sign(PrivateKey key) {
+        try {
+            _signature = Crypto.getSignature(digestMessageFields(), key);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public String getSource() {
