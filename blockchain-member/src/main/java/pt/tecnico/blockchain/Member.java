@@ -1,23 +1,20 @@
 package pt.tecnico.blockchain;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.DatagramSocket;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.Collections;
-
-import static pt.tecnico.blockchain.ErrorMessage.*;
-
 import pt.tecnico.blockchain.Config.BlockchainConfig;
 import pt.tecnico.blockchain.Keys.KeyFilename;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Path.BlockchainPaths;
+import pt.tecnico.blockchain.contracts.tes.TESContract;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.server.BlockchainMemberAPI;
-import pt.tecnico.blockchain.contracts.SmartContract;
-import pt.tecnico.blockchain.contracts.tes.TESContract;
+
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+
+import static pt.tecnico.blockchain.ErrorMessage.*;
 
 public class Member
 {
@@ -58,7 +55,7 @@ public class Member
             Thread.sleep(config.timeUntilStart());
 
             behavior.track();
-            RunMember.run(socket, config.getSlotDuration());
+            RunMember.run(socket);
 
         } catch (IOException e) {
             throw new BlockChainException(COULD_NOT_LOAD_CONFIG_FILE, e.getMessage());

@@ -14,9 +14,9 @@ import pt.tecnico.blockchain.behavior.states.signas.SignAsState;
 import static pt.tecnico.blockchain.Config.BlockchainConfig.*;
 
 public class MemberSlotBehavior {
-    private BlockchainConfig config;
-    private int slotDuration;
-    private int pID;
+    private final BlockchainConfig config;
+    private final int slotDuration;
+    private final int pID;
     private int slot;
 
     public MemberSlotBehavior(BlockchainConfig config, int pID) {

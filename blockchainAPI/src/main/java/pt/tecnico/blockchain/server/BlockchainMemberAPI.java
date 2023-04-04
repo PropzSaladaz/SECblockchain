@@ -1,30 +1,29 @@
 package pt.tecnico.blockchain.server;
+
 import pt.tecnico.blockchain.*;
-import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.TransactionResultMessage;
-import pt.tecnico.blockchain.Messages.tes.TESTransaction;
-import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.contracts.SmartContract;
+import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
+import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Map;
-import java.io.IOException;
-import java.net.DatagramSocket;
 
-import pt.tecnico.blockchain.Pair;
+import static pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus.*;
 
 public class BlockchainMemberAPI implements Application {
-    private Blockchain chain;
-    private SynchronizedTransactionPool pool;
-    private DatagramSocket _socket;
-    private Map<Integer,Pair<String,Integer>> _clientsPidToInfo;
-    private BlockChainState _blockChainState;
-    private String _publicKey;
+    private final Blockchain chain;
+    private final SynchronizedTransactionPool pool;
+    private final DatagramSocket _socket;
+    private final Map<Integer,Pair<String,Integer>> _clientsPidToInfo;
+    private final BlockChainState _blockChainState;
+    private final String _publicKey;
 
     public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients, PublicKey publicKey) throws NoSuchAlgorithmException {
         chain = new Blockchain();
@@ -56,65 +55,7 @@ public class BlockchainMemberAPI implements Application {
         chain.prepareValue(value);
     }
 
-    public Content addTransactionAndGetBlockIfReady(BlockchainTransaction transaction) {
-        List<BlockchainTransaction> transactions;
-        pool.addTransactionIfNotInPool(transaction);
-        if ((transactions = pool.getTransactionsIfHasEnough()).size() > 0) {
-            return new BlockchainBlock(transactions);
-        }
-        return null;
-    }
 
-    public void executeStrongRead(BlockchainTransaction transaction) throws Exception {
-        TransactionResultMessage finalMessage = new TransactionResultMessage(transaction);
-        if(_blockChainState.existContract(transaction.getContractID())){
-            if(_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent(),_publicKey)){
-                finalMessage.setStatus(TransactionResultMessage.SUCCESSFUL_TRANSACTION);
-            }else{
-                finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
-            }
-        }else{
-            finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
-        }
-
-        Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(transaction.getSender())));
-        AuthenticatedPerfectLink.send(_socket, finalMessage, senderInfo.getFirst(), senderInfo.getSecond());
-    }
-
-    public void sendTransactionResultToClient(Content content) {
-        try {
-            BlockchainBlock block = (BlockchainBlock) content;
-            List<BlockchainTransaction> transactions = block.getTransactions();
-            for (BlockchainTransaction transaction : transactions ) {
-                TransactionResultMessage finalMessage = new TransactionResultMessage(transaction);
-                if (transaction.getStatus().equals(BlockchainTransaction.APPENDED)){
-                    finalMessage.setStatus(TransactionResultMessage.SUCCESSFUL_TRANSACTION);
-                } else{
-                    finalMessage.setStatus(TransactionResultMessage.REJECTED_TRANSACTION);
-                }
-                Pair<String,Integer> senderInfo = _clientsPidToInfo.get(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(transaction.getSender())));
-                AuthenticatedPerfectLink.send(_socket, finalMessage, senderInfo.getFirst(), senderInfo.getSecond());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Blockchain getChain() {
-        return chain;
-    }
-
-    public SynchronizedTransactionPool getPool() {
-        return pool;
-    }
-
-    public DatagramSocket getSocket() {
-        return _socket;
-    }
-
-    public BlockChainState getBlockChainState() {
-        return _blockChainState;
-    }
 
     public void addContractToBlockchain(SmartContract _contract) {
         _blockChainState.addContract(_contract);
@@ -124,11 +65,80 @@ public class BlockchainMemberAPI implements Application {
         BlockchainBlock block = (BlockchainBlock) content;
         List<BlockchainTransaction> transactions = block.getTransactions();
         for (BlockchainTransaction transaction : transactions) {
-            if(_blockChainState.existContract(transaction.getContractID())){
-                if (_blockChainState.getContract(transaction.getContractID()).assertTransaction(transaction.getContent(),_publicKey)){
-                    transaction.setStatus(BlockchainTransaction.APPENDED);
-                }
+            String contractId = transaction.getContractID();
+            if(_blockChainState.existContract(contractId)){
+                SmartContract contract = _blockChainState.getContract(contractId);
+                if (contract.assertTransaction(transaction.getContent(), _publicKey))
+                    transaction.setStatus(APPENDED);
             }
         }
+    }
+
+
+    /* -------------------------------------------
+     *          SEND RESPONSE MESSAGES
+     * ---------------------------------------- */
+
+    public void sendTransactionResultToClient(Content content) {
+        try {
+            BlockchainBlock block = (BlockchainBlock) content;
+            List<BlockchainTransaction> transactions = block.getTransactions();
+            for (BlockchainTransaction transaction : transactions ) {
+                TransactionResultMessage response = new TransactionResultMessage(transaction);
+                if (transaction.getStatus() == APPENDED)
+                    response.setStatus(SUCCESS);
+                else response.setStatus(FAILURE, "Transaction could not be validated.");
+                sendResponseToClient(transaction.getSender(), response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendResponseToClient(String sender, TransactionResultMessage response) throws Exception {
+        PublicKey clientkey = KeyConverter.base64ToPublicKey(sender);
+        Integer clientPid = RSAKeyStoreById.getPidFromPublic(clientkey);
+        Pair<String,Integer> senderInfo = _clientsPidToInfo.get(clientPid);
+        AuthenticatedPerfectLink.send(_socket, response, senderInfo.getFirst(), senderInfo.getSecond());
+    }
+
+
+    /* -------------------------------------------
+     *         HANDLE RECEIVED MESSAGES
+     * ---------------------------------------- */
+
+    public void parseTransaction(BlockchainTransaction transaction) throws Exception {
+        switch (transaction.getOperationType()) {
+            case UPDATE:
+                BlockchainBlock block = addTransactionAndGetBlockIfReady(transaction);
+                if (block != null) Ibft.start(block);
+                break;
+            case READ:
+                parseRead(transaction);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private BlockchainBlock addTransactionAndGetBlockIfReady(BlockchainTransaction transaction) {
+        List<BlockchainTransaction> transactions;
+        pool.addTransactionIfNotInPool(transaction);
+        if ((transactions = pool.getTransactionsIfHasEnough()).size() > 0) {
+            return new BlockchainBlock(transactions);
+        }
+        return null;
+    }
+
+    private void parseRead(BlockchainTransaction transaction) throws Exception {
+        TransactionResultMessage response = new TransactionResultMessage(transaction);
+        String contractID = transaction.getContractID();
+        if(_blockChainState.existContract(contractID)) {
+            SmartContract contract = _blockChainState.getContract(contractID);
+            if (contract.assertTransaction(transaction.getContent(), _publicKey))
+                 response.setStatus(SUCCESS);
+            else response.setStatus(FAILURE, "Transaction could not be validated.");
+        } else response.setStatus(FAILURE, "Contract with id '" + transaction.getContractID() + "' doesn't exist.");
+        sendResponseToClient(transaction.getSender(), response);
     }
 }

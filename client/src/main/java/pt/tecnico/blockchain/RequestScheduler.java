@@ -6,6 +6,7 @@ import pt.tecnico.blockchain.Config.operations.ClientOperation;
 import pt.tecnico.blockchain.Config.operations.CreateAccountOperation;
 import pt.tecnico.blockchain.Config.operations.TransferOperation;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.Messages.tes.TESReadType;
 import pt.tecnico.blockchain.SlotTimer.ScheduledTask;
 import pt.tecnico.blockchain.contracts.tes.TESClientAPI;
 
@@ -54,7 +55,16 @@ public class RequestScheduler {
     }
 
     private static void issueCheckBalanceRequest(CheckBalanceOperation request) {
-        client.checkBalance(request.getReadType(), request.getGasPrice(), request.getGasLimit());
+        switch (request.getReadType()) {
+            case BlockchainConfig.WEAKLY_CONSISTENT_READ:
+                client.checkBalance(TESReadType.WEAK, request.getGasPrice(), request.getGasLimit());
+                break;
+            case BlockchainConfig.STRONGLY_CONSISTENT_READ:
+                client.checkBalance(TESReadType.STRONG, request.getGasPrice(), request.getGasLimit());
+                break;
+            default:
+                break;
+        }
     }
 
     private static void issueTransferRequest(TransferOperation request) {

@@ -4,6 +4,7 @@ import pt.tecnico.blockchain.Messages.*;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.AppendBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionType;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.server.BlockchainMemberAPI;
@@ -35,20 +36,14 @@ public class MemberServicesImpl {
             ApplicationMessage appMsg = (ApplicationMessage) content;
             switch (appMsg.getApplicationMessageType()) {
                 case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
-                    BlockchainTransaction transaction = (BlockchainTransaction) content;
-                    if(transaction.getOperationType().equals(BlockchainTransaction.UPDATE)){
-                        Content block = _blockchainMemberAPI.addTransactionAndGetBlockIfReady(transaction);
-                        if (block != null) Ibft.start(block);
-                    }else if(transaction.getOperationType().equals(BlockchainTransaction.STRONG_READ)){
-                        _blockchainMemberAPI.executeStrongRead(transaction);
-                    }
+                    _blockchainMemberAPI.parseTransaction((BlockchainTransaction) content);
                     break;
                 case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
-                    ConsensusInstanceMessage ibftMessage = (ConsensusInstanceMessage) content;
-                    Ibft.handleMessage(ibftMessage, message.getSenderPid());
+                    Ibft.handleMessage((ConsensusInstanceMessage) content, message.getSenderPid());
                     break;
                 default:
-                    Logger.logWarning("ERROR: Could not handle request");
+                    Logger.logWarning("ERROR: Could not handle request. Expected either " +
+                            "BLOCKCHAIN_TRANSACTION or CONSENSUS_INSTANCE_MESSAGE");
                     break;
             }
         } catch (ClassCastException e) {

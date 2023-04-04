@@ -10,20 +10,14 @@ import java.util.UUID;
  * Contains an arbitrary transaction for a specific contract identified by ID
  */
 public class BlockchainTransaction extends ApplicationMessage implements Content {
-    public static final String APPENDED = "APPENDED";
-    public static final String STRONG_READ = "STRONG READ";
-    public static final String WEAK_READ = "WEAK READ";
-    public static final String UPDATE = "UPDATE";
-
-
 
     private String contractID;
     private String from;
     private int nonce;
     private int gasPrice;
     private int gasLimit;
-    private String _status;
-    private String _operationType;
+    private BlockchainTransactionStatus _status;
+    private BlockchainTransactionType _operationType;
 
 
     public BlockchainTransaction(String from, int nonce, Content transaction, int gasPrice, int gasLimit, String contractID) {
@@ -33,7 +27,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         this.contractID = contractID;
         this.gasPrice = gasPrice;
         this.gasLimit = gasLimit;
-        _status = "NOT APPENDED";
+        _status = BlockchainTransactionStatus.FAILURE;
     }
 
     @Override
@@ -49,19 +43,19 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         return Integer.toString(nonce);
     }
 
-    public String getStatus() {
+    public BlockchainTransactionStatus getStatus() {
         return _status;
     }
 
-    public void setOperationType(String operationType) {
+    public void setOperationType(BlockchainTransactionType operationType) {
         _operationType = operationType;
     }
 
-    public String getOperationType() {
+    public BlockchainTransactionType getOperationType() {
         return _operationType;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(BlockchainTransactionStatus status) {
         _status = status;
     }
 
