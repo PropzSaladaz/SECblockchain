@@ -15,7 +15,8 @@ import static pt.tecnico.blockchain.IbftMessagehandler.broadcastMessage;
 public class DefaultIbftBehavior {
 
     public static void handlePrePrepareRequest(ConsensusInstanceMessage message) {
-        if (isValidMessageFromLeader(message) && Ibft.getApp().validateValue(message.getContent())) {
+        // is commented out because we are validating and executing by calling that method
+        if (isValidMessageFromLeader(message) /*&& Ibft.getApp().validateValue(message.getContent())*/) {
             ConsensusInstanceMessage msg = new ConsensusInstanceMessage(
                 message.getConsensusInstance(),
                 message.getRound(), 
@@ -60,10 +61,10 @@ public class DefaultIbftBehavior {
                if (Ibft.hasValidCommitQuorum()) {
                    Logger.logDebug("Has valid COMMIT quorum");
                    IbftTimer.stop();
-                   if (Ibft.getApp().validateValue(message.getContent())) {
+                   if (Ibft.getApp().validateValue(message.getContent(), Ibft.getCommitQuorum())) {
                        Logger.logDebug("Value was validated, broadcasting... ");
                        Ibft.getApp().prepareValue(message.getContent());
-                       Ibft.getApp().decide(message.getContent(), Ibft.getCommitQuorum());
+                       Ibft.getApp().decide(message.getContent());
                        Ibft.endInstance();
                    }
                }

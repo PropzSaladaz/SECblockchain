@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain.Messages.tes;
+package pt.tecnico.blockchain.Messages.tes.transactions;
 
 import pt.tecnico.blockchain.Messages.Content;
 
@@ -8,6 +8,7 @@ import java.security.SignatureException;
 public class TransferTransaction extends TESTransaction {
 
     private String destinationAddress;
+    String destinationBalanceHash;
     private int amount;
 
     public TransferTransaction(int nonce, String sourceAddress, String destinationAddress, int amount) {
@@ -30,6 +31,14 @@ public class TransferTransaction extends TESTransaction {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public String getDestinationBalanceHash() {
+        return destinationBalanceHash;
+    }
+
+    public void setDestinationBalanceHash(int destinationBalance) {
+        this.destinationBalanceHash = getBase64HashFromBalance(destinationBalance);
     }
 
     @Override

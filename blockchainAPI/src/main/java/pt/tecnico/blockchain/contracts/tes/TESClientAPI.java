@@ -6,6 +6,14 @@ import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionType;
 import pt.tecnico.blockchain.Messages.tes.*;
+import pt.tecnico.blockchain.Messages.tes.responses.CheckBalanceResultMessage;
+import pt.tecnico.blockchain.Messages.tes.responses.CreateAccountResultMessage;
+import pt.tecnico.blockchain.Messages.tes.responses.TESResultMessage;
+import pt.tecnico.blockchain.Messages.tes.responses.TransferResultMessage;
+import pt.tecnico.blockchain.Messages.tes.transactions.CheckBalanceTransaction;
+import pt.tecnico.blockchain.Messages.tes.transactions.CreateAccountTransaction;
+import pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction;
+import pt.tecnico.blockchain.Messages.tes.transactions.TransferTransaction;
 import pt.tecnico.blockchain.client.BlockchainClientAPI;
 import pt.tecnico.blockchain.client.DecentralizedAppClientAPI;
 
@@ -16,14 +24,14 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.*;
 
-import static pt.tecnico.blockchain.Messages.tes.TESTransaction.CREATE_ACCOUNT;
-import static pt.tecnico.blockchain.Messages.tes.TESTransaction.TRANSFER;
+import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.CREATE_ACCOUNT;
+import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.TRANSFER;
 
 public class TESClientAPI implements DecentralizedAppClientAPI {
 
     private static final String contractID = "HARDCODEDCONTRACID"; // TODO define a hash in the server TES class
     private final BlockchainClientAPI client;
-    private final Map<Integer, Map<Integer, List<TESTransaction>>> tesMessagesQuorum; // nonce -> hashCode -> List of obj
+    private final Map<Integer, Map<Integer, List<TESResultMessage>>> tesMessagesQuorum; // nonce -> hashCode -> List of obj
     private final Set<Integer> deliveredSet;
 
     public TESClientAPI(DatagramSocket socket, PublicKey pubKey, PrivateKey privKey) {
@@ -98,12 +106,11 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     @Override
     public void deliver(Content message, BlockchainTransactionType operationType, BlockchainTransactionStatus status) {
-        TESTransaction transaction = (TESTransaction) message; // TODO maybe create a class just for the response to the client
-        if (transaction.checkSignature()) parseTransaction(transaction,  operationType, status);
-        else Logger.logWarning("Received a TES response with invalid signature");
+        TESResultMessage transaction = (TESResultMessage) message; // TODO maybe create a class just for the response to the client
+        parseTransaction(transaction,  operationType, status);
     }
 
-    private void parseTransaction(TESTransaction txn, BlockchainTransactionType operationType,
+    private void parseTransaction(TESResultMessage txn, BlockchainTransactionType operationType,
                                   BlockchainTransactionStatus status) {
         switch (operationType) {
             case READ:
@@ -117,10 +124,10 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         }
     }
 
-    private void parseRead(TESTransaction txn, BlockchainTransactionStatus status) {
+    private void parseRead(TESResultMessage txn, BlockchainTransactionStatus status) {
         // TODO change to response type
         try {
-            CheckBalanceTransaction balance = (CheckBalanceTransaction) txn;
+            CheckBalanceResultMessage balance = (CheckBalanceResultMessage) txn;
             switch (balance.getReadType()) {
                 case WEAK:
                     parseWeakRead(balance, status);
@@ -137,15 +144,15 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         }
     }
 
-    private void parseWeakRead(CheckBalanceTransaction txn, BlockchainTransactionStatus status) {
+    private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) {
         // TODO validate the received signature quorum, etc...
     }
 
-    private void parseStrongRead(CheckBalanceTransaction txn, BlockchainTransactionStatus status) { // wait for f+1 responses
+    private void parseStrongRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) { // wait for f+1 responses
         // TODO receive a checkbalance response message instead
         addTransactionToReceivedMap(txn);
         if (responseReadyToDeliver(txn)) {
-            deliveredSet.add(txn.getNonce());
+            deliveredSet.add(txn.getTxnNonce());
             printStatus(status,
                     "THE BALANCE IS: " /*txn.get()*/,
                     "IMPOSSIBLE TO CHECK BALANCE"
@@ -153,16 +160,16 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         }
     }
 
-    private void parseUpdate(TESTransaction txn, BlockchainTransactionStatus status) {
+    private void parseUpdate(TESResultMessage txn, BlockchainTransactionStatus status) {
         addTransactionToReceivedMap(txn);
         if (responseReadyToDeliver(txn)) {
-            deliveredSet.add(txn.getNonce());
+            deliveredSet.add(txn.getTxnNonce());
             switch (txn.getType()) {
                 case TRANSFER:
-                    parseTransfer((TransferTransaction) txn, status);
+                    parseTransfer((TransferResultMessage) txn, status);
                     break;
                 case CREATE_ACCOUNT:
-                    parseCreateAccount((CreateAccountTransaction) txn, status);
+                    parseCreateAccount((CreateAccountResultMessage) txn, status);
                     break;
                 default:
                     Logger.logWarning("Expected Transfer or Create Balance, but got something else.");
@@ -171,37 +178,39 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         }
     }
 
-    private void addTransactionToReceivedMap(TESTransaction txn) {
-        tesMessagesQuorum.computeIfAbsent(txn.getNonce(), k -> new HashMap<>());
-        Map<Integer, List<TESTransaction>> receivedWithNonce = tesMessagesQuorum.get(txn.getNonce());
+    private void addTransactionToReceivedMap(TESResultMessage txn) {
+        // TODO should check that, if the message is equal and has same nonce, it comes from a different member
+        // else, a malicious member could send all responses to the client
+        tesMessagesQuorum.computeIfAbsent(txn.getTxnNonce(), k -> new HashMap<>());
+        Map<Integer, List<TESResultMessage>> receivedWithNonce = tesMessagesQuorum.get(txn.getTxnNonce());
         receivedWithNonce.computeIfAbsent(txn.hashCode(), k -> new ArrayList<>());
         receivedWithNonce.get(txn.hashCode()).add(txn);
     }
 
-    private boolean responseReadyToDeliver(TESTransaction txn) {
-        return !deliveredSet.contains(txn.getNonce()) && hasMajorityEqualResponses(txn);
+    private boolean responseReadyToDeliver(TESResultMessage txn) {
+        return !deliveredSet.contains(txn.getTxnNonce()) && hasMajorityEqualResponses(txn);
     }
 
-    private boolean hasMajorityEqualResponses(TESTransaction txn) { // wait for f+1 responses
+    private boolean hasMajorityEqualResponses(TESResultMessage txn) { // wait for f+1 responses
         return getNumberOfResponsesEqualTo(txn) == getMaxNumberOfFaultyProcesses() + 1;
     }
 
-    private int getNumberOfResponsesEqualTo(TESTransaction txn) {
-        return tesMessagesQuorum.get(txn.getNonce()).get(txn.hashCode()).size();
+    private int getNumberOfResponsesEqualTo(TESResultMessage txn) {
+        return tesMessagesQuorum.get(txn.getTxnNonce()).get(txn.hashCode()).size();
     }
 
     public int getMaxNumberOfFaultyProcesses() {
         return (int)Math.floor((client.getNumberProcesses()-1) / 3.0);
     }
 
-    private void parseTransfer(TransferTransaction txn, BlockchainTransactionStatus status) {
+    private void parseTransfer(TransferResultMessage txn, BlockchainTransactionStatus status) {
         printStatus(status,
-                "TRANSFERRED " + txn.getAmount()+ "$" + " TO  " + txn.getSender() +"\n",
-                "IMPOSSIBLE TO TRANSFER " + txn.getAmount()+ "$" + " TO  " + txn.getSender() +"\n"
+                "TRANSFERRED " + txn.getAmount()+ "$" + " TO  " + txn.getDestination() +"\n",
+                "IMPOSSIBLE TO TRANSFER " + txn.getAmount()+ "$" + " TO  " + txn.getDestination() +"\n"
         );
     }
 
-    private void parseCreateAccount(CreateAccountTransaction txn, BlockchainTransactionStatus status) {
+    private void parseCreateAccount(CreateAccountResultMessage txn, BlockchainTransactionStatus status) {
         printStatus(status,
                 "ACCOUNT CREATED WITH KEY: " + txn.getSender(),
                 "IMPOSSIBLE TO CREATE ACCOUNT WITH KEY: " + txn.getSender()
@@ -210,10 +219,10 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     private void printStatus(BlockchainTransactionStatus status, String successMessage, String failureMessage) {
         switch(status) {
-            case SUCCESS:
+            case VALIDATED:
                 Logger.logInfo(successMessage);
                 break;
-            case FAILURE:
+            case REJECTED:
                 Logger.logInfo(failureMessage);
                 break;
             default:

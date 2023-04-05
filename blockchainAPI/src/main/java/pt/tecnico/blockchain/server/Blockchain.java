@@ -39,14 +39,14 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public void decide(Content msg, List<Content> quorum) {
+    public void decide(Content msg) {
         BlockchainBlock blockValue = (BlockchainBlock) msg;
         _lastBlock = new Block(_lastBlock, blockValue.getTransactions());
         printBlockchain();
     }
 
     @Override
-    public boolean validateValue(Content value) {
+    public boolean validateValue(Content value, List<Content> quorum) {
         try {
             BlockchainBlock newBlock = (BlockchainBlock) value;
             String predictedHash = Block.computeHash(_lastBlock.getBlockHash(),

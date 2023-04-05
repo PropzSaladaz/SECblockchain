@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain.Messages.tes;
+package pt.tecnico.blockchain.Messages.tes.transactions;
 
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Pair;
@@ -15,13 +15,34 @@ public abstract class TESTransaction implements Content {
 
     private String from;
     private String type;
+    private String senderBalanceHash;
     private byte[] signature;
     private int nonce;
+
+    private String failureMessage; // should not be persistent in blockchain
 
     public TESTransaction(int nonce, String type, String sender) {
         this.type = type;
         this.from = sender;
         this.nonce = nonce;
+    }
+
+    public String getBalanceHash() {
+        return senderBalanceHash;
+    }
+
+    public void setSenderBalanceHash(int balance) {
+        this.senderBalanceHash = getBase64HashFromBalance(balance);
+    }
+
+    protected String getBase64HashFromBalance(int balance) {
+        try {
+            byte[] bytes = Integer.toString(balance).getBytes();
+            return Crypto.base64(Crypto.digest(bytes));
+        } catch(NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public String getType() {
@@ -34,6 +55,14 @@ public abstract class TESTransaction implements Content {
 
     public String getSender() {
         return from;
+    }
+
+    public String getFailureMessage() {
+        return failureMessage;
+    }
+
+    public void setFailureMessage(String failureMessage) {
+        this.failureMessage = failureMessage;
     }
 
     public void setPublicKeyHash(String sender) {

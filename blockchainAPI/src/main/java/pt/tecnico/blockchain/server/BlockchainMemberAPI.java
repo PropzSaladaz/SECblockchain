@@ -37,21 +37,20 @@ public class BlockchainMemberAPI implements Application {
     }
 
     @Override
-    public void decide(Content msg, List<Content> quorum) {
-        List<SignedBlockchainBlockMessage> blockSignaturesQuorum = quorum.stream().map(
-            content -> {
-                return (SignedBlockchainBlockMessage) content;
-            }
-        ).collect(Collectors.toList());
-        chain.decide(msg, null);
-        sendTransactionResultToClient(msg, blockSignaturesQuorum);
+    public void decide(Content msg) {
+        SignedBlockchainBlockMessage m = (SignedBlockchainBlockMessage) msg;
+        chain.decide(m.getContent()); // block is appended with all transactions (VALIDATED and NOT-VALIDATED)
+        sendTransactionResultToClient(msg);
     }
 
     @Override
-    public boolean validateValue(Content value) {
+    public boolean validateValue(Content value, List<Content> quorum) {
         SignedBlockchainBlockMessage signedValue = (SignedBlockchainBlockMessage) value;
-        validateBlockTransactions((BlockchainBlock)signedValue.getContent());
-        return chain.validateValue(signedValue.getContent());
+        List<byte[]> blockSignaturesQuorum = quorum.stream().map(
+                content -> ((SignedBlockchainBlockMessage) content).getSignature()
+        ).collect(Collectors.toList());
+        validateAndExecuteBlockTransactions(signedValue.getContent()); // TODO should use the signed block here to update all affected accounts
+        return chain.validateValue(signedValue.getContent(), null);
     }
 
     @Override
@@ -70,17 +69,18 @@ public class BlockchainMemberAPI implements Application {
         _blockChainState.addContract(_contract);
     }
 
-    public void validateBlockTransactions(Content content){
-        BlockchainBlock block = (BlockchainBlock) content;
+    public void validateAndExecuteBlockTransactions(Content content) {
+        BlockchainBlock block = (BlockchainBlock) content; // TODO cast prob - create new arrayList and return it
         List<BlockchainTransaction> transactions = block.getTransactions();
         for (BlockchainTransaction transaction : transactions) {
             String contractId = transaction.getContractID();
             if(_blockChainState.existContract(contractId)){
                 SmartContract contract = _blockChainState.getContract(contractId);
-                if (contract.assertTransaction(transaction.getContent(), _publicKey))
-                    transaction.setStatus(APPENDED);
+                if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey))
+                    transaction.setStatus(VALIDATED);
+                else transaction.setStatus(REJECTED);
             }
-        } // TODO set REJECTED
+        }
     }
 
 
@@ -88,17 +88,17 @@ public class BlockchainMemberAPI implements Application {
      *          SEND RESPONSE MESSAGES
      * ---------------------------------------- */
 
-    public void sendTransactionResultToClient(Content content, List<SignedBlockchainBlockMessage> signaturesQuorum) {
+    public void sendTransactionResultToClient(Content content) {
         try {
             BlockchainBlock block = (BlockchainBlock) content;
             List<BlockchainTransaction> transactions = block.getTransactions();
             for (BlockchainTransaction transaction : transactions ) {
-                TransactionResultMessage response = new TransactionResultMessage(transaction.getNonce(), transaction);
-                if (transaction.getStatus() == APPENDED){
-                    response.setStatus(SUCCESS);
-                    // TODO
-                }
-                else response.setStatus(FAILURE, "Transaction could not be validated.");
+                SmartContract contract = _blockChainState.getContract(transaction.getContractID());
+                Content contractResp = contract.getTransactionResponse(transaction.getContent());
+                TransactionResultMessage response = new TransactionResultMessage(
+                        transaction.getNonce(),
+                        contractResp
+                );
                 sendResponseToClient(transaction.getSender(), response);
             }
         } catch (Exception e) {
@@ -122,20 +122,34 @@ public class BlockchainMemberAPI implements Application {
         switch (transaction.getOperationType()) {
             case UPDATE:
                 BlockchainBlock block = addTransactionAndGetBlockIfReady(transaction);
-                if (block != null) Ibft.start(block);
+                if (block != null) {
+                    updateTransactionsBeforeConsensus(block);
+                    Ibft.start(new SignedBlockchainBlockMessage(block));
+                }
                 break;
             case READ:
-                Thread worker = new Thread(() -> {
-                    try {
-                        parseRead(transaction);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-                worker.start();
+//                Thread worker = new Thread(() -> {
+//                    try {
+//                        parseRead(transaction);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                });
+//                worker.start();
+                parseRead(transaction);
                 break;
             default:
                 break;
+        }
+    }
+
+    private void updateTransactionsBeforeConsensus(BlockchainBlock block) {
+        for (BlockchainTransaction txn : block.getTransactions()) {
+            String contractId = txn.getContractID();
+            if(_blockChainState.existContract(contractId)){
+                SmartContract contract = _blockChainState.getContract(contractId);
+                contract.updateTransactionWithCurrentState(txn.getContent());
+            }
         }
     }
 
@@ -153,13 +167,13 @@ public class BlockchainMemberAPI implements Application {
         String contractID = transaction.getContractID();
         if(_blockChainState.existContract(contractID)) {
             SmartContract contract = _blockChainState.getContract(contractID);
-            if (contract.assertTransaction(transaction.getContent(), _publicKey)) {
-                Content resultContent = contract.executeReadTransaction(transaction.getContent());
+            if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey)) {
+                Content resultContent = contract.getTransactionResponse(transaction.getContent());
                 response.setContent(resultContent);
-                response.setStatus(SUCCESS);
+                response.setStatus(VALIDATED);
             }
-            else response.setStatus(FAILURE, "Transaction could not be validated.");
-        } else response.setStatus(FAILURE, "Contract with id '" + transaction.getContractID() + "' doesn't exist.");
+            else response.setStatus(REJECTED, "Transaction could not be validated.");
+        } else response.setStatus(REJECTED, "Contract with id '" + transaction.getContractID() + "' doesn't exist.");
         sendResponseToClient(transaction.getSender(), response);
     }
 }

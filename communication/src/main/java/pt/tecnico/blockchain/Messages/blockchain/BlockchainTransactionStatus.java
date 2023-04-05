@@ -1,16 +1,15 @@
 package pt.tecnico.blockchain.Messages.blockchain;
 
 public enum BlockchainTransactionStatus {
-    SUCCESS(0),
-    FAILURE(1),
-    APPENDED(2);
+    VALIDATED("VALIDATED"),
+    REJECTED("REJECTED"),
+    NOT_VALIDATED_YET("NOT VALIDATED YET");
+    private final String opID;
 
-    private final int opID;
-
-    BlockchainTransactionStatus(int opID) {
+    BlockchainTransactionStatus(String opID) {
         this.opID = opID;
     }
-    public int getCode() {
+    public String getMessage() {
         return opID;
     }
 }

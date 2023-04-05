@@ -1,4 +1,4 @@
-package pt.tecnico.blockchain.Messages.tes;
+package pt.tecnico.blockchain.contracts.tes;
 
 import pt.tecnico.blockchain.Messages.Content;
 

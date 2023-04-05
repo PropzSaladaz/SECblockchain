@@ -7,8 +7,9 @@ import pt.tecnico.blockchain.Messages.Content;
 public class TransactionResultMessage extends ApplicationMessage implements Content {
 
     private BlockchainTransactionStatus _status;
-    private String message;
     private Integer _nonce;
+
+    private String failureMessage;
 
     public TransactionResultMessage(int nonce, Content message) {
         super(message);
@@ -18,17 +19,13 @@ public class TransactionResultMessage extends ApplicationMessage implements Cont
     @Override
     public String getApplicationMessageType() {return TRANSACTION_RESULT_MESSAGE;}
 
-    public String getMessage() {
-        return message;
-    }
-
     public void setStatus(BlockchainTransactionStatus status) {
         _status = status;
     }
 
-    public void setStatus(BlockchainTransactionStatus status, String message) {
+    public void setStatus(BlockchainTransactionStatus status, String failureMessage) {
         _status = status;
-        this.message = message;
+        this.failureMessage = failureMessage;
     }
 
     public BlockchainTransactionStatus getStatus() {

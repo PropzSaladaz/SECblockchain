@@ -18,6 +18,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
     private int gasLimit;
     private BlockchainTransactionStatus _status;
     private BlockchainTransactionType _operationType;
+    private String failureMessage;
 
 
     public BlockchainTransaction(String from, int nonce, Content transaction, int gasPrice, int gasLimit, String contractID) {
@@ -27,7 +28,7 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         this.contractID = contractID;
         this.gasPrice = gasPrice;
         this.gasLimit = gasLimit;
-        _status = BlockchainTransactionStatus.FAILURE; // TODO change to unspecified
+        _status = BlockchainTransactionStatus.NOT_VALIDATED_YET; // TODO change to unspecified
     }
 
     @Override
@@ -57,6 +58,11 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
 
     public void setStatus(BlockchainTransactionStatus status) {
         _status = status;
+    }
+
+    public void setStatus(BlockchainTransactionStatus status, String message) {
+        _status = status;
+        failureMessage = message;
     }
 
     public int getGasPrice() {
