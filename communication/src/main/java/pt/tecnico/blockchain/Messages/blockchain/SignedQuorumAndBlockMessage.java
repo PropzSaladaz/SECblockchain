@@ -15,14 +15,24 @@ public class SignedQuorumAndBlockMessage extends Message implements Content {
     }
 
 
-    public List<Pair<Integer, byte[]>> getSignatures() {
+    public boolean verifyBalanceProof() {
+        BlockchainBlock block = (BlockchainBlock) this.getContent();
+        for (Pair<Integer, byte[]> sigPair : this.getSignaturePairs()) {
+            if (block.verifySignature(sigPair.getFirst(), sigPair.getSecond())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public List<Pair<Integer, byte[]>> getSignaturePairs() {
         return _signatures;
     }
 
     @Override
     public boolean equals(Content another) {
         SignedQuorumAndBlockMessage proof = (SignedQuorumAndBlockMessage) another;
-        return  _signatures.equals(proof.getSignatures()) &&
+        return  _signatures.equals(proof.getSignaturePairs()) &&
                 this.getContent().equals(proof.getContent()); 
     }
 

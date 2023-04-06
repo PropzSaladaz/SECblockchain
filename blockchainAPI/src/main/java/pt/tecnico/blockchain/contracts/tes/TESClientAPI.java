@@ -2,9 +2,11 @@ package pt.tecnico.blockchain.contracts.tes;
 
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Logger;
+import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionType;
+import pt.tecnico.blockchain.Messages.blockchain.SignedQuorumAndBlockMessage;
 import pt.tecnico.blockchain.Messages.tes.*;
 import pt.tecnico.blockchain.Messages.tes.responses.CheckBalanceResultMessage;
 import pt.tecnico.blockchain.Messages.tes.responses.CreateAccountResultMessage;
@@ -106,7 +108,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     @Override
     public void deliver(Content message, BlockchainTransactionType operationType, BlockchainTransactionStatus status) {
-        TESResultMessage transaction = (TESResultMessage) message; // TODO maybe create a class just for the response to the client
+        TESResultMessage transaction = (TESResultMessage) message; 
         parseTransaction(transaction,  operationType, status);
     }
 
@@ -125,15 +127,14 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void parseRead(TESResultMessage txn, BlockchainTransactionStatus status) {
-        // TODO change to response type
         try {
-            CheckBalanceResultMessage balance = (CheckBalanceResultMessage) txn;
-            switch (balance.getReadType()) {
+            CheckBalanceResultMessage txnResponse = (CheckBalanceResultMessage) txn;
+            switch (txnResponse.getReadType()) {
                 case WEAK:
-                    parseWeakRead(balance, status);
+                    parseWeakRead(txnResponse, status);
                     break;
                 case STRONG:
-                    parseStrongRead(balance, status);
+                    parseStrongRead(txnResponse, status);
                     break;
                 default:
                     Logger.logWarning("Expected Weak or Strong read type, but got something else.");
@@ -145,16 +146,22 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) {
-        // TODO validate the received signature quorum, etc...
+        if (((SignedQuorumAndBlockMessage) txn.getContent()).verifyBalanceProof()) {
+            printStatus(status,
+                    "THE BALANCE IS: " + txn.getAmount(),
+                    "IMPOSSIBLE TO CHECK BALANCE"
+            );
+        } else {
+            Logger.logError("Balance proof was incorrect. ");
+        }
     }
 
     private void parseStrongRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) { // wait for f+1 responses
-        // TODO receive a checkbalance response message instead
         addTransactionToReceivedMap(txn);
         if (responseReadyToDeliver(txn)) {
             deliveredSet.add(txn.getTxnNonce());
             printStatus(status,
-                    "THE BALANCE IS: " /*txn.get()*/,
+                    "THE BALANCE IS: " + txn.getAmount(),
                     "IMPOSSIBLE TO CHECK BALANCE"
             );
         }

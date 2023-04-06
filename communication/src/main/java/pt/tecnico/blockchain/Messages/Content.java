@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.PrivateKey;
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 
 
 public interface Content extends Serializable {
@@ -23,9 +24,9 @@ public interface Content extends Serializable {
 
     default void sign(Integer signerPID) {}
 
-    default boolean verifySignature(PublicKey pubKey, byte[] signature) {
+    default boolean verifySignature(Integer signerPID, byte[] signature) {
         try {
-            return Crypto.verifySignature(digestMessageFields(), signature, pubKey);
+            return Crypto.verifySignature(digestMessageFields(), signature, RSAKeyStoreById.getPublicFromPid(signerPID));
         } catch(Exception e) {
             e.printStackTrace();
             return false;

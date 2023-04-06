@@ -83,12 +83,10 @@ public class BlockchainMemberAPI implements Application {
         for (BlockchainTransaction transaction : transactions) {
             String contractId = transaction.getContractID();
             SmartContract contract = _blockChainState.getContract(contractId);
-            if (contract == null) continue; // contract with contractID does not exist -> goto next transaction
-
-            if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, signedBlock)) {
-                transaction.setStatus(VALIDATED);
-            }
-            else transaction.setStatus(REJECTED);   
+            transaction.setStatus(
+                (contract != null && contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, signedBlock)) ?
+                VALIDATED : REJECTED
+            );
         }
     }
 
@@ -178,9 +176,10 @@ public class BlockchainMemberAPI implements Application {
             SmartContract contract = _blockChainState.getContract(contractID);
             // In reads we request a transaction proof instead of providing one
             if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, null)) {
+                response.setStatus(VALIDATED);
+                // This content corresponds to the SignedQuorumAndBlockMessage (balance proof)
                 Content resultContent = contract.getTransactionResponse(transaction.getContent());
                 response.setContent(resultContent);
-                response.setStatus(VALIDATED);
             }
             else response.setStatus(REJECTED, "Transaction could not be validated.");
         } else response.setStatus(REJECTED, "Contract with id '" + transaction.getContractID() + "' doesn't exist.");
