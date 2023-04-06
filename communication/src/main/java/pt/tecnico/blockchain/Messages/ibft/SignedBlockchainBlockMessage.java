@@ -15,6 +15,9 @@ public class SignedBlockchainBlockMessage extends Message implements Content {
     private byte[] _signature;
     private Integer _signerPID;
 
+    public SignedBlockchainBlockMessage() {
+    }
+
     public SignedBlockchainBlockMessage(Content block) {
         super(block);
     }
@@ -44,8 +47,8 @@ public class SignedBlockchainBlockMessage extends Message implements Content {
     @Override
     public String toString(int level) {
         return  toStringWithTabs("SignedBlockchainBlockMessage {" , level) +
-                toStringWithTabs("signature: " + _signature , level + 1) +
-                toStringWithTabs("block: " + getContent() , level + 1) +
+                toStringWithTabs("signature: " + Crypto.base64(_signature, 15) , level + 1) +
+                getContent().toString(level+1) +
                 toStringWithTabs("}", level);
     }
 

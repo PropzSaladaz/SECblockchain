@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.behavior.states.correct;
 
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.links.FairLossLink;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.links.PLMessage;
@@ -23,8 +24,8 @@ public class DefaultPLBehavior {
         message.setSeqNum(currentSeqNum);
         message.setAck(false);
         PerfectLink.incrAckSeqNum(receiverInfo);
-        ScheduledTask task = new ScheduledTask( () -> FairLossLink.send(socket, message, hostname , port),
-                RESEND_MESSAGE_TIMEOUT);
+        ScheduledTask task = new ScheduledTask( () -> FairLossLink.send(socket, message, hostname , port)
+        , RESEND_MESSAGE_TIMEOUT);
         PerfectLink.addToStubbornTasks(receiverInfo.toString() + currentSeqNum, task);
         task.start();
     }

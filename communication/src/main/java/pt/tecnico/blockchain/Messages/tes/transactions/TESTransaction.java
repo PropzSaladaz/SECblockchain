@@ -123,8 +123,8 @@ public abstract class TESTransaction implements Content {
     public String toString(int tabs) {
         return  toStringWithTabs("TESTransaction: {", tabs) +
                 toStringWithTabs("type: " + type, tabs + 1) +
-                toStringWithTabs("from: " + from, tabs + 1) +
-                toStringWithTabs("signature: " + Arrays.toString(signature), tabs + 1) +
+                toStringWithTabs("from: " +  from.substring(0, 15), tabs + 1) +
+                toStringWithTabs("signature: " + Crypto.base64(signature, 15), tabs + 1) +
                 toStringWithTabs("}", tabs);
     }
 

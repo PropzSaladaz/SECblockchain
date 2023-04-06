@@ -80,7 +80,7 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     @Override
     public String toString(int level) {
         return toStringWithTabs("ConsensusInstanceMessage: {", level) +
-                toStringWithTabs("signature: " + _signature, level+1) +
+                toStringWithTabs("signature: " + Crypto.base64(_signature, 15), level+1) +
                 toStringWithTabs("messageType: " + _messageType, level+1) +
                 toStringWithTabs("consensusInstance: " + _consensusInstance, level+1) +
                 toStringWithTabs("roundNumber: " + _roundNumber, level+1) +

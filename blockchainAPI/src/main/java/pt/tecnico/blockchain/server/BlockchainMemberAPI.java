@@ -47,17 +47,25 @@ public class BlockchainMemberAPI implements Application {
 
     @Override
     public boolean validateValue(Content value, List<Content> quorum) {
+        try {
+            SignedBlockchainBlockMessage signedValue = (SignedBlockchainBlockMessage) value;
+            List<Pair<Integer, byte[]>> signaturesQuorum = quorum.stream().map(
+                    signedBlockMessage -> new Pair<>(
+                            ((SignedBlockchainBlockMessage) signedBlockMessage).getSignerPID(),
+                            ((SignedBlockchainBlockMessage) signedBlockMessage).getSignature()
+                    )
+            ).collect(Collectors.toList());
+            validateAndExecuteBlockTransactions(new QuorumSignedBlockMessage(signedValue.getContent(), signaturesQuorum));
+            boolean v = chain.validateValue(signedValue.getContent(), null);
+            Logger.logDebugPrimary("Value validation result: " + v);
+            return v;
 
-        SignedBlockchainBlockMessage signedValue = (SignedBlockchainBlockMessage) value;
-        List<Pair<Integer, byte[]>> signaturesQuorum = quorum.stream().map(
-            signedBlockMessage -> new Pair<Integer, byte[]>(
-                ((SignedBlockchainBlockMessage) signedBlockMessage).getSignerPID(),
-                ((SignedBlockchainBlockMessage) signedBlockMessage).getSignature()
-            )
-        ).collect(Collectors.toList());
+        } catch (ClassCastException e) {
+            Logger.logWarning("BlockchainMemberAPI received an unexpected message from IBFT");
+            e.printStackTrace();
+            return false;
+        }
 
-        validateAndExecuteBlockTransactions(new QuorumSignedBlockMessage(signedValue.getContent(), signaturesQuorum));
-        return chain.validateValue(signedValue.getContent(), null);
     }
 
     @Override
@@ -135,14 +143,6 @@ public class BlockchainMemberAPI implements Application {
                 }
                 break;
             case READ:
-//                Thread worker = new Thread(() -> {
-//                    try {
-//                        parseRead(transaction);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                });
-//                worker.start();
                 parseRead(transaction);
                 break;
             default:
@@ -164,7 +164,9 @@ public class BlockchainMemberAPI implements Application {
         List<BlockchainTransaction> transactions;
         pool.addTransactionIfNotInPool(transaction);
         if ((transactions = pool.getTransactionsIfHasEnough()).size() > 0) {
-            return new BlockchainBlock(transactions);
+            BlockchainBlock block = new BlockchainBlock(transactions);
+            block.setHash(chain.getNextPredictedHash(block));
+            return block;
         }
         return null;
     }

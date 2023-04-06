@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.Message;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
 import pt.tecnico.blockchain.Messages.MessageManager;
@@ -123,7 +124,7 @@ public class Ibft {
     public static synchronized void addToPreparedQuorum(ConsensusInstanceMessage message) {
         if (!quorumContainsPID(_prepared, message.getSenderPID())) {
             if (message.getConsensusInstance() == _consensusInstance){
-                Logger.logDebug("Added PREPARE to prepare quorum");
+                Logger.logDebugSecondary("Added PREPARE to prepare quorum");
                 _prepared.add(message);
             } else Logger.logWarning("Received a PREPARE message for a wrong instance. Expected:" + _consensusInstance
                     + "got: " + message.getConsensusInstance());
@@ -134,7 +135,7 @@ public class Ibft {
     public static synchronized void addToCommitQuorum(ConsensusInstanceMessage message) {
         if (!quorumContainsPID(_commited, message.getSenderPID())) {
             if(message.getConsensusInstance() == _consensusInstance) {
-                Logger.logDebug("Added COMMIT to prepare quorum");
+                Logger.logDebugSecondary("Added COMMIT to prepare quorum");
                 _commited.add(message);
             } else Logger.logWarning("Received a COMMIT message for a wrong instance. Expected:" + _consensusInstance
                     + "got: " + message.getConsensusInstance());
@@ -166,20 +167,14 @@ public class Ibft {
     public static boolean verifyQuorumSignatures(List<ConsensusInstanceMessage> quorum, int quorumSize) {
         try {
             if(quorum.size() == quorumSize){
-                List<ConsensusInstanceMessage> verifiedQuorum = quorum.stream().filter(msg -> {
-                    try {
-                        return Crypto.verifySignature(
-                                MessageManager.getContentBytes(msg.getContent()),
-                                msg.getSignatureBytes(),
-                                RSAKeyStoreById.getPublicKey(msg.getSenderPID()));
-
-                    } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException | IOException e) {
-                        e.printStackTrace();
-                        return false;
-                    }
-                }).collect(Collectors.toList());
+                List<ConsensusInstanceMessage> verifiedQuorum = quorum.stream().filter(msg ->
+                        Crypto.verifySignature(
+                        msg.digestMessageFields(),
+                        msg.getSignatureBytes(),
+                        RSAKeyStoreById.getPublicKey(msg.getSenderPID()))
+                ).collect(Collectors.toList());
                 return verifiedQuorum.size() == quorumSize;
-            }else{
+            }else {
                 return false;
             }
         } catch (Exception e) {
@@ -193,10 +188,15 @@ public class Ibft {
     }
 
     public synchronized static List<Content> getCommitQuorum() {
-        return new ArrayList<Content>(_commited);
+        return new ArrayList<>(_commited);
     }
+
+    public synchronized static List<Content> getCommitQuorumValues() {
+        return  _commited.stream().map(Message::getContent).collect(Collectors.toList());
+    }
+
     public synchronized static List<Content> getPreparedQuorum() {
-        return new ArrayList<Content>(_prepared);
+        return new ArrayList<>(_prepared);
     }
 
     public static synchronized void endInstance() {

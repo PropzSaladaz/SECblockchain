@@ -56,13 +56,13 @@ public class DefaultIbftBehavior {
     public static void handleCommitRequest(ConsensusInstanceMessage message){
        try{
            if (Ibft.hasSamePreparedValue(message)) {
-               Logger.logDebug("COMMIT has same Prepared value");
+               Logger.logDebugPrimary("COMMIT has same Prepared value");
                Ibft.addToCommitQuorum(message);
                if (Ibft.hasValidCommitQuorum()) {
-                   Logger.logDebug("Has valid COMMIT quorum");
+                   Logger.logDebugPrimary("Has valid COMMIT quorum");
                    IbftTimer.stop();
-                   if (Ibft.getApp().validateValue(message.getContent(), Ibft.getCommitQuorum())) {
-                       Logger.logDebug("Value was validated, broadcasting... ");
+                   if (Ibft.getApp().validateValue(message.getContent(), Ibft.getCommitQuorumValues())) {
+                       Logger.logDebugPrimary("Value was validated, broadcasting... ");
                        Ibft.getApp().prepareValue(message.getContent());
                        Ibft.getApp().decide(message.getContent());
                        Ibft.endInstance();
@@ -70,7 +70,8 @@ public class DefaultIbftBehavior {
                }
            }
         } catch(Exception e){
-            System.out.println("ERROR\n");
+            Logger.logError("Something went wrong on handleCommitRequest\n");
+            e.printStackTrace();
         }
     }
 }

@@ -47,15 +47,24 @@ public class Blockchain implements Application {
 
     @Override
     public boolean validateValue(Content value, List<Content> quorum) {
+        BlockchainBlock newBlock = (BlockchainBlock) value;
+        String predictedHash = getNextPredictedHash(newBlock);
+        Logger.logDebugSecondary("predicted hash: " + predictedHash);
+        Logger.logDebugSecondary("received block's hash: " + newBlock.getHash());
+        return newBlock.getHash().equals(predictedHash);
+    }
+
+    public String getNextPredictedHash(BlockchainBlock newBlock) {
         try {
-            BlockchainBlock newBlock = (BlockchainBlock) value;
             String predictedHash = Block.computeHash(_lastBlock.getBlockHash(),
                     Block.getBytesFrom(newBlock.getTransactions()));
-            return newBlock.getHash().equals(predictedHash);
-        } catch (IOException | NoSuchAlgorithmException e) {
+            Logger.logDebugSecondary("predictedHash =" + predictedHash);
+            return predictedHash;
+        } catch (IOException | NoSuchAlgorithmException e){
+            Logger.logError("Could not generate next predicted hash");
             e.printStackTrace();
+            return "ERROR";
         }
-        return false;
     }
 
     @Override

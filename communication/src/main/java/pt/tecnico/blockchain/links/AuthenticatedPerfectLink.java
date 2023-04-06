@@ -15,6 +15,7 @@ import java.util.Arrays;
 
 
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.links.APLMessage;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
@@ -44,7 +45,7 @@ public class AuthenticatedPerfectLink {
         return Crypto.encryptRSAPrivate(digest,privateKey);
     }
 
-    public static boolean validateMessage(APLMessage message, PublicKey pk) throws NoSuchAlgorithmException, IOException {
+    public static boolean validateMessage(APLMessage message, PublicKey pk) {
         return verifyAuth(message, pk) && verifyTimestamp(message);
     }
 
@@ -73,10 +74,8 @@ public class AuthenticatedPerfectLink {
         return _source;
     }
 
-    private static boolean verifyAuth(APLMessage message,PublicKey publicKey) throws NoSuchAlgorithmException, IOException,RuntimeException {
-        byte[] digest = digestAuth(message.getContent(), message.getSource(), _source);
-        byte[] decryptedDigest = Crypto.decryptRSAPublic(message.getSignatureBytes(), publicKey);
-        return Arrays.equals(digest, decryptedDigest);
+    private static boolean verifyAuth(APLMessage message,PublicKey publicKey) throws RuntimeException {
+        return Crypto.verifySignature(message.digestMessageFields(), message.getSignatureBytes(), publicKey);
     }
 
     private static boolean verifyTimestamp(APLMessage m) {

@@ -1,5 +1,7 @@
 package pt.tecnico.blockchain.behavior.states.correct;
 
+import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.links.APLReturnMessage;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Messages.Content;
@@ -20,6 +22,7 @@ public class DefaultAPLBehavior {
             String dest = hostname + ":" + port;
             APLMessage message = new APLMessage(content, AuthenticatedPerfectLink.getSource(), dest,
                     AuthenticatedPerfectLink.getId());
+            Logger.logDebug("digestedhash: " + Crypto.base64(message.digestMessageFields()));
             message.sign(AuthenticatedPerfectLink.getId());
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
         } catch (Exception e) {

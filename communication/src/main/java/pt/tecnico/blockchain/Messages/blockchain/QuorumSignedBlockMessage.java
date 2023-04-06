@@ -72,7 +72,7 @@ public class QuorumSignedBlockMessage extends Message implements Content {
 
     @Override
     public String toString(int tabs) {
-        return  toStringWithTabs("TESBalanceProof: {", tabs) +
+        return  toStringWithTabs("QuorumSignedBlockMessage: {", tabs) +
                 toStringWithTabs("Block: " + this.getContent().toString(), tabs + 1) +
                 toStringWithTabs("Signatures: " + _signatures.toString(), tabs + 1) +
                 toStringWithTabs("}", tabs);

@@ -7,7 +7,7 @@ import java.util.*;
 
 public class SynchronizedTransactionPool {
 
-    private static final int MINIMUM_TRANSACTIONS = 5;
+    private static final int MINIMUM_TRANSACTIONS = 1;
     private static List<BlockchainTransaction> pool = new ArrayList<>();
     private static final Set<Pair<String, Integer>> transactionIDs = new HashSet<>();
 

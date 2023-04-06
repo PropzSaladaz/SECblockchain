@@ -48,11 +48,12 @@ public class IbftMessagehandler {
     }
     
     public static void broadcastPrePrepare(Content message) {
-        ConsensusInstanceMessage prepareMessage =
+        ConsensusInstanceMessage preprepareMessage =
                 new ConsensusInstanceMessage(Ibft.getConsensusInstance()
                         ,Ibft.getRound(), Ibft.getPid(), message);
-        prepareMessage.setMessageType(ConsensusInstanceMessage.PRE_PREPARE);
-        broadcastMessage(prepareMessage);
+        preprepareMessage.setMessageType(ConsensusInstanceMessage.PRE_PREPARE);
+        preprepareMessage.sign(_pid);
+        broadcastMessage(preprepareMessage);
     }
 
     public static void broadcastMessage(Content message) {

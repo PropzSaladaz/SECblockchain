@@ -134,12 +134,16 @@ public class Crypto {
         return signature.sign();
     }
 
-    public static boolean verifySignature(byte[] contentBytes, byte[] digitalSignature, PublicKey publicKey) 
-            throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
-        Signature signature = Signature.getInstance("SHA256withRSA");
-        signature.initVerify(publicKey);
-        signature.update(contentBytes);
-        return signature.verify(digitalSignature);
+    public static boolean verifySignature(byte[] contentBytes, byte[] digitalSignature, PublicKey publicKey) {
+        try {
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initVerify(publicKey);
+            signature.update(contentBytes);
+            return signature.verify(digitalSignature);
+        } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            throw new RuntimeException("ERROR WHILE DECRYPTING RSA");
+        }
     }
 
     public static String getHashFromKey(PublicKey key) throws NoSuchAlgorithmException {

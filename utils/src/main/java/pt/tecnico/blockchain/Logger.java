@@ -62,7 +62,14 @@ public class Logger {
         if (debug) printMessageWithHexaColorAndTime(message, HEXA_GREY);
     }
 
-    //TODO put back synchronized
+    public static void logDebugPrimary(String message) {
+        if (debug) printMessageWithColorAndTime(message, GREEN);
+    }
+
+    public static void logDebugSecondary(String message) {
+        if (debug) printMessageWithColorAndTime(message, YELLOW);
+    }
+
     private static synchronized void printMessageWithColor(String message, TextColor color) {
         System.out.println(String.format(defaultCode, color.getCode()) +
                 message + String.format(defaultCode, RESET.getCode()));
@@ -78,7 +85,6 @@ public class Logger {
                 message + String.format(hexaCode, RESET.getCode()));
     }
 
-    //TODO put back synchronized
     private static synchronized void printMessageWithHexaColorAndTime(String message, TextColor color) {
         System.out.println(getCurrentTime() + "\n" + String.format(hexaCode, color.getCode()) +
                 message + String.format(hexaCode, RESET.getCode()));

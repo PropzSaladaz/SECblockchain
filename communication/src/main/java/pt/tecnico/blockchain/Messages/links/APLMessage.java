@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.Messages.links;
 
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
@@ -23,9 +24,7 @@ public class APLMessage extends Message implements Content {
     private int _senderPID;
     private long _timestamp;
 
-
     public APLMessage() {
-
     }
 
     public APLMessage(Content content, String source, String dest, int senderPID) {
@@ -47,6 +46,8 @@ public class APLMessage extends Message implements Content {
             digest.update(MessageManager.getContentBytes(this.getContent()));
             digest.update(_dest.getBytes());
             digest.update(_source.getBytes());
+            digest.update(Integer.toString(_senderPID).getBytes());
+            digest.update(Double.toString(_timestamp).getBytes());
             return digest.digest();
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,12 +64,12 @@ public class APLMessage extends Message implements Content {
         }
     }
 
-    public String getSource() {
-        return _source;
+    public String getDest() {
+        return _dest;
     }
 
-    public void setSource(byte[] source) {
-        _signature = source;
+    public String getSource() {
+        return _source;
     }
 
     public int getSenderPID() {
@@ -84,7 +85,9 @@ public class APLMessage extends Message implements Content {
         return  toStringWithTabs("APLMessage {", level) +
                 toStringWithTabs("signature: " + Crypto.base64(_signature, 15), level + 1) +
                 toStringWithTabs("source: " + _source, level + 1) +
-                toStringWithTabs("sender_id: " + getSenderPID(), level + 1) +
+                toStringWithTabs("destination: " + _dest, level + 1) +
+                toStringWithTabs("senderId: " + getSenderPID(), level + 1) +
+                toStringWithTabs("timestamp: " + _timestamp, level + 1) +
                 getContent().toString(level + 1) +
                 toStringWithTabs("}", level);
     }
@@ -96,6 +99,8 @@ public class APLMessage extends Message implements Content {
             return Arrays.equals(_signature, m.getSignatureBytes()) &&
                     _source.equals(m.getSource()) &&
                     _senderPID == m.getSenderPID() &&
+                    _dest.equals(m.getDest()) &&
+                    _timestamp == m.getTimestamp() &&
                     getContent().equals(m.getContent());
         } catch(ClassCastException e) {
             return false;
