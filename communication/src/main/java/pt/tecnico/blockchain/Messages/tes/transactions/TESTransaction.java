@@ -15,9 +15,9 @@ public abstract class TESTransaction implements Content {
 
     private String from;
     private String type;
-    private String senderBalanceHash;
+    private String senderBalanceHash = "";
     private byte[] signature;
-    private int nonce;
+    private final int nonce;
 
     private String failureMessage; // should not be persistent in blockchain
 
@@ -121,11 +121,12 @@ public abstract class TESTransaction implements Content {
 
     @Override
     public String toString(int tabs) {
-        return  toStringWithTabs("TESTransaction: {", tabs) +
-                toStringWithTabs("type: " + type, tabs + 1) +
-                toStringWithTabs("from: " +  from.substring(0, 15), tabs + 1) +
-                toStringWithTabs("signature: " + Crypto.base64(signature, 15), tabs + 1) +
-                toStringWithTabs("}", tabs);
+        String senderBalHash = senderBalanceHash.equals("") ? "" : senderBalanceHash.substring(0, 15);
+        return  toStringWithTabs("type: " + type, tabs) +
+                toStringWithTabs("nonce: " + nonce, tabs) +
+                toStringWithTabs("from: " +  from, tabs) +
+                toStringWithTabs("senderBalanceHash: " + senderBalHash, tabs) +
+                toStringWithTabs("signature: " + Crypto.base64(signature), tabs);
     }
 
 

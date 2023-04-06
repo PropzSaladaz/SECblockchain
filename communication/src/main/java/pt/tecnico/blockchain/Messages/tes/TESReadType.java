@@ -1,15 +1,15 @@
 package pt.tecnico.blockchain.Messages.tes;
 
 public enum TESReadType {
-    WEAK(0),
-    STRONG(1);
+    WEAK("WEAK"),
+    STRONG("STRONG");
 
-    private final int opID;
+    private final String opID;
 
-    TESReadType(int opID) {
+    TESReadType(String opID) {
         this.opID = opID;
     }
-    public int getCode() {
+    public String getCode() {
         return opID;
     }
 }

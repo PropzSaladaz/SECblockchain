@@ -46,8 +46,8 @@ public class BlockchainBlock implements Content {
         for (BlockchainTransaction m : _transactions) {
             txns.append(m.toString(level+2));
         }
-        return  toStringWithTabs("BlockchainMessage {" , level) +
-                toStringWithTabs("transactions: " + txns , level + 1) +
+        return  toStringWithTabs("BlockchainBlock {" , level) +
+                toStringWithTabs("transactions: \n" + txns , level + 1) +
                 toStringWithTabs("hash: " + hash , level + 1) +
                 toStringWithTabs("}", level);
     }

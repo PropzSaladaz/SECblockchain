@@ -48,7 +48,7 @@ public class CheckBalanceResultMessage extends TESResultMessage implements Conte
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.update(super.digestMessageFields());
             digest.update(Integer.toString(_amount).getBytes());
-            digest.update(Integer.toString(readType.getCode()).getBytes());
+            digest.update(readType.getCode().getBytes());
             return digest.digest();
         } catch (Exception e) {
             e.printStackTrace();

@@ -54,13 +54,6 @@ public class TESContract implements SmartContract {
         _clientAccounts.put(minerKey, new ClientAccount());
     }
 
-    public int getAccountCurrentBalance(String accountId){
-        if (_clientAccounts.containsKey(accountId)) {
-            return _clientAccounts.get(accountId).getCurrentBalance();
-        }
-        return -1;
-    }
-
     public int getAccountPreviousBalance(String accountId){
         if (_clientAccounts.containsKey(accountId)) {
             return _clientAccounts.get(accountId).getPreviousBalance();
@@ -118,6 +111,13 @@ public class TESContract implements SmartContract {
             default:
                 break;
         }
+    }
+
+    public int getAccountCurrentBalance(String accountId){
+        if (_clientAccounts.containsKey(accountId)) {
+            return _clientAccounts.get(accountId).getCurrentBalance();
+        }
+        return -1;
     }
 
     private Content getCheckBalanceResponse(CheckBalanceTransaction transaction, String memberPubKey) throws Exception {

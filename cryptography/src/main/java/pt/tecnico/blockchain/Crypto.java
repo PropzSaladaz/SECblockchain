@@ -89,6 +89,11 @@ public class Crypto {
         return digest.digest(message);
     }
 
+    public static MessageDigest getDigest() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance("SHA-256");
+
+    }
+
     public static String base64(byte[] bytes) {
         return Base64.getEncoder().encodeToString(bytes);
     }

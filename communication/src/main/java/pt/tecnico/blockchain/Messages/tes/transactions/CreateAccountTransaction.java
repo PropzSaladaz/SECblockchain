@@ -26,4 +26,11 @@ public class CreateAccountTransaction extends TESTransaction {
         }
     }
 
+    @Override
+    public String toString(int tabs) {
+        return  toStringWithTabs("CreateAccountTransaction: {", tabs) +
+                super.toString(tabs + 1) +
+                toStringWithTabs("}", tabs);
+    }
+
 }

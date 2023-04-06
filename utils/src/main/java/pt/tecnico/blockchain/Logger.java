@@ -1,5 +1,7 @@
 package pt.tecnico.blockchain;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -50,12 +52,20 @@ public class Logger {
         printMessageWithColor("[ERROR]: " + message, RED);
     }
 
+    public static void logError(String message, Exception e) {
+        printMessageWithColor("[ERROR]: " + message, e, RED);
+    }
+
     public static void logInfo(String message) {
         printMessageWithColor("[INFO]: " + message, CYAN);
     }
 
     public static void logWarning(String message) {
         printMessageWithColor("[WARNING]: " + message, YELLOW);
+    }
+
+    public static void logWarning(String message, Exception e) {
+        printMessageWithColor("[WARNING]: " + message, e, YELLOW);
     }
 
     public static void logDebug(String message) {
@@ -74,10 +84,25 @@ public class Logger {
         System.out.println(String.format(defaultCode, color.getCode()) +
                 message + String.format(defaultCode, RESET.getCode()));
     }
+    private static synchronized void printMessageWithColor(String message, Exception e, TextColor color) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        System.out.println(String.format(defaultCode, color.getCode()) +
+                message + "\n" + sw + String.format(defaultCode, RESET.getCode()));
+    }
 
     private static synchronized void printMessageWithColorAndTime(String message, TextColor color) {
         System.out.println(getCurrentTime() + "\n" + String.format(defaultCode, color.getCode()) +
                 message + String.format(defaultCode, RESET.getCode()));
+    }
+
+    private static synchronized void printMessageWithColorAndTime(String message, Exception e, TextColor color) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        System.out.println(getCurrentTime() + "\n" + String.format(defaultCode, color.getCode()) +
+                message + "\n" + sw + String.format(defaultCode, RESET.getCode()));
     }
 
     private static synchronized void printMessageWithHexaColor(String message, TextColor color) {

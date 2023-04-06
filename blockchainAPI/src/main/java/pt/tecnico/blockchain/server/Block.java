@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class Block implements Serializable {
     public Block(List<BlockchainTransaction> transactions)  {
         _transactions = transactions;
         _blockNumber = 0;
+        _hash = Crypto.base64("GENESIS_BLOCK".getBytes());
     }
 
     public Block(Block previousBlock, List<BlockchainTransaction> transactions) {
@@ -52,12 +54,10 @@ public class Block implements Serializable {
 
     public static String computeHash(String previousBlockHash, byte[] transactions)
             throws IOException, NoSuchAlgorithmException {
-        byte[] blockBytes = getBytesFrom(previousBlockHash);
-        ByteBuffer buffer = ByteBuffer.allocate(blockBytes.length + transactions.length);
-        buffer.put(blockBytes);
-        buffer.put(transactions);
-        byte[] digest = Crypto.digest(buffer.array());
-        return Crypto.base64(digest);
+        MessageDigest digest = Crypto.getDigest();
+        digest.update(transactions);
+        digest.update(previousBlockHash.getBytes());
+        return Crypto.base64(digest.digest());
     }
 
     public static byte[] getBytesFrom(Object obj) throws IOException {

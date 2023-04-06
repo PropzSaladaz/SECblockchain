@@ -20,16 +20,24 @@ public class CheckBalanceTransaction extends TESTransaction {
 
     @Override
     protected void signConcreteAttributes(Signature signature) throws SignatureException {
-        signature.update((byte) readType.getCode());
+        signature.update(readType.getCode().getBytes());
     }
 
     @Override
     protected boolean concreteAttributesEquals(Content another) {
         try {
             CheckBalanceTransaction txn = (CheckBalanceTransaction) another;
-            return true;
+            return readType.equals(txn.getReadType());
         } catch (ClassCastException e) {
             return false;
         }
+    }
+
+    @Override
+    public String toString(int tabs) {
+        return  toStringWithTabs("CheckBalanceTransaction: {", tabs) +
+                toStringWithTabs("readType: " + readType.getCode(), tabs) +
+                super.toString(tabs + 1) +
+                toStringWithTabs("}", tabs);
     }
 }

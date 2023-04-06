@@ -36,6 +36,7 @@ public class MemberServicesImpl {
             ApplicationMessage appMsg = (ApplicationMessage) content;
             switch (appMsg.getApplicationMessageType()) {
                 case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
+                    Logger.logInfo("HandleRequest - memberImpl: " + ((BlockchainTransaction) content).toString(0));
                     _blockchainMemberAPI.parseTransaction((BlockchainTransaction) content);
                     break;
                 case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:
@@ -47,9 +48,9 @@ public class MemberServicesImpl {
                     break;
             }
         } catch (ClassCastException e) {
-            System.out.println("Corrupted message\n");
+            Logger.logWarning("Corrupted message: \n", e);
         } catch (RuntimeException e){
-            System.out.println("Non Authorization To Perform Operation\n");
+            Logger.logWarning("Non Authorization To Perform Operation\n", e);
         } catch (Exception e) {
             e.printStackTrace();
         }

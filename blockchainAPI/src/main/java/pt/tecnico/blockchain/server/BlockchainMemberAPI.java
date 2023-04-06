@@ -139,6 +139,10 @@ public class BlockchainMemberAPI implements Application {
                 BlockchainBlock block = addTransactionAndGetBlockIfReady(transaction);
                 if (block != null) {
                     updateTransactionsBeforeConsensus(block);
+                    for (BlockchainTransaction b : block.getTransactions()) {
+                        Logger.logInfo(b.toString(0));
+                    }
+                    block.setHash(chain.getNextPredictedHash(block));
                     Ibft.start(new SignedBlockchainBlockMessage(block));
                 }
                 break;
@@ -162,11 +166,13 @@ public class BlockchainMemberAPI implements Application {
 
     private BlockchainBlock addTransactionAndGetBlockIfReady(BlockchainTransaction transaction) {
         List<BlockchainTransaction> transactions;
+        Logger.logInfo("addTransactionAndGetBlockIfReady: " + transaction.toString(0));
         pool.addTransactionIfNotInPool(transaction);
         if ((transactions = pool.getTransactionsIfHasEnough()).size() > 0) {
-            BlockchainBlock block = new BlockchainBlock(transactions);
-            block.setHash(chain.getNextPredictedHash(block));
-            return block;
+            for (BlockchainTransaction t : transactions) {
+                Logger.logInfo("addTransactionAndGetBlockIfReady inside loop: " + t.toString(0));
+            }
+            return new BlockchainBlock(transactions);
         }
         return null;
     }
