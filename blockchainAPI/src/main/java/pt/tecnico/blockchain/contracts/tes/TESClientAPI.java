@@ -1,8 +1,8 @@
 package pt.tecnico.blockchain.contracts.tes;
 
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.Logger;
-import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionType;
@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.CREATE_ACCOUNT;
 import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.TRANSFER;
@@ -35,9 +36,9 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     private final BlockchainClientAPI client;
     private final Map<Integer, Map<Integer, List<TESResultMessage>>> tesMessagesQuorum; // nonce -> hashCode -> List of obj
     private final Set<Integer> deliveredSet;
+    private Integer previousBalanceRead; // TODO : Get initial balance from create account
 
     public TESClientAPI(DatagramSocket socket, PublicKey pubKey, PrivateKey privKey) {
-        // TODO check if client has key. If not, generate a new pair
         client = new BlockchainClientAPI(socket,  this);
         client.setCredentials(pubKey, privKey);
         tesMessagesQuorum = new HashMap<>();
@@ -142,11 +143,16 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
             }
         } catch (ClassCastException e) {
             Logger.logError("Expected CheckBalance message but got something else");
+        } catch (Exception e) {
+            Logger.logError("Exception parsing read in TESClientAPI");
         }
     }
 
-    private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) {
-        if (((SignedQuorumAndBlockMessage) txn.getContent()).verifyBalanceProof()) {
+    private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) throws Exception {
+        if (((SignedQuorumAndBlockMessage) txn.getContent()).verifyBalanceProof(
+                KeyConverter.keyToString(client.getPublicKey()), 
+                Crypto.base64(Crypto.digest(Integer.toString(previousBalanceRead).getBytes()))))
+        {
             printStatus(status,
                     "THE BALANCE IS: " + txn.getAmount(),
                     "IMPOSSIBLE TO CHECK BALANCE"
@@ -186,12 +192,18 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void addTransactionToReceivedMap(TESResultMessage txn) {
-        // TODO should check that, if the message is equal and has same nonce, it comes from a different member
-        // else, a malicious member could send all responses to the client
         tesMessagesQuorum.computeIfAbsent(txn.getTxnNonce(), k -> new HashMap<>());
         Map<Integer, List<TESResultMessage>> receivedWithNonce = tesMessagesQuorum.get(txn.getTxnNonce());
         receivedWithNonce.computeIfAbsent(txn.hashCode(), k -> new ArrayList<>());
-        receivedWithNonce.get(txn.hashCode()).add(txn);
+
+        int numberOfEqualMessagesFromDifferentMembers = receivedWithNonce.values().stream().filter(response -> {
+            return txn.getContent().equals((TESTransaction)((TESResultMessage)response).getContent()) &&
+                !txn.getResponseSender().equals(((TESResultMessage)response).getResponseSender());
+        }).collect(Collectors.toList()).size();
+
+        if (numberOfEqualMessagesFromDifferentMembers == receivedWithNonce.get(txn.hashCode()).size()) {
+            receivedWithNonce.get(txn.hashCode()).add(txn);
+        }
     }
 
     private boolean responseReadyToDeliver(TESResultMessage txn) {
@@ -219,8 +231,8 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     private void parseCreateAccount(CreateAccountResultMessage txn, BlockchainTransactionStatus status) {
         printStatus(status,
-                "ACCOUNT CREATED WITH KEY: " + txn.getSender(),
-                "IMPOSSIBLE TO CREATE ACCOUNT WITH KEY: " + txn.getSender()
+                "ACCOUNT CREATED WITH KEY: " + txn.getResponseSender(),
+                "IMPOSSIBLE TO CREATE ACCOUNT WITH KEY: " + txn.getResponseSender()
         );
     }
 

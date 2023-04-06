@@ -56,7 +56,7 @@ public class BlockchainMemberAPI implements Application {
             )
         ).collect(Collectors.toList());
 
-        validateAndExecuteBlockTransactions(new SignedQuorumAndBlockMessage(signedValue.getContent(), signaturesQuorum)); // TODO should use the signed block here to update all affected accounts
+        validateAndExecuteBlockTransactions(new SignedQuorumAndBlockMessage(signedValue.getContent(), signaturesQuorum));
         return chain.validateValue(signedValue.getContent(), null);
     }
 
@@ -101,7 +101,7 @@ public class BlockchainMemberAPI implements Application {
             List<BlockchainTransaction> transactions = block.getTransactions();
             for (BlockchainTransaction transaction : transactions ) {
                 SmartContract contract = _blockChainState.getContract(transaction.getContractID());
-                Content contractResp = contract.getTransactionResponse(transaction.getContent());
+                Content contractResp = contract.getTransactionResponse(transaction.getContent(), _publicKey);
                 TransactionResultMessage response = new TransactionResultMessage(
                         transaction.getNonce(),
                         contractResp
@@ -178,7 +178,7 @@ public class BlockchainMemberAPI implements Application {
             if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, null)) {
                 response.setStatus(VALIDATED);
                 // This content corresponds to the SignedQuorumAndBlockMessage (balance proof)
-                Content resultContent = contract.getTransactionResponse(transaction.getContent());
+                Content resultContent = contract.getTransactionResponse(transaction.getContent(), _publicKey);
                 response.setContent(resultContent);
             }
             else response.setStatus(REJECTED, "Transaction could not be validated.");

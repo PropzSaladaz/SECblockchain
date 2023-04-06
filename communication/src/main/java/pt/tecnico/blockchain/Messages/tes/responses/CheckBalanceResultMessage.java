@@ -1,6 +1,11 @@
 package pt.tecnico.blockchain.Messages.tes.responses;
 
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
+
+import java.security.MessageDigest;
+
+import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.TESReadType;
 import pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction;
@@ -35,6 +40,29 @@ public class CheckBalanceResultMessage extends TESResultMessage implements Conte
 
     public TESReadType getReadType() {
         return readType;
+    }
+
+    @Override
+    public byte[] digestMessageFields() {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(super.digestMessageFields());
+            digest.update(Integer.toString(_amount).getBytes());
+            digest.update(Integer.toString(readType.getCode()).getBytes());
+            return digest.digest();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public void sign(Integer signerPID) {
+        try {
+            super.setSignature(Crypto.getSignature(digestMessageFields(), RSAKeyStoreById.getPrivateKey(signerPID)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

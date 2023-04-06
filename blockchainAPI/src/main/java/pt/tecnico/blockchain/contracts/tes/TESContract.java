@@ -1,7 +1,9 @@
 package pt.tecnico.blockchain.contracts.tes;
 
+import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Pair;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.*;
 import pt.tecnico.blockchain.Messages.tes.responses.CheckBalanceResultMessage;
@@ -13,6 +15,7 @@ import pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction;
 import pt.tecnico.blockchain.Messages.tes.transactions.TransferTransaction;
 import pt.tecnico.blockchain.contracts.SmartContract;
 
+import java.security.interfaces.RSAKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,17 +74,22 @@ public class TESContract implements SmartContract {
     }
 
     @Override
-    public Content getTransactionResponse(Content transaction) {
-        TESTransaction txn = (TESTransaction) transaction;
-        switch (txn.getType()) {
-            case CHECK_BALANCE:
-                return getCheckBalanceResponse((CheckBalanceTransaction) transaction);
-            case TRANSFER:
-                return getTransferResponse((TransferTransaction) transaction);
-            case CREATE_ACCOUNT:
-                return getCreateAccountResponse((CreateAccountTransaction) transaction);
-            default:
-                return null;
+    public Content getTransactionResponse(Content transaction, String memberPubKey) {
+        try {
+            TESTransaction txn = (TESTransaction) transaction;
+            switch (txn.getType()) {
+                case CHECK_BALANCE:
+                    return getCheckBalanceResponse((CheckBalanceTransaction) transaction, memberPubKey);
+                case TRANSFER:
+                    return getTransferResponse((TransferTransaction) transaction, memberPubKey);
+                case CREATE_ACCOUNT:
+                    return getCreateAccountResponse((CreateAccountTransaction) transaction, memberPubKey);
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -113,7 +121,7 @@ public class TESContract implements SmartContract {
         }
     }
 
-    private Content getCheckBalanceResponse(CheckBalanceTransaction transaction) {
+    private Content getCheckBalanceResponse(CheckBalanceTransaction transaction, String memberPubKey) throws Exception {
         CheckBalanceResultMessage response = new CheckBalanceResultMessage(
                 transaction.getNonce(),
                 transaction.getSender()
@@ -124,12 +132,14 @@ public class TESContract implements SmartContract {
                 response.setAmount(_clientAccounts.get(from).getCurrentBalance());
                 response.setReadType(TESReadType.STRONG);
                 response.setFailureReason(transaction.getFailureMessage());
+                response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
                 return response;
             case WEAK:
                 response.setAmount(_clientAccounts.get(from).getPreviousBalance());
                 response.setReadType(TESReadType.WEAK);
-                response.setFailureReason(transaction.getFailureMessage());
                 response.setContent(getAccountBalanceProof(from));
+                response.setFailureReason(transaction.getFailureMessage());
+                response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
                 return response;
             default:
                 Logger.logError("Unknown readType for CheckBalanceTransaction");
@@ -137,7 +147,7 @@ public class TESContract implements SmartContract {
         }
     }
 
-    private Content getTransferResponse(TransferTransaction transaction) {
+    private Content getTransferResponse(TransferTransaction transaction, String memberPubKey) throws Exception {
         TransferResultMessage response = new TransferResultMessage(
                 transaction.getNonce(),
                 transaction.getSender(),
@@ -145,15 +155,17 @@ public class TESContract implements SmartContract {
                 transaction.getDestinationAddress()
         );
         response.setFailureReason(transaction.getFailureMessage());
+        response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
         return response;
     }
 
-    private Content getCreateAccountResponse(CreateAccountTransaction transaction) {
+    private Content getCreateAccountResponse(CreateAccountTransaction transaction, String memberPubKey) throws Exception {
         CreateAccountResultMessage response = new CreateAccountResultMessage(
                 transaction.getNonce(),
                 transaction.getSender()
         );
         response.setFailureReason(transaction.getFailureMessage());
+        response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
         return response;
     }
 

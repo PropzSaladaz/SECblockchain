@@ -2,6 +2,8 @@ package pt.tecnico.blockchain.Messages.blockchain;
 
 import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Messages.Message;
+import pt.tecnico.blockchain.Messages.tes.responses.TESResultMessage;
+import pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction;
 import pt.tecnico.blockchain.Messages.Content;
 import java.util.List;
 
@@ -14,12 +16,19 @@ public class SignedQuorumAndBlockMessage extends Message implements Content {
         _signatures = signatures;
     }
 
-
-    public boolean verifyBalanceProof() {
+    public boolean verifyBalanceProof(String transactionInvoker, String previousBalanceHash) {
         BlockchainBlock block = (BlockchainBlock) this.getContent();
+        List<BlockchainTransaction> blockTransactions = block.getTransactions();
+        int tx_i = 0;
+        boolean foundVerifierInvokingTx = false;
         for (Pair<Integer, byte[]> sigPair : this.getSignaturePairs()) {
-            if (block.verifySignature(sigPair.getFirst(), sigPair.getSecond())) {
+            if (!block.verifySignature(sigPair.getFirst(), sigPair.getSecond())) {
                 return false;
+            }
+            if (foundVerifierInvokingTx && blockTransactions.get(tx_i).getSender().equals(transactionInvoker)) {
+                if (((TESTransaction)blockTransactions.get(tx_i).getContent()).getBalanceHash().equals(previousBalanceHash)) {
+                    foundVerifierInvokingTx = true;
+                } else return false;
             }
         }
         return true;

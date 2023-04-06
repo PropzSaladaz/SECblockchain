@@ -1,19 +1,33 @@
 package pt.tecnico.blockchain.Messages.tes.responses;
 
+import java.security.MessageDigest;
+
+import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
+import pt.tecnico.blockchain.Messages.MessageManager;
 
 public abstract class TESResultMessage extends Message implements Content {
     private String type;
     private final int txnNonce;
-    private String sender;
+    private String transactionInvoker;
+    private String resultSender;
     private String failureReason = "";
+    private byte[] _signature;
 
-    TESResultMessage(int nonce, String sender, String type) {
+    TESResultMessage(int nonce, String transactionInvoker, String type) {
         txnNonce = nonce;
         this.type = type;
-        this.sender = sender;
+        this.transactionInvoker = transactionInvoker;
+    }
+
+    public void setSignature(byte[] signature) {
+        _signature = signature;
+    }
+
+    public byte[] getSignature() {
+        return _signature;
     }
 
     public String getType() {
@@ -23,8 +37,12 @@ public abstract class TESResultMessage extends Message implements Content {
         return txnNonce;
     }
 
-    public String getSender() {
-        return sender;
+    public String getResponseSender() {
+        return resultSender;
+    }
+
+    public String getTransactionInvoker() {
+        return transactionInvoker;
     }
 
     public String getErrorMessage() {
@@ -33,6 +51,32 @@ public abstract class TESResultMessage extends Message implements Content {
 
     public void setFailureReason(String message) {
         failureReason = message;
+    }
+
+    @Override
+    public byte[] digestMessageFields() {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(MessageManager.getContentBytes(this.getContent()));
+            digest.update(type.getBytes());
+            digest.update(Integer.toString(txnNonce).getBytes());
+            digest.update(transactionInvoker.getBytes());
+            digest.update(resultSender.getBytes());
+            digest.update(failureReason.getBytes());
+            return digest.digest();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public void sign(Integer signerPID) {
+        try {
+            _signature = Crypto.getSignature(digestMessageFields(), RSAKeyStoreById.getPrivateKey(signerPID));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
