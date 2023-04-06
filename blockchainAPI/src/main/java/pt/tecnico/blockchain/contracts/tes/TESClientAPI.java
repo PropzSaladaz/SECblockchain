@@ -3,10 +3,11 @@ package pt.tecnico.blockchain.contracts.tes;
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.Logger;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionType;
-import pt.tecnico.blockchain.Messages.blockchain.SignedQuorumAndBlockMessage;
+import pt.tecnico.blockchain.Messages.blockchain.QuorumSignedBlockMessage;
 import pt.tecnico.blockchain.Messages.tes.*;
 import pt.tecnico.blockchain.Messages.tes.responses.CheckBalanceResultMessage;
 import pt.tecnico.blockchain.Messages.tes.responses.CreateAccountResultMessage;
@@ -32,11 +33,10 @@ import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.TRA
 
 public class TESClientAPI implements DecentralizedAppClientAPI {
 
-    private static final String contractID = "HARDCODEDCONTRACID"; // TODO define a hash in the server TES class
+    private static final String contractID = "TESCONTRACTID"; // TODO define a hash in the server TES class
     private final BlockchainClientAPI client;
     private final Map<Integer, Map<Integer, List<TESResultMessage>>> tesMessagesQuorum; // nonce -> hashCode -> List of obj
     private final Set<Integer> deliveredSet;
-    private Integer previousBalanceRead; // TODO : Get initial balance from create account
 
     public TESClientAPI(DatagramSocket socket, PublicKey pubKey, PrivateKey privKey) {
         client = new BlockchainClientAPI(socket,  this);
@@ -52,10 +52,10 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void createAccount(int gasPrice, int gasLimit) {
         try {
-            CreateAccountTransaction txn = new CreateAccountTransaction(client.getNonce(), Crypto.getHashFromKey(client.getPublicKey()));
+            CreateAccountTransaction txn = new CreateAccountTransaction(client.getNonce(), KeyConverter.keyToString(client.getPublicKey()));
             txn.sign(client.getPrivateKey());
             submitUpdateTransactionToBlockchain(txn, gasPrice, gasLimit);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -63,11 +63,11 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     public void transfer(PublicKey destination, int amount, int gasPrice, int gasLimit) {
         try {
             TransferTransaction txn = new TransferTransaction(client.getNonce(),
-                    Crypto.getHashFromKey(client.getPublicKey()),
-                    Crypto.getHashFromKey(destination), amount);
+                    KeyConverter.keyToString(client.getPublicKey()),
+                    KeyConverter.keyToString(destination), amount);
             txn.sign(client.getPrivateKey());
             submitUpdateTransactionToBlockchain(txn, gasPrice, gasLimit);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -75,10 +75,10 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     public void checkBalance(TESReadType readType, int gasPrice, int gasLimit) {
         try {
             CheckBalanceTransaction txn = new CheckBalanceTransaction(client.getNonce(),
-                    Crypto.getHashFromKey(client.getPublicKey()), readType);
+                    KeyConverter.keyToString(client.getPublicKey()), readType);
             txn.sign(client.getPrivateKey());
             submitReadTransactionToBlockchain(txn, gasPrice, gasLimit);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -149,12 +149,11 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) throws Exception {
-        if (((SignedQuorumAndBlockMessage) txn.getContent()).verifyBalanceProof(
-                KeyConverter.keyToString(client.getPublicKey()), 
-                Crypto.base64(Crypto.digest(Integer.toString(previousBalanceRead).getBytes()))))
-        {
+        int _currentBalance = ((QuorumSignedBlockMessage) txn.getContent()).assertTesAccountBalance(
+                                    KeyConverter.keyToString(client.getPublicKey()), txn.getAmount());
+        if (_currentBalance >= 0) {
             printStatus(status,
-                    "THE BALANCE IS: " + txn.getAmount(),
+                    "THE BALANCE IS: " + _currentBalance,
                     "IMPOSSIBLE TO CHECK BALANCE"
             );
         } else {
@@ -192,17 +191,21 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void addTransactionToReceivedMap(TESResultMessage txn) {
-        tesMessagesQuorum.computeIfAbsent(txn.getTxnNonce(), k -> new HashMap<>());
-        Map<Integer, List<TESResultMessage>> receivedWithNonce = tesMessagesQuorum.get(txn.getTxnNonce());
-        receivedWithNonce.computeIfAbsent(txn.hashCode(), k -> new ArrayList<>());
+        if (txn.verifySignature(RSAKeyStoreById.getPidFromPublic(client.getPublicKey()), txn.getSignature())) {
+            tesMessagesQuorum.computeIfAbsent(txn.getTxnNonce(), k -> new HashMap<Integer,List<TESResultMessage>>());
+            Map<Integer, List<TESResultMessage>> receivedWithNonce = tesMessagesQuorum.get(txn.getTxnNonce());
+            receivedWithNonce.computeIfAbsent(txn.hashCode(), k -> new ArrayList<TESResultMessage>());
 
-        int numberOfEqualMessagesFromDifferentMembers = receivedWithNonce.values().stream().filter(response -> {
-            return txn.getContent().equals((TESTransaction)((TESResultMessage)response).getContent()) &&
-                !txn.getResponseSender().equals(((TESResultMessage)response).getResponseSender());
-        }).collect(Collectors.toList()).size();
+            int numberOfEqualMessagesFromDifferentMembers = receivedWithNonce.get(txn.hashCode()).stream().filter(
+                txnResponse -> {
+                    return ((TESTransaction) txnResponse.getContent()).equals(txn.getContent()) &&
+                            !txnResponse.getResponseSender().equals(txn.getResponseSender());
+                }
+            ).collect(Collectors.toList()).size();
 
-        if (numberOfEqualMessagesFromDifferentMembers == receivedWithNonce.get(txn.hashCode()).size()) {
-            receivedWithNonce.get(txn.hashCode()).add(txn);
+            if (numberOfEqualMessagesFromDifferentMembers == receivedWithNonce.get(txn.hashCode()).size()) {
+                receivedWithNonce.get(txn.hashCode()).add(txn);
+            }
         }
     }
 

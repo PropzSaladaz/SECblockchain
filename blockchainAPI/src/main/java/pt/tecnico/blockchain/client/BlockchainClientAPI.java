@@ -71,14 +71,8 @@ public class BlockchainClientAPI {
     }
 
     private BlockchainTransaction buildBlockchainTransaction(Content concreteTxn, int gasPrice, int gasLimit, String contractID) {
-        return new BlockchainTransaction(
-            KeyConverter.keyToString(_clientKeys.getFirst()),
-            getNonceAndIncrease(), 
-            concreteTxn, 
-            gasPrice, 
-            gasLimit, 
-            contractID
-        );
+        String from = KeyConverter.keyToString(_clientKeys.getFirst());
+        return new BlockchainTransaction(from, getNonceAndIncrease(), concreteTxn, gasPrice, gasLimit, contractID);
     }
 
     private void sendTransactionToMembers(BlockchainTransaction txnRequest) throws IOException, NoSuchAlgorithmException {

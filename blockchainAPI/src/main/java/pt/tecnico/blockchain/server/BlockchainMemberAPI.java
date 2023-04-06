@@ -5,7 +5,7 @@ import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
-import pt.tecnico.blockchain.Messages.blockchain.SignedQuorumAndBlockMessage;
+import pt.tecnico.blockchain.Messages.blockchain.QuorumSignedBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.TransactionResultMessage;
 import pt.tecnico.blockchain.Messages.ibft.SignedBlockchainBlockMessage;
 import pt.tecnico.blockchain.contracts.SmartContract;
@@ -56,7 +56,7 @@ public class BlockchainMemberAPI implements Application {
             )
         ).collect(Collectors.toList());
 
-        validateAndExecuteBlockTransactions(new SignedQuorumAndBlockMessage(signedValue.getContent(), signaturesQuorum));
+        validateAndExecuteBlockTransactions(new QuorumSignedBlockMessage(signedValue.getContent(), signaturesQuorum));
         return chain.validateValue(signedValue.getContent(), null);
     }
 
@@ -77,7 +77,7 @@ public class BlockchainMemberAPI implements Application {
     }
 
     public void validateAndExecuteBlockTransactions(Content content) {
-        SignedQuorumAndBlockMessage signedBlock = (SignedQuorumAndBlockMessage) content; // TODO cast prob - create new arrayList and return it
+        QuorumSignedBlockMessage signedBlock = (QuorumSignedBlockMessage) content;
         BlockchainBlock block = (BlockchainBlock) signedBlock.getContent();
         List<BlockchainTransaction> transactions = block.getTransactions();
         for (BlockchainTransaction transaction : transactions) {

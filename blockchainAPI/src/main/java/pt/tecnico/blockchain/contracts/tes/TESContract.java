@@ -25,12 +25,11 @@ import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.*;
 public class TESContract implements SmartContract {
 
     public Map<String, ClientAccount> _clientAccounts;
-    public String _contractID;
+    public static String _contractID = "TESCONTRACTID";
     public List<String> _minerList;
 
     public TESContract() {
         _clientAccounts = new HashMap<>();
-        _contractID = "HARDCODEDCONTRACID";
     }
 
     @Override
