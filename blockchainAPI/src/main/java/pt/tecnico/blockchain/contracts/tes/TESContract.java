@@ -1,6 +1,7 @@
 package pt.tecnico.blockchain.contracts.tes;
 
 import pt.tecnico.blockchain.Logger;
+import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.*;
 import pt.tecnico.blockchain.Messages.tes.responses.CheckBalanceResultMessage;
@@ -65,8 +66,8 @@ public class TESContract implements SmartContract {
         return -1;
     }
 
-    public Content getAccountLastBlockWritten(String account_id){
-        return _clientAccounts.get(account_id).getLastBlockToWriteOnBalance();
+    public Content getAccountBalanceProof(String account_id){
+        return _clientAccounts.get(account_id).getBalanceProof();
     }
 
     @Override
@@ -128,7 +129,7 @@ public class TESContract implements SmartContract {
                 response.setAmount(_clientAccounts.get(from).getPreviousBalance());
                 response.setReadType(TESReadType.WEAK);
                 response.setFailureReason(transaction.getFailureMessage());
-                response.setContent(getAccountLastBlockWritten(from));
+                response.setContent(getAccountBalanceProof(from));
                 return response;
             default:
                 Logger.logError("Unknown readType for CheckBalanceTransaction");
@@ -158,16 +159,16 @@ public class TESContract implements SmartContract {
 
 
     @Override
-    public boolean validateAndExecuteTransaction(Content tx, String minerKey) {
+    public boolean validateAndExecuteTransaction(Content tx, String minerKey, Content transactionsProof) {
         TESTransaction transaction = (TESTransaction) tx;
         if (validateSignature(transaction)) {
             switch (transaction.getType()) {
-                case CREATE_ACCOUNT:
-                    return validateAndExecuteCreateAccount((CreateAccountTransaction) transaction, minerKey);
-                case TRANSFER:
-                    return validateAndExecuteTransfer((TransferTransaction) transaction, minerKey);
                 case TESTransaction.CHECK_BALANCE:
                     return validateAndExecuteCheckBalance((CheckBalanceTransaction) transaction, minerKey);
+                case CREATE_ACCOUNT:
+                    return validateAndExecuteCreateAccount((CreateAccountTransaction) transaction, minerKey, transactionsProof);
+                case TRANSFER:
+                    return validateAndExecuteTransfer((TransferTransaction) transaction, minerKey, transactionsProof);
                 default:
                     Logger.logError("ERROR: Could not handle request");
                     return false;
@@ -175,10 +176,15 @@ public class TESContract implements SmartContract {
         } else return false;
     }
 
-    private boolean validateAndExecuteCreateAccount(CreateAccountTransaction transaction, String minerKey) {
+    private void executeCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof) {
+        _clientAccounts.put(transaction.getSender(), new ClientAccount());
+        _clientAccounts.get(transaction.getSender()).updateBalanceProof(transactionsProof);
+        payMiner(minerKey, 1000);
+    }
+
+    private boolean validateAndExecuteCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof) {
         if (!clientAccountExists(transaction.getSender())){
-            _clientAccounts.put(transaction.getSender(), new ClientAccount());
-            payMiner(minerKey, 1000);
+            executeCreateAccount(transaction, minerKey, transactionsProof);
             return true;
         } else {
             transaction.setFailureMessage("Account with ID " + transaction.getSender() + " already exists.");
@@ -186,11 +192,17 @@ public class TESContract implements SmartContract {
         }
     }
 
-    private boolean validateAndExecuteTransfer(TransferTransaction transaction, String minerKey) {
+    private void executeTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof) {
+        _clientAccounts.get(transaction.getSender()).withdrawal(transaction.getAmount());
+        _clientAccounts.get(transaction.getDestinationAddress()).deposit(transaction.getAmount());
+        _clientAccounts.get(transaction.getSender()).updateBalanceProof(transactionsProof);
+        _clientAccounts.get(transaction.getDestinationAddress()).updateBalanceProof(transactionsProof);
+        payMiner(minerKey, 5000);
+    }
+
+    private boolean validateAndExecuteTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof) {
         if (validateTransfer(transaction)) {
-            _clientAccounts.get(transaction.getSender()).withdrawal(transaction.getAmount());
-            _clientAccounts.get(transaction.getDestinationAddress()).deposit(transaction.getAmount());
-            payMiner(minerKey, 5000);
+            executeTransfer(transaction, minerKey, transactionsProof);
             return true;
         } else {
             return false;

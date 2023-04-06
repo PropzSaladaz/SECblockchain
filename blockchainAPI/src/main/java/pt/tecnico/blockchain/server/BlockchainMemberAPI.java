@@ -5,6 +5,7 @@ import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
+import pt.tecnico.blockchain.Messages.blockchain.SignedQuorumAndBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.TransactionResultMessage;
 import pt.tecnico.blockchain.Messages.ibft.SignedBlockchainBlockMessage;
 import pt.tecnico.blockchain.contracts.SmartContract;
@@ -13,6 +14,7 @@ import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,11 +47,16 @@ public class BlockchainMemberAPI implements Application {
 
     @Override
     public boolean validateValue(Content value, List<Content> quorum) {
+
         SignedBlockchainBlockMessage signedValue = (SignedBlockchainBlockMessage) value;
-        List<byte[]> blockSignaturesQuorum = quorum.stream().map(
-                content -> ((SignedBlockchainBlockMessage) content).getSignature()
+        List<Pair<Integer, byte[]>> signaturesQuorum = quorum.stream().map(
+            signedBlockMessage -> new Pair<Integer, byte[]>(
+                ((SignedBlockchainBlockMessage) signedBlockMessage).getSignerPID(),
+                ((SignedBlockchainBlockMessage) signedBlockMessage).getSignature()
+            )
         ).collect(Collectors.toList());
-        validateAndExecuteBlockTransactions(signedValue.getContent()); // TODO should use the signed block here to update all affected accounts
+
+        validateAndExecuteBlockTransactions(new SignedQuorumAndBlockMessage(signedValue.getContent(), signaturesQuorum)); // TODO should use the signed block here to update all affected accounts
         return chain.validateValue(signedValue.getContent(), null);
     }
 
@@ -70,16 +77,18 @@ public class BlockchainMemberAPI implements Application {
     }
 
     public void validateAndExecuteBlockTransactions(Content content) {
-        BlockchainBlock block = (BlockchainBlock) content; // TODO cast prob - create new arrayList and return it
+        SignedQuorumAndBlockMessage signedBlock = (SignedQuorumAndBlockMessage) content; // TODO cast prob - create new arrayList and return it
+        BlockchainBlock block = (BlockchainBlock) signedBlock.getContent();
         List<BlockchainTransaction> transactions = block.getTransactions();
         for (BlockchainTransaction transaction : transactions) {
             String contractId = transaction.getContractID();
-            if(_blockChainState.existContract(contractId)){
-                SmartContract contract = _blockChainState.getContract(contractId);
-                if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey))
-                    transaction.setStatus(VALIDATED);
-                else transaction.setStatus(REJECTED);
+            SmartContract contract = _blockChainState.getContract(contractId);
+            if (contract == null) continue; // contract with contractID does not exist -> goto next transaction
+
+            if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, signedBlock)) {
+                transaction.setStatus(VALIDATED);
             }
+            else transaction.setStatus(REJECTED);   
         }
     }
 
@@ -167,7 +176,8 @@ public class BlockchainMemberAPI implements Application {
         String contractID = transaction.getContractID();
         if(_blockChainState.existContract(contractID)) {
             SmartContract contract = _blockChainState.getContract(contractID);
-            if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey)) {
+            // In reads we request a transaction proof instead of providing one
+            if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, null)) {
                 Content resultContent = contract.getTransactionResponse(transaction.getContent());
                 response.setContent(resultContent);
                 response.setStatus(VALIDATED);

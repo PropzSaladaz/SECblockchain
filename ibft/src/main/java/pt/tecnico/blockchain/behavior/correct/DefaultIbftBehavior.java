@@ -24,7 +24,7 @@ public class DefaultIbftBehavior {
                 message.getContent()
             );
             msg.setMessageType(ConsensusInstanceMessage.PREPARE);
-            msg.sign(RSAKeyStoreById.getPrivateKey(Ibft.getPid()));
+            msg.sign(Ibft.getPid());
             broadcastMessage(msg);
         }
         //IbftTimer.start(message.getRound()); Not needed anymore
@@ -48,7 +48,7 @@ public class DefaultIbftBehavior {
                 message.getContent()
             );
             msg.setMessageType(ConsensusInstanceMessage.COMMIT);
-            msg.sign(RSAKeyStoreById.getPrivateKey(Ibft.getPid()));
+            msg.sign(Ibft.getPid());
             broadcastMessage(msg);
         }
     }

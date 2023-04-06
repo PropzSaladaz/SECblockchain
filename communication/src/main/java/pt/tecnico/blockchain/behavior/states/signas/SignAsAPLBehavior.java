@@ -17,7 +17,7 @@ public class SignAsAPLBehavior {
         try {
             String dest = hostname + ":" + port;
             APLMessage message = new APLMessage(content, AuthenticatedPerfectLink.getSource(), dest, signAs);
-            message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
+            message.sign(AuthenticatedPerfectLink.getId());
             System.out.println("SIGNAS: Sending APL with sender id = " + signAs);
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
         } catch (Exception e) {

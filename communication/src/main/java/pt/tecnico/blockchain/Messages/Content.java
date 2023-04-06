@@ -21,7 +21,7 @@ public interface Content extends Serializable {
         }
     }
 
-    default void sign(PrivateKey privKey) {}
+    default void sign(Integer signerPID) {}
 
     default boolean verifySignature(PublicKey pubKey, byte[] signature) {
         try {

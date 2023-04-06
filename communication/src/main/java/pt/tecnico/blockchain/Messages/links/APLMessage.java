@@ -2,6 +2,7 @@ package pt.tecnico.blockchain.Messages.links;
 
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
 import pt.tecnico.blockchain.Messages.MessageManager;
@@ -54,9 +55,9 @@ public class APLMessage extends Message implements Content {
     }
 
     @Override
-    public void sign(PrivateKey key) {
+    public void sign(Integer signerPID) {
         try {
-            _signature = Crypto.getSignature(digestMessageFields(), key);
+            _signature = Crypto.getSignature(digestMessageFields(), RSAKeyStoreById.getPrivateKey(signerPID));
         } catch (Exception e) {
             e.printStackTrace();
         }

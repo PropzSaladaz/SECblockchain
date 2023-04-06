@@ -4,6 +4,7 @@ import pt.tecnico.blockchain.Messages.Message;
 import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 
 import java.security.PrivateKey;
@@ -12,6 +13,7 @@ import java.security.PublicKey;
 public class SignedBlockchainBlockMessage extends Message implements Content {
     
     private byte[] _signature;
+    private Integer _signerPID;
 
     public SignedBlockchainBlockMessage(Content block) {
         super(block);
@@ -20,6 +22,10 @@ public class SignedBlockchainBlockMessage extends Message implements Content {
     public SignedBlockchainBlockMessage(byte[] signature, Content block) {
         super(block);
         _signature = signature;
+    }
+
+    public Integer getSignerPID() {
+        return _signerPID;
     }
 
     public void setSignature(byte[] signature) {
@@ -64,9 +70,9 @@ public class SignedBlockchainBlockMessage extends Message implements Content {
     }
     
     @Override
-    public void sign(PrivateKey privKey) {
+    public void sign(Integer signerPID) {
         try {
-            _signature = Crypto.getSignature(digestMessageFields(), privKey);
+            _signature = Crypto.getSignature(digestMessageFields(), RSAKeyStoreById.getPrivateKey(signerPID));
         } catch (Exception e) {
             e.printStackTrace();
         }

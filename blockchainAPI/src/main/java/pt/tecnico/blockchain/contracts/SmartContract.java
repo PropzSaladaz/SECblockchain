@@ -1,13 +1,14 @@
 package pt.tecnico.blockchain.contracts;
 
+import java.util.List;
+
+import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Messages.Content;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
-import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
 
 public interface SmartContract {
     String getContractID();
 
-    boolean validateAndExecuteTransaction(Content transaction,String minerKey);
+    boolean validateAndExecuteTransaction(Content transaction, String minerKey, Content transactionsProof);
     Content getTransactionResponse(Content transaction);
 
     /**

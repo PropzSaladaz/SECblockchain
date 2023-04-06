@@ -20,7 +20,7 @@ public class DefaultAPLBehavior {
             String dest = hostname + ":" + port;
             APLMessage message = new APLMessage(content, AuthenticatedPerfectLink.getSource(), dest,
                     AuthenticatedPerfectLink.getId());
-            message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
+            message.sign(AuthenticatedPerfectLink.getId());
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
         } catch (Exception e) {
             e.printStackTrace();

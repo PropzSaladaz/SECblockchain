@@ -12,6 +12,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+
 import pt.tecnico.blockchain.Messages.ApplicationMessage;
 
 public class ConsensusInstanceMessage extends ApplicationMessage implements Content {
@@ -117,10 +119,10 @@ public class ConsensusInstanceMessage extends ApplicationMessage implements Cont
     }
 
     @Override
-    public void sign(PrivateKey privKey) {
+    public void sign(Integer signerPID) {
         try {
-            getContent().sign(privKey);
-            _signature = Crypto.getSignature(digestMessageFields(), privKey);
+            getContent().sign(signerPID);
+            _signature = Crypto.getSignature(digestMessageFields(), RSAKeyStoreById.getPrivateKey(signerPID));
         } catch (Exception e) {
             e.printStackTrace();
         }

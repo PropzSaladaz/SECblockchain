@@ -42,7 +42,7 @@ public class CorruptAPLBehavior {
 
             APLMessage message = new APLMessage(corrupted, AuthenticatedPerfectLink.getSource(), dest,
                     AuthenticatedPerfectLink.getId());
-            message.sign(RSAKeyStoreById.getPrivateKey(AuthenticatedPerfectLink.getId()));
+            message.sign(AuthenticatedPerfectLink.getId());
             System.out.println("CORRUPTED: Sending Corrupted APL message");
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
         } catch (Exception e) {
