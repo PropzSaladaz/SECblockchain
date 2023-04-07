@@ -45,7 +45,7 @@ public class Member
 
             DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(hostname));
             BlockchainMemberAPI blockchainMemberAPI = new BlockchainMemberAPI(socket, config.getClients(), RSAKeyStoreById.getPublicFromPid(id));
-            TESContract contract = new TESContract();
+            TESContract contract = new TESContract(id);
             contract.setMiners(Collections.singletonList(Crypto.getHashFromKey(RSAKeyStoreById.getPublicKey(1))));
             blockchainMemberAPI.addContractToBlockchain(contract);
 
@@ -104,5 +104,9 @@ public class Member
         hostname = host.getFirst();
         port = host.getSecond();
 
+    }
+
+    public static int getMyId() {
+        return id;
     }
 }

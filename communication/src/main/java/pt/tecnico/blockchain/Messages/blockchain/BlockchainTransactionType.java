@@ -1,15 +1,15 @@
 package pt.tecnico.blockchain.Messages.blockchain;
 
 public enum BlockchainTransactionType {
-    READ(0),
-    UPDATE(1);
+    READ("READ"),
+    UPDATE("UPDATE");
 
-    private final int opID;
+    private final String opID;
 
-    BlockchainTransactionType(int opID) {
+    BlockchainTransactionType(String opID) {
         this.opID = opID;
     }
-    public int getCode() {
+    public String getMessage() {
         return opID;
     }
 }

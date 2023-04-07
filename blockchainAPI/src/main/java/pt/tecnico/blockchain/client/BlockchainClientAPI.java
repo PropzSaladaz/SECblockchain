@@ -104,7 +104,7 @@ public class BlockchainClientAPI {
                     APLReturnMessage message = AuthenticatedPerfectLink.deliver(_socket);
                     handleResponse(message.getContent());
                 } catch (ClassCastException | IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
-                    Logger.logWarning("Received a corrupted message, ignoring...");
+                    Logger.logWarning("Received a corrupted message, ignoring...", e);
                 }
             }
         });
@@ -114,8 +114,7 @@ public class BlockchainClientAPI {
     private void handleResponse(Content message) {
         if (responseIsTransactionResult(message)) {
             TransactionResultMessage transactionResult = (TransactionResultMessage) message;
-            BlockchainTransaction transaction = (BlockchainTransaction) transactionResult.getContent();
-            _app.deliver(transaction.getContent(), transaction.getOperationType(), transactionResult.getStatus());
+            _app.deliver(transactionResult, BlockchainTransactionType.READ, transactionResult.getStatus()); // TODO change op type
         } else {
             Logger.logWarning("Expected to receive a TransactionResultMessage but received something else.");
         }

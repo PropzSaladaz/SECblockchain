@@ -1,19 +1,21 @@
 package pt.tecnico.blockchain.Messages.tes.responses;
 
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.Message;
 import pt.tecnico.blockchain.Messages.MessageManager;
 
 public abstract class TESResultMessage extends Message implements Content {
-    private String type;
+    private final String type;
     private final int txnNonce;
-    private String transactionInvoker;
+    private final String transactionInvoker;
     private String resultSender;
-    private String failureReason = "";
+    private String failureReason = "None";
     private byte[] _signature;
 
     TESResultMessage(int nonce, String transactionInvoker, String type) {
@@ -33,12 +35,17 @@ public abstract class TESResultMessage extends Message implements Content {
     public String getType() {
         return type;
     }
+
     public int getTxnNonce() {
         return txnNonce;
     }
 
-    public String getResponseSender() {
+    public String getResultSender() {
         return resultSender;
+    }
+
+    public void setResultSender(String sender) {
+        resultSender = sender;
     }
 
     public String getTransactionInvoker() {
@@ -90,6 +97,25 @@ public abstract class TESResultMessage extends Message implements Content {
         }
     }
     protected abstract boolean concreteTxnEquals(Content another);
+
+
+    @Override
+    public String toHash() {
+        try {
+            MessageDigest d = Crypto.getDigest();
+            d.update(type.getBytes());
+            d.update(Integer.toString(txnNonce).getBytes());
+            d.update(transactionInvoker.getBytes());
+            d.update(failureReason.getBytes());
+            updateConcreteHash(d);
+            return Crypto.base64(d.digest());
+        } catch (NoSuchAlgorithmException e) {
+            Logger.logError("Could not get hash for TESResultMessage", e);
+            throw new RuntimeException();
+        }
+    }
+
+    protected abstract void updateConcreteHash(MessageDigest d);
 
     @Override
     public String toString(int level) {

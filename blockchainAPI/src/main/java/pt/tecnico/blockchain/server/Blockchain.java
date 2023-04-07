@@ -10,6 +10,7 @@ import pt.tecnico.blockchain.Pair;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Blockchain implements Application {
@@ -47,23 +48,21 @@ public class Blockchain implements Application {
     }
 
     @Override
-    public boolean validateValue(Content value, List<Content> quorum) {
+    public boolean validatePrePrepareValue(Content value) {
+        return validateCommitValue(value, null);
+    }
+
+    @Override
+    public boolean validateCommitValue(Content value, List<Content> quorum) {
         BlockchainBlock newBlock = (BlockchainBlock) value;
-        Logger.logInfo(newBlock.toString(0));
         String predictedHash = getNextPredictedHash(newBlock);
-        Logger.logDebugSecondary("predicted hash: " + predictedHash);
-        Logger.logDebugSecondary("received block's hash: " + newBlock.getHash());
         return newBlock.getHash().equals(predictedHash);
     }
 
     public String getNextPredictedHash(BlockchainBlock newBlock) {
         try {
-            String predictedHash = Block.computeHash(_lastBlock.getBlockHash(),
+            return Block.computeHash(_lastBlock.getBlockHash(),
                     Block.getBytesFrom(newBlock.getTransactions()));
-            Logger.logDebugSecondary("lastBlock =" + _lastBlock);
-            Logger.logDebugSecondary("transactions =" + Crypto.base64(Block.getBytesFrom(newBlock.getTransactions())));
-            Logger.logDebugSecondary("predictedHash =" + predictedHash);
-            return predictedHash;
         } catch (IOException | NoSuchAlgorithmException e){
             Logger.logError("Could not generate next predicted hash");
             e.printStackTrace();

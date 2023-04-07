@@ -15,6 +15,7 @@ import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,24 +30,39 @@ public class BlockchainMemberAPI implements Application {
     private final BlockChainState _blockChainState;
     private final String _publicKey;
 
-    public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients, PublicKey publicKey) throws NoSuchAlgorithmException {
+    public BlockchainMemberAPI(DatagramSocket socket, Map<Integer,Pair<String,Integer>> clients, PublicKey publicKey) {
         chain = new Blockchain();
         _socket = socket;
         pool = new SynchronizedTransactionPool();
         _clientsPidToInfo = clients;
         _blockChainState = new BlockChainState();
-        _publicKey = Crypto.getHashFromKey(publicKey);
+        _publicKey = Crypto.base64(publicKey.getEncoded());
     }
 
     @Override
     public void decide(Content msg) {
-        SignedBlockchainBlockMessage m = (SignedBlockchainBlockMessage) msg;
-        chain.decide(m.getContent()); // block is appended with all transactions (VALIDATED and NOT-VALIDATED)
-        sendTransactionResultToClient(msg);
+        try {
+            SignedBlockchainBlockMessage m = (SignedBlockchainBlockMessage) msg;
+            chain.decide(m.getContent()); // block is appended with all transactions (VALIDATED and NOT-VALIDATED)
+            sendTransactionResultToClient(m.getContent());
+        } catch (ClassCastException e) {
+            Logger.logWarning("Unexpected message type", e);
+        }
     }
 
     @Override
-    public boolean validateValue(Content value, List<Content> quorum) {
+    public boolean validatePrePrepareValue(Content value) {
+        try {
+            SignedBlockchainBlockMessage signedValue = (SignedBlockchainBlockMessage) value;
+            return chain.validatePrePrepareValue(signedValue.getContent());
+        } catch (ClassCastException e) {
+            Logger.logWarning("Unexpected message type", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean validateCommitValue(Content value, List<Content> quorum) {
         try {
             SignedBlockchainBlockMessage signedValue = (SignedBlockchainBlockMessage) value;
             List<Pair<Integer, byte[]>> signaturesQuorum = quorum.stream().map(
@@ -56,13 +72,12 @@ public class BlockchainMemberAPI implements Application {
                     )
             ).collect(Collectors.toList());
             validateAndExecuteBlockTransactions(new QuorumSignedBlockMessage(signedValue.getContent(), signaturesQuorum));
-            boolean v = chain.validateValue(signedValue.getContent(), null);
+            boolean v = chain.validateCommitValue(signedValue.getContent(), quorum);
             Logger.logDebugPrimary("Value validation result: " + v);
             return v;
 
         } catch (ClassCastException e) {
-            Logger.logWarning("BlockchainMemberAPI received an unexpected message from IBFT");
-            e.printStackTrace();
+            Logger.logWarning("Unexpected message type", e);
             return false;
         }
 
@@ -75,8 +90,12 @@ public class BlockchainMemberAPI implements Application {
 
     @Override
     public void prepareValue(Content value) {
-        SignedBlockchainBlockMessage signedBlock = (SignedBlockchainBlockMessage) value;
-        chain.prepareValue(signedBlock.getContent());
+        try {
+            SignedBlockchainBlockMessage signedBlock = (SignedBlockchainBlockMessage) value;
+            chain.prepareValue(signedBlock.getContent());
+        } catch (ClassCastException e) {
+            Logger.logWarning("Unexpected message type", e);
+        }
     }
 
 
@@ -85,16 +104,20 @@ public class BlockchainMemberAPI implements Application {
     }
 
     public void validateAndExecuteBlockTransactions(Content content) {
-        QuorumSignedBlockMessage signedBlock = (QuorumSignedBlockMessage) content;
-        BlockchainBlock block = (BlockchainBlock) signedBlock.getContent();
-        List<BlockchainTransaction> transactions = block.getTransactions();
-        for (BlockchainTransaction transaction : transactions) {
-            String contractId = transaction.getContractID();
-            SmartContract contract = _blockChainState.getContract(contractId);
-            transaction.setStatus(
-                (contract != null && contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, signedBlock)) ?
-                VALIDATED : REJECTED
-            );
+        try {
+            QuorumSignedBlockMessage signedBlock = (QuorumSignedBlockMessage) content;
+            BlockchainBlock block = (BlockchainBlock) signedBlock.getContent();
+            List<BlockchainTransaction> transactions = block.getTransactions();
+            for (BlockchainTransaction transaction : transactions) {
+                String contractId = transaction.getContractID();
+                SmartContract contract = _blockChainState.getContract(contractId);
+                transaction.setStatus(
+                        (contract != null && contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, signedBlock)) ?
+                                VALIDATED : REJECTED
+                );
+            }
+        } catch (ClassCastException e) {
+            Logger.logWarning("Unexpected message type", e);
         }
     }
 
@@ -117,13 +140,13 @@ public class BlockchainMemberAPI implements Application {
                 sendResponseToClient(transaction.getSender(), response);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.logError("", e);
         }
     }
 
     private void sendResponseToClient(String sender, TransactionResultMessage response) throws Exception {
-        PublicKey clientkey = KeyConverter.base64ToPublicKey(sender);
-        Integer clientPid = RSAKeyStoreById.getPidFromPublic(clientkey);
+        Integer clientPid = RSAKeyStoreById.getPidFromPublic(sender);
+        Logger.logInfo("clientPID = " + clientPid);
         Pair<String,Integer> senderInfo = _clientsPidToInfo.get(clientPid);
         AuthenticatedPerfectLink.send(_socket, response, senderInfo.getFirst(), senderInfo.getSecond());
     }
@@ -138,10 +161,7 @@ public class BlockchainMemberAPI implements Application {
             case UPDATE:
                 BlockchainBlock block = addTransactionAndGetBlockIfReady(transaction);
                 if (block != null) {
-                    updateTransactionsBeforeConsensus(block);
-                    for (BlockchainTransaction b : block.getTransactions()) {
-                        Logger.logInfo(b.toString(0));
-                    }
+                    validateTransactionsFromBlock(block);
                     block.setHash(chain.getNextPredictedHash(block));
                     Ibft.start(new SignedBlockchainBlockMessage(block));
                 }
@@ -154,24 +174,25 @@ public class BlockchainMemberAPI implements Application {
         }
     }
 
-    private void updateTransactionsBeforeConsensus(BlockchainBlock block) {
-        for (BlockchainTransaction txn : block.getTransactions()) {
-            String contractId = txn.getContractID();
-            if(_blockChainState.existContract(contractId)){
-                SmartContract contract = _blockChainState.getContract(contractId);
-                contract.updateTransactionWithCurrentState(txn.getContent());
-            }
+    /**
+     * Validates txns and sets current state on the txns (invokes updateTransactionWithCurrentState from
+     * the contract)
+     */
+    public void validateTransactionsFromBlock(BlockchainBlock block) {
+        for (BlockchainTransaction transaction : block.getTransactions()) {
+            String contractId = transaction.getContractID();
+            SmartContract contract = _blockChainState.getContract(contractId);
+            if (contract != null) {
+                transaction.setStatus( contract.validateTransaction(transaction.getContent()) ? VALIDATED : REJECTED);
+                contract.updateTransactionWithCurrentState(transaction.getContent());
+            } else transaction.setStatus(REJECTED);
         }
     }
 
     private BlockchainBlock addTransactionAndGetBlockIfReady(BlockchainTransaction transaction) {
         List<BlockchainTransaction> transactions;
-        Logger.logInfo("addTransactionAndGetBlockIfReady: " + transaction.toString(0));
         pool.addTransactionIfNotInPool(transaction);
         if ((transactions = pool.getTransactionsIfHasEnough()).size() > 0) {
-            for (BlockchainTransaction t : transactions) {
-                Logger.logInfo("addTransactionAndGetBlockIfReady inside loop: " + t.toString(0));
-            }
             return new BlockchainBlock(transactions);
         }
         return null;

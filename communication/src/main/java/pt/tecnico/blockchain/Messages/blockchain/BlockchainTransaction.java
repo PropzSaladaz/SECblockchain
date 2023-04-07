@@ -82,6 +82,12 @@ public class BlockchainTransaction extends ApplicationMessage implements Content
         return toStringWithTabs("BlockchainTransaction: {", tabs) +
                 toStringWithTabs("contractID: " + contractID, tabs+1) +
                 toStringWithTabs("nonce: " + nonce, tabs+1) +
+                toStringWithTabs("from: " + from.substring(0, 15), tabs+1) +
+                toStringWithTabs("status: " + _status.getMessage(), tabs+1) +
+                toStringWithTabs("operationType: " + _operationType.getMessage(), tabs+1) +
+                toStringWithTabs("gasPrice: " + gasPrice, tabs+1) +
+                toStringWithTabs("gasLimit: " + gasLimit, tabs+1) +
+                toStringWithTabs("failureMessage: " + failureMessage, tabs+1) +
                 getContent().toString(tabs+1) +
                 toStringWithTabs("}", tabs);
     }

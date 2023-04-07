@@ -52,7 +52,9 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     public void createAccount(int gasPrice, int gasLimit) {
         try {
-            CreateAccountTransaction txn = new CreateAccountTransaction(client.getNonce(), KeyConverter.keyToString(client.getPublicKey()));
+            CreateAccountTransaction txn = new CreateAccountTransaction(
+                    client.getNonce(),
+                    KeyConverter.keyToString(client.getPublicKey()));
             txn.sign(client.getPrivateKey());
             submitUpdateTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (Exception e) {
@@ -75,7 +77,8 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     public void checkBalance(TESReadType readType, int gasPrice, int gasLimit) {
         try {
             CheckBalanceTransaction txn = new CheckBalanceTransaction(client.getNonce(),
-                    KeyConverter.keyToString(client.getPublicKey()), readType);
+                    KeyConverter.keyToString(client.getPublicKey()),
+                    readType);
             txn.sign(client.getPrivateKey());
             submitReadTransactionToBlockchain(txn, gasPrice, gasLimit);
         } catch (Exception e) {
@@ -148,7 +151,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
         }
     }
 
-    private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) throws Exception {
+    private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) {
         int _currentBalance = ((QuorumSignedBlockMessage) txn.getContent()).assertTesAccountBalance(
                                     KeyConverter.keyToString(client.getPublicKey()), txn.getAmount());
         if (_currentBalance >= 0) {
@@ -191,19 +194,18 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void addTransactionToReceivedMap(TESResultMessage txn) {
-        if (txn.verifySignature(RSAKeyStoreById.getPidFromPublic(client.getPublicKey()), txn.getSignature())) {
-            tesMessagesQuorum.computeIfAbsent(txn.getTxnNonce(), k -> new HashMap<Integer,List<TESResultMessage>>());
+        Integer pid = RSAKeyStoreById.getPidFromPublic(KeyConverter.keyToString(client.getPublicKey()));
+        if (txn.verifySignature(pid, txn.getSignature())) {
+            tesMessagesQuorum.computeIfAbsent(txn.getTxnNonce(), k -> new HashMap<>());
             Map<Integer, List<TESResultMessage>> receivedWithNonce = tesMessagesQuorum.get(txn.getTxnNonce());
-            receivedWithNonce.computeIfAbsent(txn.hashCode(), k -> new ArrayList<TESResultMessage>());
+            receivedWithNonce.computeIfAbsent(txn.hashCode(), k -> new ArrayList<>());
 
-            int numberOfEqualMessagesFromDifferentMembers = receivedWithNonce.get(txn.hashCode()).stream().filter(
-                txnResponse -> {
-                    return ((TESTransaction) txnResponse.getContent()).equals(txn.getContent()) &&
-                            !txnResponse.getResponseSender().equals(txn.getResponseSender());
+            if (receivedWithNonce.containsKey(txn.hashCode())) {
+                for (TESResultMessage result : receivedWithNonce.get(txn.hashCode())) {
+                    if (result.getResultSender().equals(txn.getResultSender())) {
+                        return; // already received msg from this process, so ignore it
+                    }
                 }
-            ).collect(Collectors.toList()).size();
-
-            if (numberOfEqualMessagesFromDifferentMembers == receivedWithNonce.get(txn.hashCode()).size()) {
                 receivedWithNonce.get(txn.hashCode()).add(txn);
             }
         }
@@ -234,8 +236,8 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     private void parseCreateAccount(CreateAccountResultMessage txn, BlockchainTransactionStatus status) {
         printStatus(status,
-                "ACCOUNT CREATED WITH KEY: " + txn.getResponseSender(),
-                "IMPOSSIBLE TO CREATE ACCOUNT WITH KEY: " + txn.getResponseSender()
+                "ACCOUNT CREATED WITH KEY: " + txn.getTransactionInvoker(),
+                "IMPOSSIBLE TO CREATE ACCOUNT WITH KEY: " + txn.getTransactionInvoker()
         );
     }
 

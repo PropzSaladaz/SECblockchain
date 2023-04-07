@@ -19,7 +19,7 @@ public abstract class TESTransaction implements Content {
     private byte[] signature;
     private final int nonce;
 
-    private String failureMessage; // should not be persistent in blockchain
+    private String failureMessage = "None"; // should not be persistent in blockchain
 
     public TESTransaction(int nonce, String type, String sender) {
         this.type = type;

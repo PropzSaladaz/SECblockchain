@@ -5,6 +5,16 @@ import pt.tecnico.blockchain.Messages.Content;
 public interface SmartContract {
     String getContractID();
 
+
+    /**
+     * Will be used by the member that initially proposes the block to set the status of all transactions
+     * before proposing the block
+     */
+    boolean validateTransaction(Content transaction);
+
+    /**
+     * Will be used by every member upon receiving a consensus-proposed block
+     */
     boolean validateAndExecuteTransaction(Content transaction, String minerKey, Content transactionsProof);
     Content getTransactionResponse(Content transaction, String memberPubKey);
 

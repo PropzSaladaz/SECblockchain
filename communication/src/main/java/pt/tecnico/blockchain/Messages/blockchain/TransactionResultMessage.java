@@ -9,7 +9,7 @@ public class TransactionResultMessage extends ApplicationMessage implements Cont
     private BlockchainTransactionStatus _status;
     private Integer _nonce;
 
-    private String failureMessage;
+    private String failureMessage = "None";
 
     public TransactionResultMessage(int nonce, Content message) {
         super(message);

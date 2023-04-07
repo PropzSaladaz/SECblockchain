@@ -2,6 +2,8 @@ package pt.tecnico.blockchain.Keys;
 
 
 
+import pt.tecnico.blockchain.Crypto;
+import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.RSAKeyReader;
 
 import java.io.File;
@@ -69,9 +71,9 @@ public class RSAKeyStoreById {
         return publicKeys.get(pid);
     }
 
-    public static Integer getPidFromPublic(PublicKey publicKey) {
+    public static Integer getPidFromPublic(String publicKeyBase64) {
         for (Map.Entry<Integer, PublicKey> entry : publicKeys.entrySet()) {
-            if (entry.getValue() == publicKey) return entry.getKey();
+            if (KeyConverter.keyToString(entry.getValue()).equals(publicKeyBase64)) return entry.getKey();
         }
         return null;
     }

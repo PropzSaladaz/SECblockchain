@@ -52,6 +52,12 @@ public class TransferResultMessage extends TESResultMessage {
     }
 
     @Override
+    protected void updateConcreteHash(MessageDigest d) {
+        d.update(Integer.toString(amount).getBytes());
+        d.update(destination.getBytes());
+    }
+
+    @Override
     public String toString(int level) {
         return toStringWithTabs("TransactionResultMessage: {", level) +
                 super.toString(level + 1) +

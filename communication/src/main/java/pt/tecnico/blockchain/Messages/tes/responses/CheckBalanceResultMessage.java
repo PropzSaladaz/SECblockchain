@@ -76,6 +76,12 @@ public class CheckBalanceResultMessage extends TESResultMessage implements Conte
     }
 
     @Override
+    protected void updateConcreteHash(MessageDigest d) {
+        d.update(Integer.toString(_amount).getBytes());
+        d.update(readType.getCode().getBytes());
+    }
+
+    @Override
     public String toString(int level) {
         return toStringWithTabs("CheckBalanceResultMessage: {", level) +
                 super.toString(level + 1) +

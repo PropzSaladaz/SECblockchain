@@ -1,14 +1,19 @@
 package pt.tecnico.blockchain;
 
 import pt.tecnico.blockchain.Messages.Content;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
 import pt.tecnico.blockchain.Messages.ibft.ConsensusInstanceMessage;
+import pt.tecnico.blockchain.Messages.ibft.SignedBlockchainBlockMessage;
 import pt.tecnico.blockchain.behavior.IbftBehaviorController;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class IbftMessagehandler {
     static ArrayList<Pair<String, Integer>> _memberHostNames;
@@ -54,6 +59,18 @@ public class IbftMessagehandler {
         preprepareMessage.setMessageType(ConsensusInstanceMessage.PRE_PREPARE);
         preprepareMessage.sign(_pid);
         broadcastMessage(preprepareMessage);
+    }
+
+    private static byte[] getBytesFrom(Object obj) {
+        try {
+            ByteArrayOutputStream bytesOS = new ByteArrayOutputStream();
+            ObjectOutputStream objectOS = new ObjectOutputStream(bytesOS);
+            objectOS.writeObject(obj);
+            return bytesOS.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static void broadcastMessage(Content message) {

@@ -24,12 +24,14 @@ import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.*;
 
 public class TESContract implements SmartContract {
 
-    public Map<String, ClientAccount> _clientAccounts;
-    public static String _contractID = "TESCONTRACTID";
-    public List<String> _minerList;
+    private Map<String, ClientAccount> _clientAccounts;
+    private static String _contractID = "TESCONTRACTID";
+    private List<String> _minerList;
+    private int pid;
 
-    public TESContract() {
+    public TESContract(int pid) {
         _clientAccounts = new HashMap<>();
+        this.pid = pid;
     }
 
     @Override
@@ -120,25 +122,26 @@ public class TESContract implements SmartContract {
         return -1;
     }
 
-    private Content getCheckBalanceResponse(CheckBalanceTransaction transaction, String memberPubKey) throws Exception {
+    private Content getCheckBalanceResponse(CheckBalanceTransaction transaction, String memberPubKey) {
         CheckBalanceResultMessage response = new CheckBalanceResultMessage(
                 transaction.getNonce(),
                 transaction.getSender()
         );
+        response.setResultSender(memberPubKey);
         String from = transaction.getSender();
         switch (transaction.getReadType()) {
             case STRONG:
                 response.setAmount(_clientAccounts.get(from).getCurrentBalance());
                 response.setReadType(TESReadType.STRONG);
                 response.setFailureReason(transaction.getFailureMessage());
-                response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
+                response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
                 return response;
             case WEAK:
                 response.setAmount(_clientAccounts.get(from).getPreviousBalance());
                 response.setReadType(TESReadType.WEAK);
                 response.setContent(getAccountBalanceProof(from));
                 response.setFailureReason(transaction.getFailureMessage());
-                response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
+                response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
                 return response;
             default:
                 Logger.logError("Unknown readType for CheckBalanceTransaction");
@@ -146,25 +149,27 @@ public class TESContract implements SmartContract {
         }
     }
 
-    private Content getTransferResponse(TransferTransaction transaction, String memberPubKey) throws Exception {
+    private Content getTransferResponse(TransferTransaction transaction, String memberPubKey) {
         TransferResultMessage response = new TransferResultMessage(
                 transaction.getNonce(),
                 transaction.getSender(),
                 transaction.getAmount(),
                 transaction.getDestinationAddress()
         );
+        response.setResultSender(memberPubKey);
         response.setFailureReason(transaction.getFailureMessage());
-        response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
+        response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
         return response;
     }
 
-    private Content getCreateAccountResponse(CreateAccountTransaction transaction, String memberPubKey) throws Exception {
+    private Content getCreateAccountResponse(CreateAccountTransaction transaction, String memberPubKey) {
         CreateAccountResultMessage response = new CreateAccountResultMessage(
                 transaction.getNonce(),
                 transaction.getSender()
         );
+        response.setResultSender(memberPubKey);
         response.setFailureReason(transaction.getFailureMessage());
-        response.sign(RSAKeyStoreById.getPidFromPublic(KeyConverter.base64ToPublicKey(memberPubKey)));
+        response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
         return response;
     }
 
@@ -181,10 +186,42 @@ public class TESContract implements SmartContract {
                 case TRANSFER:
                     return validateAndExecuteTransfer((TransferTransaction) transaction, minerKey, transactionsProof);
                 default:
-                    Logger.logError("ERROR: Could not handle request");
+                    Logger.logError("Unknown TES transaction type");
                     return false;
             }
         } else return false;
+    }
+
+    @Override
+    public boolean validateTransaction(Content tx) {
+        TESTransaction transaction = (TESTransaction) tx;
+        if (validateSignature(transaction)) {
+            switch (transaction.getType()) {
+                case TESTransaction.CHECK_BALANCE:
+                    return validateCheckBalance((CheckBalanceTransaction) transaction);
+                case CREATE_ACCOUNT:
+                    return validateCreateAccount((CreateAccountTransaction) transaction);
+                case TRANSFER:
+                    return validateTransfer((TransferTransaction) transaction);
+                default:
+                    Logger.logError("Unknown TES transaction type");
+                    return false;
+            }
+        } else return false;
+    }
+
+    private boolean validateAndExecuteCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof) {
+        if (validateCreateAccount(transaction)){
+            executeCreateAccount(transaction, minerKey, transactionsProof);
+            return true;
+        } else {
+            transaction.setFailureMessage("Account with ID " + transaction.getSender() + " already exists.");
+            return false;
+        }
+    }
+
+    private boolean validateCreateAccount(CreateAccountTransaction transaction) {
+        return !clientAccountExists(transaction.getSender());
     }
 
     private void executeCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof) {
@@ -193,12 +230,11 @@ public class TESContract implements SmartContract {
         payMiner(minerKey, 1000);
     }
 
-    private boolean validateAndExecuteCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof) {
-        if (!clientAccountExists(transaction.getSender())){
-            executeCreateAccount(transaction, minerKey, transactionsProof);
+    private boolean validateAndExecuteTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof) {
+        if (validateTransfer(transaction)) {
+            executeTransfer(transaction, minerKey, transactionsProof);
             return true;
         } else {
-            transaction.setFailureMessage("Account with ID " + transaction.getSender() + " already exists.");
             return false;
         }
     }
@@ -211,25 +247,12 @@ public class TESContract implements SmartContract {
         payMiner(minerKey, 5000);
     }
 
-    private boolean validateAndExecuteTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof) {
-        if (validateTransfer(transaction)) {
-            executeTransfer(transaction, minerKey, transactionsProof);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private boolean validateAndExecuteCheckBalance(CheckBalanceTransaction transaction, String minerKey) {
-        return (clientAccountExists(transaction.getSender()));
+        return validateCheckBalance(transaction);
     }
 
-    private void payMiner(String minerKey, int amount) { // TODO transfer from the client account! check if client has the necessary balance
-        if(_minerList.contains(minerKey)) _clientAccounts.get(minerKey).deposit(amount);
-    }
-
-    private boolean clientAccountExists(String publicKey) {
-        return _clientAccounts.containsKey(publicKey);
+    private boolean validateCheckBalance(CheckBalanceTransaction transaction) {
+        return clientAccountExists(transaction.getSender());
     }
 
     private boolean validateTransfer(TransferTransaction transfer) {
@@ -251,5 +274,13 @@ public class TESContract implements SmartContract {
             return  false;
         }
         return true;
+    }
+
+    private void payMiner(String minerKey, int amount) { // TODO transfer from the client account! check if client has the necessary balance
+        if(_minerList.contains(minerKey)) _clientAccounts.get(minerKey).deposit(amount);
+    }
+
+    private boolean clientAccountExists(String publicKey) {
+        return _clientAccounts.containsKey(publicKey);
     }
 }
