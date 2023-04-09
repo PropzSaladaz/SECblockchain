@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.Messages.tes.responses;
 
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
 
 import java.security.MessageDigest;
@@ -8,6 +9,7 @@ import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.TESReadType;
+import pt.tecnico.blockchain.Messages.tes.transactions.CheckBalanceTransaction;
 import pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction;
 
 
@@ -16,14 +18,10 @@ public class CheckBalanceResultMessage extends TESResultMessage implements Conte
     private int _amount;
     private TESReadType readType;
 
-    public CheckBalanceResultMessage(int nonce, String sender) {
-        super(nonce, sender, TESTransaction.CHECK_BALANCE);
-    }
-
-    public CheckBalanceResultMessage(int nonce, String sender, int balance, TESReadType readType) {
-        super(nonce, sender, TESTransaction.CHECK_BALANCE);
-        _amount = balance;
-        this.readType = readType;
+    public CheckBalanceResultMessage(CheckBalanceTransaction txn) {
+        super(txn.getNonce(), txn.getSender(), TESTransaction.CHECK_BALANCE);
+        readType = txn.getReadType();
+        setFailureReason(txn.getFailureMessage());
     }
 
     public void setAmount(int _amount) {
@@ -51,7 +49,7 @@ public class CheckBalanceResultMessage extends TESResultMessage implements Conte
             digest.update(readType.getCode().getBytes());
             return digest.digest();
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.logError("Could not digestMessageFields", e);
             return null;
         }
     }

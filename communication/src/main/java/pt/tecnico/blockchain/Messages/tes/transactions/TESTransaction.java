@@ -121,12 +121,12 @@ public abstract class TESTransaction implements Content {
 
     @Override
     public String toString(int tabs) {
-        String senderBalHash = senderBalanceHash.equals("") ? "" : senderBalanceHash.substring(0, 15);
+        String senderBalHash = senderBalanceHash.equals("") ? "" : senderBalanceHash.substring(0, 15) + "...";
         return  toStringWithTabs("type: " + type, tabs) +
                 toStringWithTabs("nonce: " + nonce, tabs) +
-                toStringWithTabs("from: " +  from, tabs) +
+                toStringWithTabs("from: " +  from.substring(0, 15) + "...", tabs) +
                 toStringWithTabs("senderBalanceHash: " + senderBalHash, tabs) +
-                toStringWithTabs("signature: " + Crypto.base64(signature), tabs);
+                toStringWithTabs("signature: " + Crypto.base64(signature, 15), tabs);
     }
 
 

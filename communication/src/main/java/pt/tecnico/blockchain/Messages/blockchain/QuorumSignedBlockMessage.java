@@ -37,6 +37,8 @@ public class QuorumSignedBlockMessage extends Message implements Content {
 
         for (Pair<Integer, byte[]> sigPair : this.getSignaturePairs()) {
             if (!block.verifySignature(sigPair.getFirst(), sigPair.getSecond())) {
+                Logger.logInfo(block.toString(0));
+                Logger.logInfo("Couldnt verify signature");
                 return -1;
             }
         }

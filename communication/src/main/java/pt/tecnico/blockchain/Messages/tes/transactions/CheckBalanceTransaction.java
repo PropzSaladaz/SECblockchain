@@ -36,7 +36,7 @@ public class CheckBalanceTransaction extends TESTransaction {
     @Override
     public String toString(int tabs) {
         return  toStringWithTabs("CheckBalanceTransaction: {", tabs) +
-                toStringWithTabs("readType: " + readType.getCode(), tabs) +
+                toStringWithTabs("readType: " + readType.getCode(), tabs + 1) +
                 super.toString(tabs + 1) +
                 toStringWithTabs("}", tabs);
     }

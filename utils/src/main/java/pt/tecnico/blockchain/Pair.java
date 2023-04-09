@@ -1,8 +1,9 @@
 package pt.tecnico.blockchain;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Pair<T1, T2> {
+public class Pair<T1, T2> implements Serializable {
     private final T1 t1;
     private final T2 t2;
 

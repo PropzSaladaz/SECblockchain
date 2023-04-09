@@ -2,6 +2,7 @@ package pt.tecnico.blockchain.Messages.tes.responses;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 
 import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
@@ -64,7 +65,7 @@ public abstract class TESResultMessage extends Message implements Content {
     public byte[] digestMessageFields() {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update(MessageManager.getContentBytes(this.getContent()));
+            if (getContent() != null) digest.update(MessageManager.getContentBytes(getContent())); // since content is optional
             digest.update(type.getBytes());
             digest.update(Integer.toString(txnNonce).getBytes());
             digest.update(transactionInvoker.getBytes());
@@ -101,7 +102,7 @@ public abstract class TESResultMessage extends Message implements Content {
 
     @Override
     public String toHash() {
-        try {
+        try { // purposely do not account for resultSender
             MessageDigest d = Crypto.getDigest();
             d.update(type.getBytes());
             d.update(Integer.toString(txnNonce).getBytes());
@@ -119,7 +120,11 @@ public abstract class TESResultMessage extends Message implements Content {
 
     @Override
     public String toString(int level) {
-        return toStringWithTabs("nonce:" + txnNonce, level) +
-                toStringWithTabs("failureReason:" + failureReason, level);
+        return toStringWithTabs("type:" + type, level) +
+                toStringWithTabs("txnNonce:" + txnNonce, level) +
+                toStringWithTabs("txnInvoker: " + transactionInvoker, level) +
+                toStringWithTabs("resultSender: " + resultSender, level) +
+                toStringWithTabs("signature: " + Crypto.base64(_signature, 15) , level) +
+                toStringWithTabs("failureReason: " + failureReason, level);
     }
 }

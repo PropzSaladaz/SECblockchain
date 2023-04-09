@@ -8,6 +8,7 @@ import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransaction;
 import pt.tecnico.blockchain.Messages.blockchain.QuorumSignedBlockMessage;
 import pt.tecnico.blockchain.Messages.blockchain.TransactionResultMessage;
 import pt.tecnico.blockchain.Messages.ibft.SignedBlockchainBlockMessage;
+import pt.tecnico.blockchain.Messages.tes.responses.TESResultMessage;
 import pt.tecnico.blockchain.contracts.SmartContract;
 import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 
@@ -71,6 +72,9 @@ public class BlockchainMemberAPI implements Application {
                             ((SignedBlockchainBlockMessage) signedBlockMessage).getSignature()
                     )
             ).collect(Collectors.toList());
+            for (Pair<Integer, byte[]> m : signaturesQuorum) {
+                Logger.logInfo("signed message: SignerPID = " + m.getFirst() + "\t signature = " + Crypto.base64(m.getSecond(), 15));
+            }
             validateAndExecuteBlockTransactions(new QuorumSignedBlockMessage(signedValue.getContent(), signaturesQuorum));
             boolean v = chain.validateCommitValue(signedValue.getContent(), quorum);
             Logger.logDebugPrimary("Value validation result: " + v);
@@ -132,10 +136,15 @@ public class BlockchainMemberAPI implements Application {
             List<BlockchainTransaction> transactions = block.getTransactions();
             for (BlockchainTransaction transaction : transactions ) {
                 SmartContract contract = _blockChainState.getContract(transaction.getContractID());
-                Content contractResp = contract.getTransactionResponse(transaction.getContent(), _publicKey);
+                Content contractResp = contract.getTransactionResponse(transaction.getContent(),
+                        transaction.getStatus(),
+                        _publicKey);
+                TESResultMessage m = (TESResultMessage) contractResp;
                 TransactionResultMessage response = new TransactionResultMessage(
                         transaction.getNonce(),
-                        contractResp
+                        contractResp,
+                        transaction.getOperationType(),
+                        transaction.getStatus()
                 );
                 sendResponseToClient(transaction.getSender(), response);
             }
@@ -146,7 +155,6 @@ public class BlockchainMemberAPI implements Application {
 
     private void sendResponseToClient(String sender, TransactionResultMessage response) throws Exception {
         Integer clientPid = RSAKeyStoreById.getPidFromPublic(sender);
-        Logger.logInfo("clientPID = " + clientPid);
         Pair<String,Integer> senderInfo = _clientsPidToInfo.get(clientPid);
         AuthenticatedPerfectLink.send(_socket, response, senderInfo.getFirst(), senderInfo.getSecond());
     }
@@ -199,18 +207,20 @@ public class BlockchainMemberAPI implements Application {
     }
 
     private void parseRead(BlockchainTransaction transaction) throws Exception {
-        TransactionResultMessage response = new TransactionResultMessage(transaction.getNonce(), null);
+        TransactionResultMessage response = new TransactionResultMessage(transaction.getNonce(),
+                transaction.getOperationType());
         String contractID = transaction.getContractID();
         if(_blockChainState.existContract(contractID)) {
             SmartContract contract = _blockChainState.getContract(contractID);
-            // In reads we request a transaction proof instead of providing one
+            // on reads we don't need to provide transactionProof. We assume it was provided by last commit
             if (contract.validateAndExecuteTransaction(transaction.getContent(), _publicKey, null)) {
                 response.setStatus(VALIDATED);
-                // This content corresponds to the SignedQuorumAndBlockMessage (balance proof)
-                Content resultContent = contract.getTransactionResponse(transaction.getContent(), _publicKey);
-                response.setContent(resultContent);
             }
             else response.setStatus(REJECTED, "Transaction could not be validated.");
+            Content resultContent = contract.getTransactionResponse(transaction.getContent(),
+                    transaction.getStatus(),
+                    _publicKey);
+            response.setContent(resultContent);
         } else response.setStatus(REJECTED, "Contract with id '" + transaction.getContractID() + "' doesn't exist.");
         sendResponseToClient(transaction.getSender(), response);
     }

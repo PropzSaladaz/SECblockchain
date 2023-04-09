@@ -6,13 +6,17 @@ import pt.tecnico.blockchain.Crypto;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
 import pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction;
+import pt.tecnico.blockchain.Messages.tes.transactions.TransferTransaction;
 
 public class TransferResultMessage extends TESResultMessage {
     int amount;
     String destination;
 
-    public TransferResultMessage(int nonce, String sender, int amount, String destination) {
-        super(nonce, sender, TESTransaction.TRANSFER);
+    public TransferResultMessage(TransferTransaction txn) {
+        super(txn.getNonce(), txn.getSender(), TESTransaction.TRANSFER);
+        amount = txn.getAmount();
+        destination = txn.getDestinationAddress();
+        setFailureReason(txn.getFailureMessage());
     }
 
     public int getAmount() {
@@ -59,8 +63,10 @@ public class TransferResultMessage extends TESResultMessage {
 
     @Override
     public String toString(int level) {
-        return toStringWithTabs("TransactionResultMessage: {", level) +
+        return toStringWithTabs("TransferResultMessage: {", level) +
                 super.toString(level + 1) +
+                toStringWithTabs("amount: " + amount, level + 1) +
+                toStringWithTabs("destination: " + destination.substring(0, 15), level + 1) +
                 toStringWithTabs("}", level);
     }
 }

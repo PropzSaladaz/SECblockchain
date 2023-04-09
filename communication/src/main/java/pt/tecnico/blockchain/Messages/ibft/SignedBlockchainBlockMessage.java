@@ -1,5 +1,6 @@
 package pt.tecnico.blockchain.Messages.ibft;
 
+import pt.tecnico.blockchain.Logger;
 import pt.tecnico.blockchain.Messages.Message;
 import pt.tecnico.blockchain.Messages.MessageManager;
 import pt.tecnico.blockchain.Messages.blockchain.BlockchainBlock;
@@ -20,11 +21,6 @@ public class SignedBlockchainBlockMessage extends Message implements Content {
 
     public SignedBlockchainBlockMessage(Content block) {
         super(block);
-    }
-
-    public SignedBlockchainBlockMessage(byte[] signature, Content block) {
-        super(block);
-        _signature = signature;
     }
 
     public Integer getSignerPID() {
@@ -76,6 +72,8 @@ public class SignedBlockchainBlockMessage extends Message implements Content {
     public void sign(Integer signerPID) {
         try {
             _signature = Crypto.getSignature(digestMessageFields(), RSAKeyStoreById.getPrivateKey(signerPID));
+            _signerPID = signerPID;
+            Logger.logInfo(" Signing SignedBlock: " + getContent().toString(0));
         } catch (Exception e) {
             e.printStackTrace();
         }

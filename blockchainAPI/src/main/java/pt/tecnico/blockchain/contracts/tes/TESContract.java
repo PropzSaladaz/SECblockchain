@@ -2,6 +2,7 @@ package pt.tecnico.blockchain.contracts.tes;
 
 import pt.tecnico.blockchain.KeyConverter;
 import pt.tecnico.blockchain.Logger;
+import pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus;
 import pt.tecnico.blockchain.Pair;
 import pt.tecnico.blockchain.Keys.RSAKeyStoreById;
 import pt.tecnico.blockchain.Messages.Content;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus.VALIDATED;
 import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.*;
 
 public class TESContract implements SmartContract {
@@ -63,17 +65,14 @@ public class TESContract implements SmartContract {
         return -1;
     }
 
-    public Content getAccountBalanceProof(String account_id){
-        return _clientAccounts.get(account_id).getBalanceProof();
-    }
-
     @Override
-    public Content getTransactionResponse(Content transaction, String memberPubKey) {
+    public Content getTransactionResponse(Content transaction, BlockchainTransactionStatus status,
+                                          String memberPubKey) {
         try {
             TESTransaction txn = (TESTransaction) transaction;
             switch (txn.getType()) {
                 case CHECK_BALANCE:
-                    return getCheckBalanceResponse((CheckBalanceTransaction) transaction, memberPubKey);
+                    return getCheckBalanceResponse((CheckBalanceTransaction) transaction, status, memberPubKey);
                 case TRANSFER:
                     return getTransferResponse((TransferTransaction) transaction, memberPubKey);
                 case CREATE_ACCOUNT:
@@ -122,25 +121,19 @@ public class TESContract implements SmartContract {
         return -1;
     }
 
-    private Content getCheckBalanceResponse(CheckBalanceTransaction transaction, String memberPubKey) {
-        CheckBalanceResultMessage response = new CheckBalanceResultMessage(
-                transaction.getNonce(),
-                transaction.getSender()
-        );
-        response.setResultSender(memberPubKey);
+    private Content getCheckBalanceResponse(CheckBalanceTransaction transaction, BlockchainTransactionStatus status,
+                                            String memberPubKey) {
         String from = transaction.getSender();
+        CheckBalanceResultMessage response = new CheckBalanceResultMessage(transaction);
+        response.setResultSender(memberPubKey);
         switch (transaction.getReadType()) {
             case STRONG:
-                response.setAmount(_clientAccounts.get(from).getCurrentBalance());
-                response.setReadType(TESReadType.STRONG);
-                response.setFailureReason(transaction.getFailureMessage());
+                if (status == VALIDATED) response.setAmount(getAccountCurrentBalance(from));
                 response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
                 return response;
             case WEAK:
-                response.setAmount(_clientAccounts.get(from).getPreviousBalance());
-                response.setReadType(TESReadType.WEAK);
+                if (status == VALIDATED) response.setAmount(getAccountPreviousBalance(from));
                 response.setContent(getAccountBalanceProof(from));
-                response.setFailureReason(transaction.getFailureMessage());
                 response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
                 return response;
             default:
@@ -149,26 +142,22 @@ public class TESContract implements SmartContract {
         }
     }
 
+    public Content getAccountBalanceProof(String account_id){
+        if (_clientAccounts.containsKey(account_id)) {
+            return _clientAccounts.get(account_id).getBalanceProof();
+        } else return null;
+    }
+
     private Content getTransferResponse(TransferTransaction transaction, String memberPubKey) {
-        TransferResultMessage response = new TransferResultMessage(
-                transaction.getNonce(),
-                transaction.getSender(),
-                transaction.getAmount(),
-                transaction.getDestinationAddress()
-        );
+        TransferResultMessage response = new TransferResultMessage(transaction);
         response.setResultSender(memberPubKey);
-        response.setFailureReason(transaction.getFailureMessage());
         response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
         return response;
     }
 
     private Content getCreateAccountResponse(CreateAccountTransaction transaction, String memberPubKey) {
-        CreateAccountResultMessage response = new CreateAccountResultMessage(
-                transaction.getNonce(),
-                transaction.getSender()
-        );
+        CreateAccountResultMessage response = new CreateAccountResultMessage(transaction);
         response.setResultSender(memberPubKey);
-        response.setFailureReason(transaction.getFailureMessage());
         response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
         return response;
     }
@@ -230,6 +219,14 @@ public class TESContract implements SmartContract {
         payMiner(minerKey, 1000);
     }
 
+    private boolean validateCheckBalance(CheckBalanceTransaction transaction) {
+        if (clientAccountExists(transaction.getSender())) {
+            return true;
+        }
+        transaction.setFailureMessage("Client account doesn't exist");
+        return false;
+    }
+
     private boolean validateAndExecuteTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof) {
         if (validateTransfer(transaction)) {
             executeTransfer(transaction, minerKey, transactionsProof);
@@ -249,10 +246,6 @@ public class TESContract implements SmartContract {
 
     private boolean validateAndExecuteCheckBalance(CheckBalanceTransaction transaction, String minerKey) {
         return validateCheckBalance(transaction);
-    }
-
-    private boolean validateCheckBalance(CheckBalanceTransaction transaction) {
-        return clientAccountExists(transaction.getSender());
     }
 
     private boolean validateTransfer(TransferTransaction transfer) {

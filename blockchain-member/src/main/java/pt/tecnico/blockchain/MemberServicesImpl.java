@@ -36,7 +36,6 @@ public class MemberServicesImpl {
             ApplicationMessage appMsg = (ApplicationMessage) content;
             switch (appMsg.getApplicationMessageType()) {
                 case ApplicationMessage.BLOCKCHAIN_TRANSACTION_MESSAGE:
-                    Logger.logInfo("HandleRequest - memberImpl: " + ((BlockchainTransaction) content).toString(0));
                     _blockchainMemberAPI.parseTransaction((BlockchainTransaction) content);
                     break;
                 case ApplicationMessage.CONSENSUS_INSTANCE_MESSAGE:

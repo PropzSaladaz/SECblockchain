@@ -114,7 +114,9 @@ public class BlockchainClientAPI {
     private void handleResponse(Content message) {
         if (responseIsTransactionResult(message)) {
             TransactionResultMessage transactionResult = (TransactionResultMessage) message;
-            _app.deliver(transactionResult, BlockchainTransactionType.READ, transactionResult.getStatus()); // TODO change op type
+            _app.deliver(transactionResult.getContent(),
+                    transactionResult.getTransactionType(),
+                    transactionResult.getStatus());
         } else {
             Logger.logWarning("Expected to receive a TransactionResultMessage but received something else.");
         }

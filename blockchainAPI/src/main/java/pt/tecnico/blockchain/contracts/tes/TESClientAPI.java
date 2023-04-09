@@ -28,6 +28,7 @@ import java.security.PublicKey;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus.VALIDATED;
 import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.CREATE_ACCOUNT;
 import static pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction.TRANSFER;
 
@@ -35,7 +36,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
 
     private static final String contractID = "TESCONTRACTID"; // TODO define a hash in the server TES class
     private final BlockchainClientAPI client;
-    private final Map<Integer, Map<Integer, List<TESResultMessage>>> tesMessagesQuorum; // nonce -> hashCode -> List of obj
+    private final Map<Integer, Map<String, List<TESResultMessage>>> tesMessagesQuorum; // nonce -> hashCode -> List of obj
     private final Set<Integer> deliveredSet;
 
     public TESClientAPI(DatagramSocket socket, PublicKey pubKey, PrivateKey privKey) {
@@ -145,23 +146,21 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
                     break;
             }
         } catch (ClassCastException e) {
-            Logger.logError("Expected CheckBalance message but got something else");
+            Logger.logError("Expected CheckBalance message but got something else", e);
         } catch (Exception e) {
-            Logger.logError("Exception parsing read in TESClientAPI");
+            Logger.logError("Exception parsing read in TESClientAPI", e);
         }
     }
 
     private void parseWeakRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) {
-        int _currentBalance = ((QuorumSignedBlockMessage) txn.getContent()).assertTesAccountBalance(
-                                    KeyConverter.keyToString(client.getPublicKey()), txn.getAmount());
-        if (_currentBalance >= 0) {
-            printStatus(status,
-                    "THE BALANCE IS: " + _currentBalance,
-                    "IMPOSSIBLE TO CHECK BALANCE"
-            );
-        } else {
-            Logger.logError("Balance proof was incorrect. ");
+        if (status == VALIDATED) {
+            int _currentBalance = ((QuorumSignedBlockMessage) txn.getContent()).assertTesAccountBalance(
+                    KeyConverter.keyToString(client.getPublicKey()), txn.getAmount());
+            Logger.logInfo("balance: " + _currentBalance);
+            if (_currentBalance >= 0) Logger.logInfo("Current Balance is: " + _currentBalance);
+            else Logger.logInfo("CheckBalance request could not be validated - Received a response from a byzantine process.");
         }
+        else Logger.logInfo("CheckBalance could not be performed: " + txn.getErrorMessage());
     }
 
     private void parseStrongRead(CheckBalanceResultMessage txn, BlockchainTransactionStatus status) { // wait for f+1 responses
@@ -194,21 +193,26 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private void addTransactionToReceivedMap(TESResultMessage txn) {
-        Integer pid = RSAKeyStoreById.getPidFromPublic(KeyConverter.keyToString(client.getPublicKey()));
-        if (txn.verifySignature(pid, txn.getSignature())) {
+        Integer clientPid = RSAKeyStoreById.getPidFromPublic(KeyConverter.keyToString(client.getPublicKey()));
+        Integer senderPid = RSAKeyStoreById.getPidFromPublic(txn.getResultSender());
+        if (txn.verifySignature(senderPid, txn.getSignature()) && iInvokedTransaction(txn)) {
             tesMessagesQuorum.computeIfAbsent(txn.getTxnNonce(), k -> new HashMap<>());
-            Map<Integer, List<TESResultMessage>> receivedWithNonce = tesMessagesQuorum.get(txn.getTxnNonce());
-            receivedWithNonce.computeIfAbsent(txn.hashCode(), k -> new ArrayList<>());
+            Map<String, List<TESResultMessage>> receivedWithNonce = tesMessagesQuorum.get(txn.getTxnNonce());
+            receivedWithNonce.computeIfAbsent(txn.toHash(), k -> new ArrayList<>());
 
-            if (receivedWithNonce.containsKey(txn.hashCode())) {
-                for (TESResultMessage result : receivedWithNonce.get(txn.hashCode())) {
+            if (receivedWithNonce.containsKey(txn.toHash())) {
+                for (TESResultMessage result : receivedWithNonce.get(txn.toHash())) {
                     if (result.getResultSender().equals(txn.getResultSender())) {
                         return; // already received msg from this process, so ignore it
                     }
                 }
-                receivedWithNonce.get(txn.hashCode()).add(txn);
+                receivedWithNonce.get(txn.toHash()).add(txn);
             }
         }
+    }
+
+    private boolean iInvokedTransaction(TESResultMessage txn) {
+        return txn.getTransactionInvoker().equals(KeyConverter.keyToString(client.getPublicKey()));
     }
 
     private boolean responseReadyToDeliver(TESResultMessage txn) {
@@ -220,7 +224,11 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
     }
 
     private int getNumberOfResponsesEqualTo(TESResultMessage txn) {
-        return tesMessagesQuorum.get(txn.getTxnNonce()).get(txn.hashCode()).size();
+        if (tesMessagesQuorum.containsKey(txn.getTxnNonce()) &&
+                tesMessagesQuorum.get(txn.getTxnNonce()).containsKey(txn.toHash())) {
+            return tesMessagesQuorum.get(txn.getTxnNonce()).get(txn.toHash()).size();
+        }
+        return -1;
     }
 
     public int getMaxNumberOfFaultyProcesses() {
@@ -250,6 +258,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
                 Logger.logInfo(failureMessage);
                 break;
             default:
+                Logger.logWarning("Unknown transaction status.");
                 break;
         }
     }

@@ -108,7 +108,8 @@ P 6 C 127.0.0.1:10006
 T 500
 A 2 (1, O) (4, A, 3)
 R 2 (5, C, 1, 1)            # client 5 creates an account
-R 3 (5, T(6, 500), 1, 1)    # client 5 transfers 500 coins to client 6 in slot 3 with gasPrice of 1
+R 3 (5, B(W), 1, 1)         # client 5 checks balance with weak read
+R 4 (5, T(6, 500), 1, 1)    # client 5 transfers 500 coins to client 6 in slot 3 with gasPrice of 1
 ```
 Do not run the test above with the comments (#) as the current file parser will throw an error.
 # 3. Run the provided set of tests

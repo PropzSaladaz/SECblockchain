@@ -61,18 +61,6 @@ public class IbftMessagehandler {
         broadcastMessage(preprepareMessage);
     }
 
-    private static byte[] getBytesFrom(Object obj) {
-        try {
-            ByteArrayOutputStream bytesOS = new ByteArrayOutputStream();
-            ObjectOutputStream objectOS = new ObjectOutputStream(bytesOS);
-            objectOS.writeObject(obj);
-            return bytesOS.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public static void broadcastMessage(Content message) {
         try {
 //            System.out.println(_memberHostNames.size());
