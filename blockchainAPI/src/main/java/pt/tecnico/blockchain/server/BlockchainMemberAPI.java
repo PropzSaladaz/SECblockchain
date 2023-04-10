@@ -15,10 +15,7 @@ import pt.tecnico.blockchain.links.AuthenticatedPerfectLink;
 import java.net.DatagramSocket;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static pt.tecnico.blockchain.Messages.blockchain.BlockchainTransactionStatus.*;
@@ -72,9 +69,6 @@ public class BlockchainMemberAPI implements Application {
                             ((SignedBlockchainBlockMessage) signedBlockMessage).getSignature()
                     )
             ).collect(Collectors.toList());
-            for (Pair<Integer, byte[]> m : signaturesQuorum) {
-                Logger.logInfo("signed message: SignerPID = " + m.getFirst() + "\t signature = " + Crypto.base64(m.getSecond(), 15));
-            }
             validateAndExecuteBlockTransactions(new QuorumSignedBlockMessage(signedValue.getContent(), signaturesQuorum));
             boolean v = chain.validateCommitValue(signedValue.getContent(), quorum);
             Logger.logDebugPrimary("Value validation result: " + v);
@@ -187,14 +181,28 @@ public class BlockchainMemberAPI implements Application {
      * the contract)
      */
     public void validateTransactionsFromBlock(BlockchainBlock block) {
+        Map<String, Object> contractStates = getValidationStateFroContractsFromBlock(block);
         for (BlockchainTransaction transaction : block.getTransactions()) {
             String contractId = transaction.getContractID();
             SmartContract contract = _blockChainState.getContract(contractId);
             if (contract != null) {
-                transaction.setStatus( contract.validateTransaction(transaction.getContent()) ? VALIDATED : REJECTED);
+                transaction.setStatus( contract.validateTransaction(transaction.getContent(),
+                        contractStates.get(contractId)) ? VALIDATED : REJECTED);
                 contract.updateTransactionWithCurrentState(transaction.getContent());
             } else transaction.setStatus(REJECTED);
         }
+    }
+
+    private Map<String, Object> getValidationStateFroContractsFromBlock(BlockchainBlock block) {
+        Map<String, Object> contractStates = new HashMap<>();
+        for (BlockchainTransaction transaction : block.getTransactions()) {
+            String contractId = transaction.getContractID();
+            SmartContract contract = _blockChainState.getContract(contractId);
+            if (contract != null) {
+                contractStates.put(contractId, contract.getNewValidationState());
+            }
+        }
+        return contractStates;
     }
 
     private BlockchainBlock addTransactionAndGetBlockIfReady(BlockchainTransaction transaction) {

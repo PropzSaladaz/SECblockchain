@@ -126,7 +126,8 @@ public abstract class TESTransaction implements Content {
                 toStringWithTabs("nonce: " + nonce, tabs) +
                 toStringWithTabs("from: " +  from.substring(0, 15) + "...", tabs) +
                 toStringWithTabs("senderBalanceHash: " + senderBalHash, tabs) +
-                toStringWithTabs("signature: " + Crypto.base64(signature, 15), tabs);
+                toStringWithTabs("signature: " + Crypto.base64(signature, 15), tabs) +
+                toStringWithTabs("failureMessage: " + failureMessage, tabs);
     }
 
 

@@ -102,10 +102,8 @@ public class Client
         RSAKeyStoreById.addPrivate(CLIENT_KEYDIR_PATH
                 .append(KeyFilename.getWithPrivExtension(TYPE, pid))
                 .getPath());
-        RSAKeyStoreById.addPublic(CLIENT_KEYDIR_PATH
-                .append(KeyFilename.getWithPubExtension(TYPE, pid))
-                .getPath());
         RSAKeyStoreById.addPublics(MEMBER_KEYDIR_PATH.getPath());
+        RSAKeyStoreById.addPublics(CLIENT_KEYDIR_PATH.getPath());
     }
 
     private static void parseArgs(String[] args) {

@@ -157,6 +157,7 @@ public class TESClientAPI implements DecentralizedAppClientAPI {
             int _currentBalance = ((QuorumSignedBlockMessage) txn.getContent()).assertTesAccountBalance(
                     KeyConverter.keyToString(client.getPublicKey()), txn.getAmount());
             Logger.logInfo("balance: " + _currentBalance);
+            Logger.logInfo("txn-amount: " + txn.getAmount());
             if (_currentBalance >= 0) Logger.logInfo("Current Balance is: " + _currentBalance);
             else Logger.logInfo("CheckBalance request could not be validated - Received a response from a byzantine process.");
         }

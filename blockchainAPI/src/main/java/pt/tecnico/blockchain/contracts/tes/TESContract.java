@@ -128,11 +128,11 @@ public class TESContract implements SmartContract {
         response.setResultSender(memberPubKey);
         switch (transaction.getReadType()) {
             case STRONG:
-                if (status == VALIDATED) response.setAmount(getAccountCurrentBalance(from));
+                response.setAmount(getAccountCurrentBalance(from));
                 response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
                 return response;
             case WEAK:
-                if (status == VALIDATED) response.setAmount(getAccountPreviousBalance(from));
+                response.setAmount(getAccountPreviousBalance(from));
                 response.setContent(getAccountBalanceProof(from));
                 response.sign(RSAKeyStoreById.getPidFromPublic(memberPubKey));
                 return response;
@@ -169,11 +169,11 @@ public class TESContract implements SmartContract {
         if (validateSignature(transaction)) {
             switch (transaction.getType()) {
                 case TESTransaction.CHECK_BALANCE:
-                    return validateAndExecuteCheckBalance((CheckBalanceTransaction) transaction, minerKey);
+                    return validateAndExecuteCheckBalance((CheckBalanceTransaction) transaction, _clientAccounts);
                 case CREATE_ACCOUNT:
-                    return validateAndExecuteCreateAccount((CreateAccountTransaction) transaction, minerKey, transactionsProof);
+                    return validateAndExecuteCreateAccount((CreateAccountTransaction) transaction, minerKey, transactionsProof, _clientAccounts);
                 case TRANSFER:
-                    return validateAndExecuteTransfer((TransferTransaction) transaction, minerKey, transactionsProof);
+                    return validateAndExecuteTransfer((TransferTransaction) transaction, minerKey, transactionsProof, _clientAccounts);
                 default:
                     Logger.logError("Unknown TES transaction type");
                     return false;
@@ -182,26 +182,39 @@ public class TESContract implements SmartContract {
     }
 
     @Override
-    public boolean validateTransaction(Content tx) {
-        TESTransaction transaction = (TESTransaction) tx;
-        if (validateSignature(transaction)) {
-            switch (transaction.getType()) {
-                case TESTransaction.CHECK_BALANCE:
-                    return validateCheckBalance((CheckBalanceTransaction) transaction);
-                case CREATE_ACCOUNT:
-                    return validateCreateAccount((CreateAccountTransaction) transaction);
-                case TRANSFER:
-                    return validateTransfer((TransferTransaction) transaction);
-                default:
-                    Logger.logError("Unknown TES transaction type");
-                    return false;
-            }
-        } else return false;
+    public boolean validateTransaction(Content tx, Object tempState) {
+        try {
+            TESTransaction transaction = (TESTransaction) tx;
+            if (validateSignature(transaction) && tempState != null) {
+                // Apply all txns to the temporary validation map to solve txn dependencies
+                Map<String, ClientAccount> validationMap = (Map<String, ClientAccount>) tempState;
+                switch (transaction.getType()) {
+                    case TESTransaction.CHECK_BALANCE:
+                        return validateAndExecuteCheckBalance((CheckBalanceTransaction) transaction, validationMap);
+                    case CREATE_ACCOUNT:
+                        return validateAndExecuteCreateAccount((CreateAccountTransaction) transaction, null,null, validationMap);
+                    case TRANSFER:
+                        return validateAndExecuteTransfer((TransferTransaction) transaction, null, null, validationMap);
+                    default:
+                        Logger.logError("Unknown TES transaction type");
+                        return false;
+                }
+            } else return false;
+        } catch (ClassCastException e) {
+            Logger.logWarning("Got an unexpected message type when validating Transaction in TESContract", e);
+            return false;
+        }
     }
 
-    private boolean validateAndExecuteCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof) {
-        if (validateCreateAccount(transaction)){
-            executeCreateAccount(transaction, minerKey, transactionsProof);
+    @Override
+    public Object getNewValidationState() {
+        return new HashMap<String, ClientAccount>();
+    }
+
+    private boolean validateAndExecuteCreateAccount(CreateAccountTransaction transaction, String minerKey,
+                                                    Content transactionsProof, Map<String, ClientAccount> resState) {
+        if (validateCreateAccount(transaction, resState)){
+            executeCreateAccount(transaction, minerKey, transactionsProof, resState);
             return true;
         } else {
             transaction.setFailureMessage("Account with ID " + transaction.getSender() + " already exists.");
@@ -209,61 +222,71 @@ public class TESContract implements SmartContract {
         }
     }
 
-    private boolean validateCreateAccount(CreateAccountTransaction transaction) {
-        return !clientAccountExists(transaction.getSender());
+    private boolean validateCreateAccount(CreateAccountTransaction transaction, Map<String, ClientAccount> resState) {
+        return !clientAccountExists(transaction.getSender(), resState);
     }
 
-    private void executeCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof) {
-        _clientAccounts.put(transaction.getSender(), new ClientAccount());
-        _clientAccounts.get(transaction.getSender()).updateBalanceProof(transactionsProof);
-        payMiner(minerKey, 1000);
+    private void executeCreateAccount(CreateAccountTransaction transaction, String minerKey, Content transactionsProof,
+                                      Map<String, ClientAccount> resState) {
+        resState.put(transaction.getSender(), new ClientAccount());
+        Logger.logInfo("Added client acc to map " +  resState.size());
+        resState.get(transaction.getSender()).updateBalanceProof(transactionsProof);
+        if (resState.equals(_clientAccounts)) payMiner(minerKey, 100);
     }
 
-    private boolean validateCheckBalance(CheckBalanceTransaction transaction) {
-        if (clientAccountExists(transaction.getSender())) {
+    private boolean validateCheckBalance(CheckBalanceTransaction transaction, Map<String, ClientAccount> resState) {
+        if (clientAccountExists(transaction.getSender(), resState)) {
             return true;
         }
         transaction.setFailureMessage("Client account doesn't exist");
         return false;
     }
 
-    private boolean validateAndExecuteTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof) {
-        if (validateTransfer(transaction)) {
-            executeTransfer(transaction, minerKey, transactionsProof);
+    private boolean validateAndExecuteTransfer(TransferTransaction transaction, String minerKey,
+                                               Content transactionsProof,  Map<String, ClientAccount> resState) {
+        if (validateTransfer(transaction, resState)) {
+            executeTransfer(transaction, minerKey, transactionsProof, resState);
             return true;
         } else {
             return false;
         }
     }
 
-    private void executeTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof) {
-        _clientAccounts.get(transaction.getSender()).withdrawal(transaction.getAmount());
-        _clientAccounts.get(transaction.getDestinationAddress()).deposit(transaction.getAmount());
-        _clientAccounts.get(transaction.getSender()).updateBalanceProof(transactionsProof);
-        _clientAccounts.get(transaction.getDestinationAddress()).updateBalanceProof(transactionsProof);
-        payMiner(minerKey, 5000);
+    private void executeTransfer(TransferTransaction transaction, String minerKey, Content transactionsProof,
+                                 Map<String, ClientAccount> resState) {
+        resState.get(transaction.getSender()).withdrawal(transaction.getAmount());
+        resState.get(transaction.getDestinationAddress()).deposit(transaction.getAmount());
+        resState.get(transaction.getSender()).updateBalanceProof(transactionsProof);
+        resState.get(transaction.getDestinationAddress()).updateBalanceProof(transactionsProof);
+        if (resState.equals(_clientAccounts)) payMiner(minerKey, 500); // if the result map is the real chain state
     }
 
-    private boolean validateAndExecuteCheckBalance(CheckBalanceTransaction transaction, String minerKey) {
-        return validateCheckBalance(transaction);
+    private boolean validateAndExecuteCheckBalance(CheckBalanceTransaction transaction,
+                                                   Map<String, ClientAccount> resState) {
+        return validateCheckBalance(transaction, resState);
     }
 
-    private boolean validateTransfer(TransferTransaction transfer) {
+    private boolean validateTransfer(TransferTransaction transfer, Map<String, ClientAccount> resState) {
         int amountToTransfer = transfer.getAmount();
-        if(!(amountToTransfer > 0)) {
+        if(amountToTransfer <= 0) {
             transfer.setFailureMessage("Amount to transfer must be > than 0.");
             return false;
         }
-        if (!clientAccountExists(transfer.getDestinationAddress())) {
+        if (!clientAccountExists(transfer.getDestinationAddress(), resState)) {
+            Logger.logInfo("ClientAcc: " + resState.size());
+            for (Map.Entry<String, ClientAccount> entry : resState.entrySet()) {
+                String key = entry.getKey();
+                Logger.logInfo("ClientAcc: " + key);
+            }
+            transfer.setFailureMessage("Receiver account doesn't exist");
+            return false;
+        }
+        if (!clientAccountExists(transfer.getSender(), resState)) {
             transfer.setFailureMessage("Sender account doesn't exist");
             return false;
         }
-        if (!clientAccountExists(transfer.getSender())) {
-            transfer.setFailureMessage("Receiver account doesn't exist");
-            return false;
-        }
-        if (!_clientAccounts.get(transfer.getSender()).hasBalanceGreaterThan(amountToTransfer)) {
-            transfer.setFailureMessage("Receiver account doesn't exist");
+        if (!resState.get(transfer.getSender()).hasBalanceGreaterThan(amountToTransfer)) {
+            transfer.setFailureMessage("Sender doesn't have enough balance");
             return  false;
         }
         return true;
@@ -273,7 +296,11 @@ public class TESContract implements SmartContract {
         if(_minerList.contains(minerKey)) _clientAccounts.get(minerKey).deposit(amount);
     }
 
-    private boolean clientAccountExists(String publicKey) {
-        return _clientAccounts.containsKey(publicKey);
+    private boolean clientAccountExists(String publicKey, Map<String, ClientAccount> resState) {
+        if (!resState.containsKey(publicKey) && !_clientAccounts.containsKey(publicKey)) return false;
+        if (!resState.containsKey(publicKey) && _clientAccounts.containsKey(publicKey)) {
+            resState.put(publicKey, _clientAccounts.get(publicKey).getCopy());
+        }
+        return true;
     }
 }

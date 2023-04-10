@@ -22,11 +22,10 @@ public class DefaultAPLBehavior {
             String dest = hostname + ":" + port;
             APLMessage message = new APLMessage(content, AuthenticatedPerfectLink.getSource(), dest,
                     AuthenticatedPerfectLink.getId());
-            Logger.logDebug("digestedhash: " + Crypto.base64(message.digestMessageFields()));
             message.sign(AuthenticatedPerfectLink.getId());
             PerfectLink.send(socket, message, InetAddress.getByName(hostname), port);
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.logError("Exception caught in APL send:", e);
         }
     }
 
@@ -43,9 +42,9 @@ public class DefaultAPLBehavior {
                 if (pk != null && AuthenticatedPerfectLink.validateMessage(message, pk)) {
                     return new APLReturnMessage(message.getContent(), message.getSenderPID());
                 }
-                System.out.println("Unauthenticated message received, ignoring message " + message.toString(0));
+                Logger.logWarning("Unauthenticated message received, ignoring message " + message.toString(0));
             } catch(Exception e){
-                e.printStackTrace();
+                Logger.logError("Exception caught in APL deliver:", e);
             }
         }
     }

@@ -45,7 +45,7 @@ public class TransferTransaction extends TESTransaction {
 
     @Override
     protected void signConcreteAttributes(Signature signature) throws SignatureException {
-        signature.update(Byte.parseByte(destinationAddress));
+        signature.update(destinationAddress.getBytes());
         signature.update(ByteBuffer.allocate(Integer.BYTES).putInt(amount).array());
     }
 

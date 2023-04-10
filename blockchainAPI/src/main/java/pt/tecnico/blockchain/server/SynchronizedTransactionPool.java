@@ -7,7 +7,7 @@ import java.util.*;
 
 public class SynchronizedTransactionPool {
 
-    private static final int MINIMUM_TRANSACTIONS = 2;
+    private static final int MINIMUM_TRANSACTIONS = 3;
     private static List<BlockchainTransaction> pool = new ArrayList<>();
     private static final Set<Pair<String, Integer>> transactionIDs = new HashSet<>();
 
@@ -30,7 +30,7 @@ public class SynchronizedTransactionPool {
     }
 
     private List<BlockchainTransaction> popHighestPaidTransactions() {
-        pool.sort(Comparator.comparingInt(BlockchainTransaction::getGasPrice));
+        pool.sort(Comparator.comparingInt(BlockchainTransaction::getGasPrice).reversed());
         List<BlockchainTransaction> txns = new ArrayList<>();
         Iterator<BlockchainTransaction> iter = pool.listIterator();
         for (int i = 0 ; i < MINIMUM_TRANSACTIONS && iter.hasNext(); i++) {

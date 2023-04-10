@@ -14,6 +14,12 @@ public class ClientAccount {
         _balanceProof = null;
     }
 
+    public ClientAccount(int balance, int previousBalance, Content balanceProof) {
+        _balance = balance;
+        _previousBalance = previousBalance;
+        _balanceProof = balanceProof;
+    }
+
     
     public synchronized void deposit(int value) {
         _balance += value;
@@ -24,7 +30,11 @@ public class ClientAccount {
         else _balance -= value;
         return true;
     }
-    
+
+    public ClientAccount getCopy() {
+        return new ClientAccount(_balance, _previousBalance, _balanceProof);
+    }
+
     public Integer getCurrentBalance() {
         return _balance;
     }
