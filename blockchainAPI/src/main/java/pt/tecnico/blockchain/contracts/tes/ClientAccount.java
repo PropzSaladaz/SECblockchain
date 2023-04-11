@@ -51,7 +51,7 @@ public class ClientAccount {
         _balanceProof = balanceProof;
     }
 
-    public boolean hasBalanceGreaterThan(int amount){
-        return _balance > amount;
+    public boolean hasBalanceGreaterOrEqualThan(int amount){
+        return _balance >= amount;
     }
 }

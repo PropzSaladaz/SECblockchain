@@ -268,7 +268,7 @@ public class TESContract implements SmartContract {
 
     private boolean validateTransfer(TransferTransaction transfer, Map<String, ClientAccount> resState) {
         int amountToTransfer = transfer.getAmount();
-        if(amountToTransfer <= 0) {
+        if(amountToTransfer < 0) {
             transfer.setFailureMessage("Amount to transfer must be > than 0.");
             return false;
         }
@@ -285,7 +285,7 @@ public class TESContract implements SmartContract {
             transfer.setFailureMessage("Sender account doesn't exist");
             return false;
         }
-        if (!resState.get(transfer.getSender()).hasBalanceGreaterThan(amountToTransfer)) {
+        if (!resState.get(transfer.getSender()).hasBalanceGreaterOrEqualThan(amountToTransfer)) {
             transfer.setFailureMessage("Sender doesn't have enough balance");
             return  false;
         }
