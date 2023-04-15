@@ -88,10 +88,14 @@ R <slot> <requests>
                -> <senderId> : client id
                -> <operation> : 'C' - Create an account,
                                 'T' - Transfer coins to a destination,
-                                'B' - Check balance
-               -> <argumentWrapper> : (<destination>, <amount>) : Only the operation 'T' is allowed to have a <argumentWrapper>
-                                    <destination> : the destination client id
-                                    <amount> : any combination of positive integers
+                                'B' - Check balance 
+               -> <argumentWrapper> : 
+                     -> In case of <operation> 'T': (<destination>, <amount>)
+                            <destination> : the destination client id
+                            <amount> : any combination of positive integers
+                     -> In case of <operation> 'B' : (<typeOfRead>)
+                            <typeOfRead> : 'W' - Weak read
+                                           'S' - Strong read
                -> <gasPrice> : requests with higher gasPrices will be appended first
                -> <gasLimit> : maximum amount of gas the user is willing to pay (not currently used)
                 
