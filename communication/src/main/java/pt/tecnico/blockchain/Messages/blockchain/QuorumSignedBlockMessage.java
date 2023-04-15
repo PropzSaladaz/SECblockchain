@@ -7,7 +7,10 @@ import pt.tecnico.blockchain.Messages.tes.responses.TESResultMessage;
 import pt.tecnico.blockchain.Messages.tes.transactions.TESTransaction;
 import pt.tecnico.blockchain.Messages.tes.transactions.TransferTransaction;
 import pt.tecnico.blockchain.Messages.Content;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class QuorumSignedBlockMessage extends Message implements Content {
     
@@ -34,11 +37,13 @@ public class QuorumSignedBlockMessage extends Message implements Content {
         BlockchainBlock block = (BlockchainBlock) this.getContent();
         List<BlockchainTransaction> blockTransactions = block.getTransactions();
         int current_balance = previousBalance;
+        Set<Integer> sigIds = new HashSet<Integer>();
 
         for (Pair<Integer, byte[]> sigPair : this.getSignaturePairs()) {
-            if (!block.verifySignature(sigPair.getFirst(), sigPair.getSecond())) {
+            if (sigIds.contains(sigPair.getFirst()) || !block.verifySignature(sigPair.getFirst(), sigPair.getSecond())) {
                 return -1;
             }
+            sigIds.add(sigPair.getFirst());
         }
         for (BlockchainTransaction tx : blockTransactions) {
             if (current_balance == -1) break;
