@@ -1,0 +1,5 @@
+{
+	"title": "Permissioned Blockchain",
+	"description": "Java implementation of a permissioned blockchain built on top of UDP, with modularized link abstractions. Implements IBFT algorithm for consensus.",
+	"status": "Finished"
+}
